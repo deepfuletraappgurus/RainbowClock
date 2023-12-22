@@ -1,0 +1,21 @@
+diff --git a/node_modules/react-navigation-drawer/lib/module/views/Drawer.js b/node_modules/react-navigation-drawer/lib/module/views/Drawer.js
+index 3f81450..82c97db 100644
+--- a/node_modules/react-navigation-drawer/lib/module/views/Drawer.js
++++ b/node_modules/react-navigation-drawer/lib/module/views/Drawer.js
+@@ -15,6 +15,7 @@ const {
+   startClock,
+   stopClock,
+   interpolate,
++  interpolateNode,
+   spring,
+   abs,
+   add,
+@@ -331,7 +332,7 @@ export default class Drawer extends React.PureComponent {
+       onHandlerStateChange: this.handleTapStateChange
+     }, /*#__PURE__*/React.createElement(Animated.View, {
+       style: [styles.overlay, {
+-        opacity: interpolate(this.progress, {
++        opacity: interpolateNode(this.progress, {
+           inputRange: [PROGRESS_EPSILON, 1],
+           outputRange: [0, 1]
+         }),
