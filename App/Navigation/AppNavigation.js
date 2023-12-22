@@ -108,7 +108,7 @@ const drawerStack = createStackNavigator(
     },
     PrintPdfScreen: {
       screen: PrintPdfScreen,
-      navigationOptions: {title: 'My Rainbow Clock'.toUpperCase()},
+      navigationOptions: {title: 'My Rainbow Clock'.toUpperCase(),headerShown:false,},
     },
 
     HomeScreen: {

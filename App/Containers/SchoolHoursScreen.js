@@ -88,28 +88,40 @@ export default class SchoolHoursScreen extends BaseComponent {
       // If selected time is after the maximum time, set it to the maximum time
       Alert.alert(Constants.APP_NAME, Constants.MESSAGE_SCHOOL_DAY_VALIDATION);
     } else {
-      console.log('EventType ===', event.type);
-      this.state.time = value;
-      // this.setState({timePicker: false})
-
-      this.state.time = Helper.dateFormater(
-        new Date(value),
-        'hh:mm A',
-        'hh:mm A',
-      );
-      this.state.fromTimeFormate = Helper.dateFormater(
-        new Date(value),
-        'hh:mm a',
-        'A',
-      );
-      //this.changeFromDate(value)
-      console.log('From/onTimeSelected===', this.state.time);
-      this.setState({fromTime: this.state.time.toString()});
-      // console.log('changeFromDateJS', this.state.time.toString())
-      // this.setState({time:new Date(Date.now())})
-      this.setState({time: value});
-      if (event.type == 'dismissed') {
-        this.setState({timePicker: false});
+      if (value instanceof Date) {
+        // If value is already a Date object, use it directly
+        this.setState({
+          time: value,
+          fromTime: Helper.dateFormater(value, 'hh:mm A', 'hh:mm A').toString(),
+          fromTimeFormate: Helper.dateFormater(value, 'hh:mm a', 'A'),
+        });
+      } else {
+        // If value is not a Date object, try converting it to a Date
+        const dateValue = new Date(value);
+        if (!isNaN(dateValue.getTime())) {
+          // Check if the conversion was successful
+          this.setState({
+            time: dateValue,
+            fromTime: Helper.dateFormater(
+              dateValue,
+              'hh:mm A',
+              'hh:mm A',
+            ).toString(),
+            fromTimeFormate: Helper.dateFormater(dateValue, 'hh:mm a', 'A'),
+          });
+        } else {
+          // Handle the case where the conversion fails
+          console.error('Invalid date format for toTime:', value);
+        }
+      }
+      if (Platform.OS === 'android') {
+        if (event.type === 'set') {
+          this.setState({timePicker: false});
+        }
+      } else {
+        if (event.type === 'dismissed') {
+          this.setState({timePicker: false});
+        }
       }
     }
   }
@@ -133,25 +145,42 @@ export default class SchoolHoursScreen extends BaseComponent {
       // If selected time is after the maximum time, set it to the maximum time
       Alert.alert(Constants.APP_NAME, Constants.MESSAGE_SCHOOL_DAY_VALIDATION);
     } else {
-      this.state.toTimeDate = value;
+      if (value instanceof Date) {
+        // If value is already a Date object, use it directly
+        this.setState({
+          toTimeDate: value,
+          toTime: Helper.dateFormater(value, 'hh:mm A', 'hh:mm A').toString(),
+          toTimeFormate: Helper.dateFormater(value, 'hh:mm a', 'A'),
+        });
+      } else {
+        // If value is not a Date object, try converting it to a Date
+        const dateValue = new Date(value);
+        if (!isNaN(dateValue.getTime())) {
+          // Check if the conversion was successful
+          this.setState({
+            toTimeDate: dateValue,
+            toTime: Helper.dateFormater(
+              dateValue,
+              'hh:mm A',
+              'hh:mm A',
+            ).toString(),
+            toTimeFormate: Helper.dateFormater(dateValue, 'hh:mm a', 'A'),
+          });
+        } else {
+          // Handle the case where the conversion fails
+          console.error('Invalid date format for toTime:', value);
+        }
+      }
 
-      this.state.toTimeDate = Helper.dateFormater(
-        new Date(value),
-        'hh:mm A',
-        'hh:mm A',
-      );
-      this.state.toTimeFormate = Helper.dateFormater(
-        new Date(value),
-        'hh:mm a',
-        'A',
-      );
-      //this.changeFromDate(value)
-      console.log('To/onTimeSelected===', this.state.toTimeDate);
-      this.setState({toTime: this.state.toTimeDate.toString()});
-      // console.log('changeFromDateJS====', this.state.toTime)
-      this.setState({toTimeDate: value});
-      if (event.type == 'dismissed') {
-        this.setState({toTimePicker: false});
+      console.log('aaaa', event.type);
+      if (Platform.OS === 'android') {
+        if (event.type === 'set') {
+          this.setState({toTimePicker: false});
+        }
+      } else {
+        if (event.type === 'dismissed') {
+          this.setState({toTimePicker: false});
+        }
       }
     }
   }

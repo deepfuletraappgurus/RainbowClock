@@ -259,7 +259,7 @@ callDeleteProfile =async()=>{
     return (
       <View style={styles.mainContainer} pointerEvents={this.state.isLoading ? 'none' : 'auto'}>
         <ImageBackground source={Images.blueBackground} style={styles.backgroundImage}>
-          <KeyboardAvoidingView style={styles.mainContainer} behavior={"padding"}>
+          <KeyboardAvoidingView style={styles.mainContainer} behavior={"padding"} keyboardVerticalOffset={Platform.OS === 'android' ? -200 : 0}>
             <SafeAreaView style={styles.SafeAreaView}>
               <ScrollView contentContainerStyle={styles.ScrollView}>
                 <View style={[styles.container, styles.center]}>
@@ -305,7 +305,7 @@ callDeleteProfile =async()=>{
                               textAlign={'center'}
                               maxLength={1}
                               keyboardType={"number-pad"}
-                              onKeyPress={this.onKeyPress}
+                              // onKeyPress={this.onKeyPress}
                               onKeyPress={(e) => {
                                 if (e.nativeEvent.key == "Backspace") {
                                   this.manageNextField(1, '', txtInputType)
@@ -314,7 +314,7 @@ callDeleteProfile =async()=>{
                               }}
                               onChangeText={(e) => {
                                 if (Platform.OS != 'ios') {
-                                  this.manageNextField(1, e)
+                                  this.manageNextField(1, e,txtInputType)
                                 }
                                 else if (e.length == 4) {
                                   this.manageAllInputs(e, txtInputType)
