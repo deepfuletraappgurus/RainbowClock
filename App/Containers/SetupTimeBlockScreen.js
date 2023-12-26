@@ -83,6 +83,8 @@ export default class SetupTimeBlockScreen extends BaseComponent {
       isRepeatEveryday: false,
       arrSelectedDates: [],
       arrSelectedTaskDates: [],
+      daySelectionCalender: false,
+      calenderSelectedDay: new Date(Date.now()),
     };
   }
 
@@ -288,13 +290,11 @@ export default class SetupTimeBlockScreen extends BaseComponent {
       if (event.type === 'set') {
         this.setState({timePicker: false});
       }
-    }
-    else{
+    } else {
       if (event.type === 'dismissed') {
         this.setState({timePicker: false});
       }
     }
-    
   }
 
   showToTimePicker() {
@@ -333,19 +333,85 @@ export default class SetupTimeBlockScreen extends BaseComponent {
     console.log('aaaa', event.type);
     if (Platform.OS === 'android') {
       if (event.type === 'set') {
-
         this.setState({toTimePicker: false});
       }
-    }
-    else{
+    } else {
       if (event.type === 'dismissed') {
         this.setState({toTimePicker: false});
       }
     }
   }
 
+  onDaySelectationCalenderPress() {
+    console.log('``````');
+    this.setState({daySelectionCalender: !this.state.daySelectionCalender});
+  }
+
+  daySelectionCalenderPicker(event, value) {
+    console.log('------', event.type, value);
+    this.handleResetSelection();
+
+    if (Platform.OS === 'android') {
+      if (event.type === 'set') {
+        if (value instanceof Date) {
+          // If value is already a Date object, use it directly
+          this.setState({
+            calenderSelectedDay: value,
+          });
+        } else {
+          // If value is not a Date object, try converting it to a Date
+          const dateValue = new Date(value);
+          if (!isNaN(dateValue.getTime())) {
+            // Check if the conversion was successful
+            this.setState({
+              calenderSelectedDay: dateValue,
+            });
+          } else {
+            // Handle the case where the conversion fails
+            console.error('Invalid date format for toTime:', value);
+          }
+        }
+        this.setState({daySelectionCalender: false});
+      }
+    } else {
+      if (value instanceof Date) {
+        // If value is already a Date object, use it directly
+        this.setState({
+          calenderSelectedDay: value,
+        });
+      } else {
+        // If value is not a Date object, try converting it to a Date
+        const dateValue = new Date(value);
+        if (!isNaN(dateValue.getTime())) {
+          // Check if the conversion was successful
+          this.setState({
+            calenderSelectedDay: dateValue,
+          });
+        } else {
+          // Handle the case where the conversion fails
+          console.error('Invalid date format for toTime:', value);
+        }
+      }
+    }
+  }
+
+  handleResetSelection = () => {
+    const resetDates = this.state.arrSelectedDates.map(dateObj => ({
+      ...dateObj,
+      selected: false,
+    }));
+    this.setState({arrSelectedDates: resetDates});
+  };
+
   //#region -> View Render
   render() {
+    const selectedDays = this.state.arrSelectedDates
+      .filter(dateObj => dateObj.selected)
+      .map(dateObj => moment(dateObj.date).format('ddd'));
+
+    const allSelected = this.state.arrSelectedDates.every(
+      dateObj => dateObj.selected,
+    );
     return (
       <View style={styles.mainContainer}>
         <KeyboardAvoidingView
@@ -490,64 +556,10 @@ export default class SetupTimeBlockScreen extends BaseComponent {
                             onPress={() => {
                               this.showTimePicker();
                             }}
-                            style={{width: '100%', height: 40}}>
-                            {/* {this.state.timePicker && (
-                                               <DatePicker
-                                                value={this.state.time}
-                                                placeholder={'HH:mm'}
-                                                mode={'time'}
-                                                display={'default'}
-                                                is24Hour={false}
-                                                    style={{ width: '100%', height: '100%'}}
-                                                    confirmBtnText="Confirm"
-                                                    cancelBtnText="Cancel"
-                                                    showIcon={false}
-                                                    onChange={(event,data) => { this.setState({timePicker: false},()=> {
-                                                        this.onTimeSelected(event,data)
-                                                        console.log('onChangeForTime', this.state.time)
-                                                    })}}
-                                                    customStyles={{
-                                                        dateInput: {
-                                                            marginLeft: 0,
-                                                            borderWidth: 0,
-                                                            width: '100%',
-                                                            alignItems: 'flex-start',
-                                                            paddingLeft: 10,
-                                                        },
-                                                        btnTextConfirm: {
-                                                            color: 'gray',
-                                                        },
-                                                        dateText: {
-                                                            color: Colors.titleColor,
-                                                        }
-                                                    }}
-                                                />)} */}
-                          </TouchableOpacity>
-                          {/* <TouchableOpacity style={styles.inputView}>
-                                                         <DatePicker full transparent style={[styles.rowSectionWhite,{width: '100%'}]}
-                                                            // style={{ width: '100%' }}
-                                                            placeholder='HH:MM'
-                                                            date={this.state.fromTime}
-                                                            mode='time'
-                                                            format="hh:mm A"
-                                                            // minDate={Helper.getCurrentTime()}
-                                                            confirmBtnText="Confirm"
-                                                            cancelBtnText="Cancel"
-                                                            showIcon={false}
-                                                            onDateChange={(fromTime) => { this.setState({ fromTime }) }}
-                                                            customStyles={{
-                                                                dateInput: {
-                                                                    marginLeft: 0,
-                                                                    borderWidth: 0,
-                                                                    width: '100%',
-                                                                    alignItems: 'center',
-                                                                },
-                                                                btnTextConfirm: {
-                                                                    color: 'gray',
-                                                                }
-                                                            }}
-                                                        /> 
-                                                    </TouchableOpacity>*/}
+                            style={{
+                              width: '100%',
+                              height: 40,
+                            }}></TouchableOpacity>
                         </View>
                         <Text style={styles.coloun}>-</Text>
                         <View style={styles.frmInline}>
@@ -570,49 +582,8 @@ export default class SetupTimeBlockScreen extends BaseComponent {
                             // <TouchableOpacity style={[styles.inputView, {paddingHorizontal:0, overflow:'hidden'}]}
                             onPress={() => {
                               this.showToTimePicker();
-                            }}>
-                            {/* {this.state.fromTime.length == 0 ? */}
-                            {/* <View style={{ position: 'absolute', left: 0, top: 0, right: 0, bottom: 0, backgroundColor: Colors.transparent, alignItems: 'center', justifyContent: 'center' }}>
-                                                                <Text style={{ color: '#c9c9c9' }}>HH:MM</Text>
-                                                            </View> */}
-                            {/* {this.state.toTimePicker && (
-
-                                               <DatePicker
-                                                value={this.state.toTimeDate}
-                                                placeholder={'HH:mm'}
-                                                mode={'time'}
-                                                display={'default'}
-                                                is24Hour={false}
-                                                    style={{ width: '100%', height: '100%'}}
-                                                    confirmBtnText="Confirm"
-                                                    cancelBtnText="Cancel"
-                                                    showIcon={false}
-                                                    onChange={(event,data) => { this.setState({toTimePicker: false},()=> {
-                                                        this.onToTimeSelected(event,data)
-                                                        console.log('onChangeForTime', this.state.toTimeDate)
-                                                    })}}
-                                                    customStyles={{
-                                                        dateInput: {
-                                                            marginLeft: 0,
-                                                            borderWidth: 0,
-                                                            width: '100%',
-                                                            alignItems: 'flex-start',
-                                                            paddingLeft: 10,
-                                                        },
-                                                        btnTextConfirm: {
-                                                            color: 'gray',
-                                                        },
-                                                        dateText: {
-                                                            color: Colors.titleColor,
-                                                        }
-                                                    }}
-                                                />)
-                                                        } */}
-                          </TouchableOpacity>
+                            }}></TouchableOpacity>
                         </View>
-                        {/* <TouchableOpacity style={styles.editTouch}>
-                                                    <Image source={Images.edit} style={styles.editIcon} />
-                                                </TouchableOpacity> MP */}
                       </View>
                     </View>
                     <View style={styles.frm}>
@@ -782,6 +753,88 @@ export default class SetupTimeBlockScreen extends BaseComponent {
                           'Select day/s below if you would like this time block to repeat.'
                         }
                       </Text>
+                      <View
+                        style={{
+                          alignSelf: 'flex-start',
+                          marginHorizontal: 15,
+                          borderTopWidth: 0.3,
+                          width: '92%',
+                          flex: 1,
+                          paddingVertical: 15,
+                          borderTopColor: Colors.snow,
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          flexDirection: 'row',
+                        }}>
+                        <>
+                          {allSelected ? (
+                            <Text style={[styles.label, {marginBottom: 0}]}>
+                              Every day of the week.
+                            </Text>
+                          ) : selectedDays.length > 0 ? (
+                            <Text
+                              style={[
+                                styles.label,
+                                {marginBottom: 0},
+                              ]}>{`Every ${selectedDays.join(',')}`}</Text>
+                          ) : (
+                            <Text
+                              style={[
+                                styles.label,
+                                {marginBottom: 0},
+                              ]}>{`On ${moment(
+                              this.state.calenderSelectedDay,
+                            ).format('YYYY:MMM:DD')}`}</Text>
+                          )}
+                        </>
+                        <TouchableOpacity
+                          onPress={() => this.onDaySelectationCalenderPress()}>
+                          <Image
+                            source={
+                              this.state.daySelectionCalender
+                                ? Images.tick
+                                : Images.navIcon3
+                            }
+                            style={[styles.bell, {resizeMode: 'contain'}]}
+                          />
+                        </TouchableOpacity>
+                      </View>
+                      {this.state.daySelectionCalender && (
+                        <DatePicker
+                          value={this.state.calenderSelectedDay}
+                          placeholder={'HH:mm'}
+                          mode={'date'}
+                          display={
+                            Platform.OS === 'ios' ? 'spinner' : 'default'
+                          }
+                          // style={{width: '100%', height: '100%'}}
+                          confirmBtnText="Confirm"
+                          cancelBtnText="Cancel"
+                          showIcon={false}
+                          onChange={(event, data) => {
+                            this.daySelectionCalenderPicker(event, data);
+                            console.log(
+                              'onChangeForTime--',
+                              this.state.calenderSelectedDay,
+                            );
+                          }}
+                          customStyles={{
+                            dateInput: {
+                              marginLeft: 0,
+                              borderWidth: 0,
+                              width: '100%',
+                              alignItems: 'flex-start',
+                              paddingLeft: 10,
+                            },
+                            btnTextConfirm: {
+                              color: 'gray',
+                            },
+                            dateText: {
+                              color: Colors.titleColor,
+                            },
+                          }}
+                        />
+                      )}
 
                       <View
                         style={{
