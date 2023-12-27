@@ -52,7 +52,7 @@ export default class ScheduleScreen extends BaseComponent {
       showTaskList: false,
       item: '',
       username: '',
-      isPdfLoading:false,
+      isPdfLoading: false,
     };
   }
 
@@ -212,6 +212,7 @@ export default class ScheduleScreen extends BaseComponent {
   }
 
   renderTaskRow = (item, index) => {
+    console.log('-------ITEM', item);
     return (
       <TouchableOpacity
         style={[styles.ScheduleItem, {backgroundColor: item.tasks[0].color}]}
@@ -227,6 +228,7 @@ export default class ScheduleScreen extends BaseComponent {
               resizeMode: 'contain',
             }}
           />
+          <Text style={styles.timer}>{item.task_name}</Text>
         </View>
         {/*MP*/}
         <View style={styles.ScheduleTask}>
@@ -245,6 +247,7 @@ export default class ScheduleScreen extends BaseComponent {
                           : styles.icon
                       }
                     />
+                    <Text style={[styles.linkText,{color:Colors.snow}]}>{data?.task_name}</Text>
                   </TouchableOpacity>
                 );
               })
@@ -310,7 +313,7 @@ export default class ScheduleScreen extends BaseComponent {
                         this.onPrintTask();
                       }}>
                       {this.state.isPdfLoading ? (
-                        <Spinner color={'#FFFFFF'} size={'small'}/>
+                        <Spinner color={'#FFFFFF'} size={'small'} />
                       ) : (
                         <Text style={styles.buttonText}>{'PRINT'}</Text>
                       )}

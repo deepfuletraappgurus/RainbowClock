@@ -143,7 +143,12 @@ export default class SetupTimeBlockScreen extends BaseComponent {
     const task_dates = this.state.arrSelectedDates
       ?.filter(data => data.selected)
       .map(datas => datas.date);
+    console.log('===111===', task_dates, this.state.calenderSelectedDay);
     Keyboard.dismiss();
+    const formattedDate = moment
+      .utc(this.state.calenderSelectedDay)
+      .format('YYYY-MM-DD');
+    const resultArray = [formattedDate];
     if (this.isValidate(task_dates)) {
       var dictCreateTask = {
         taskName:
@@ -153,7 +158,7 @@ export default class SetupTimeBlockScreen extends BaseComponent {
         fromTime: this.state.fromTime,
         toTime: this.state.toTime,
         taskColor: this.state.taskSelectedColor,
-        task_date: task_dates,
+        task_date: task_dates?.length === 0 ? resultArray : task_dates,
       };
       console.log('dictCreateTask=====>', dictCreateTask);
       // this.props.navigation.navigate('ScheduleTaskScreen', { dictCreateTask: dictCreateTask })
@@ -190,9 +195,6 @@ export default class SetupTimeBlockScreen extends BaseComponent {
       // } else if (!Helper.chooseTime(this.state.arrChildTaskTime, { from: this.state.fromTime, to: this.state.toTime })) {
       //     Helper.showErrorMessage(Constants.MESSAGE_CAN_NOT_CHOOSE_TIME);
       //     return false;
-    } else if (task_dates?.length === 0) {
-      Helper.showErrorMessage(Constants.MESSAGE_NO_DAY_SELECT_SCHEDULE);
-      return false;
     }
     return true;
   };
@@ -371,6 +373,8 @@ export default class SetupTimeBlockScreen extends BaseComponent {
             console.error('Invalid date format for toTime:', value);
           }
         }
+        this.setState({daySelectionCalender: false});
+      } else {
         this.setState({daySelectionCalender: false});
       }
     } else {
