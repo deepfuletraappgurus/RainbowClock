@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "690487647965",
+    "project_id": "rainbowclock-824bb",
+    "storage_bucket": "rainbowclock-824bb.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:690487647965:android:119d0343de6a1ffa428534",
+        "android_client_info": {
+          "package_name": "com.myrainbowclock"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCGlOy3Xlq5oWvVRpAHiia63JNjOAHkt3Q"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
