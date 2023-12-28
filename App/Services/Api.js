@@ -295,6 +295,7 @@ const createSecure = (baseURL = base_url) => {
     taskDates,
     taskCustomIcon,
     frequency,
+    is_date
   ) => {
     const data = new FormData();
     //Parms
@@ -312,6 +313,7 @@ const createSecure = (baseURL = base_url) => {
     data.append('token_type', taskTokenType);
     data.append('no_of_token', taskNumberOfTokens);
     data.append('task_date', taskDates);
+    data.append('is_date',is_date)
     if (frequency) {
       data.append('frequency', frequency);
     }
@@ -338,6 +340,8 @@ const createSecure = (baseURL = base_url) => {
         name: timestamp + '.' + strExtension,
       });
     }
+
+    console.log('!!!!!DATA!!!!!',data)
 
     return api.post('/addtask', data);
   };
@@ -417,7 +421,7 @@ const createSecure = (baseURL = base_url) => {
 
   const childRewardPoints = childId => api.post('points', {child_id: childId});
 
-  const createReward = (name, type, numberOfToken, imageData) => {
+  const createReward = (name, type, numberOfToken, imageData,child_id) => {
     const data = new FormData();
     data.append('name', name);
     data.append('type', type ? 'Special' : 'Standard');
@@ -427,6 +431,7 @@ const createSecure = (baseURL = base_url) => {
       type: imageData.mime,
       name: timestamp + '.' + imageData.mime.split('/').reverse()[0],
     });
+    data.append('child_id', child_id);
 
     return api.post('rewards/add', data); //type = Special,Standard
   };

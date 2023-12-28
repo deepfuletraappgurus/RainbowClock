@@ -10,6 +10,7 @@ import Api from '../Services/Api';
 import { Colors, Images, Metrics } from '../Themes';
 // Styles
 import styles from './Styles/CreateRewardScreenStyles';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Global Variables
 const mAPi = Api.createSecure();
@@ -38,13 +39,22 @@ export default class CreateRewardScreen extends BaseComponent {
             numberOfToken: '',
             rewardImage: '',
             loading: false,
+            objSelectedChild:''
         }
     }
 
     componentDidMount(){
         super.componentDidMount()
+        this.getChildDetail()
         // this.checkRequestPermission()
     }
+    getChildDetail = () => {
+        AsyncStorage.getItem(Constants.KEY_SELECTED_CHILD, (err, child) => {
+          if (child != '') {
+            this.setState({ objSelectedChild: JSON.parse(child) });
+          }
+        })
+      }
     //#region -> Class Methods
     checkRequestPermission = () => {
         check(PERMISSIONS.IOS.PHOTO_LIBRARY).then(result => {
@@ -168,8 +178,13 @@ export default class CreateRewardScreen extends BaseComponent {
         Keyboard.dismiss()
         if (this.isValidate()) {
             this.setState({ loading: true })
+            AsyncStorage.getItem(Constants.KEY_SELECTED_CHILD, (err, child) => {
+                if (child != '') {
+                  this.setState({ objSelectedChild: JSON.parse(child) });
+                }
+              })
             mAPi.createReward(this.state.rewardName, this.state.isSpecialReward, this.state.numberOfToken,
-                this.state.rewardImage).then(response => {
+                this.state.rewardImage,this.state.objSelectedChild?.id).then(response => {
                     this.setState({ loading: false })
                     console.log('CHILD TASK LIST ✅✅✅', JSON.stringify(response))
                     if (response.ok) {

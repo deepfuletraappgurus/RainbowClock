@@ -85,6 +85,7 @@ export default class SetupTimeBlockScreen extends BaseComponent {
       arrSelectedTaskDates: [],
       daySelectionCalender: false,
       calenderSelectedDay: new Date(Date.now()),
+      is_date:1
     };
   }
 
@@ -159,6 +160,7 @@ export default class SetupTimeBlockScreen extends BaseComponent {
         toTime: this.state.toTime,
         taskColor: this.state.taskSelectedColor,
         task_date: task_dates?.length === 0 ? resultArray : task_dates,
+        is_date: this.state.is_date
       };
       console.log('dictCreateTask=====>', dictCreateTask);
       // this.props.navigation.navigate('ScheduleTaskScreen', { dictCreateTask: dictCreateTask })
@@ -246,6 +248,7 @@ export default class SetupTimeBlockScreen extends BaseComponent {
     );
   }
   selectedDay = date => {
+    this.setState({is_date:0})
     let temp = this.state.arrSelectedDates.map(obj => {
       if (date === obj.date) {
         return {...obj, selected: !obj.selected};
@@ -405,6 +408,7 @@ export default class SetupTimeBlockScreen extends BaseComponent {
       selected: false,
     }));
     this.setState({arrSelectedDates: resetDates});
+    this.setState({is_date:1})
   };
 
   //#region -> View Render
@@ -754,7 +758,7 @@ export default class SetupTimeBlockScreen extends BaseComponent {
                       }}>
                       <Text style={[styles.label, {textAlign: 'center'}]}>
                         {
-                          'Select day/s below if you would like this time block to repeat.'
+                          'Select day/s below if you would like this time block to repeat for a month.'
                         }
                       </Text>
                       <View

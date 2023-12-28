@@ -253,10 +253,11 @@ export default class SelectTaskScreen extends BaseComponent {
         var taskDates = (this.state.dictCreateTask['task_date']).join()
         var frequency = this.state.dictCreateTask['frequency']
         var taskCustomIcon = this.state.taskCustomImage
+        var is_date = this.state.dictCreateTask['is_date']
 
         const res = objSecureAPI.addTask(childId, mainCatId, subCatId, taskType, timeSloteName ,taskName, taskDescription, taskFromTime,
-            taskToTime, taskTime, taskColor, taskTokenType, taskNumberOfTokens, taskDates, taskCustomIcon, frequency).then((resJSON) => {
-                console.log('✅✅✅', resJSON)
+            taskToTime, taskTime, taskColor, taskTokenType, taskNumberOfTokens, taskDates, taskCustomIcon, frequency,is_date).then((resJSON) => {
+                console.log('✅✅✅---', resJSON)
                 if (resJSON.ok && resJSON.status == 200) {
                     this.setState({ isLoading: false })
                     if (resJSON.data.success) {

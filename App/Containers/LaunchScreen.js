@@ -20,6 +20,7 @@ import * as Helper from '../Lib/Helper';
 import Api from '../Services/Api';
 import {Images, Colors} from '../Themes';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import crashlytics from '@react-native-firebase/crashlytics';
 
 // Styles
 import styles from './Styles/LaunchScreenStyles';
@@ -42,6 +43,7 @@ export default class LaunchScreen extends BaseComponent {
 
   //#region -> Class Methods
   btnSubmit = () => {
+    // crashlytics().crash()
     Keyboard.dismiss();
     if (this.isValidate()) {
       this.callAPI_LogIn();
