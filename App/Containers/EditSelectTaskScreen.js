@@ -309,6 +309,7 @@ export default class EditSelectTaskScreen extends BaseComponent {
     var taskDates = this.state.dictCreateTask['task_date'].join();
     var frequency = this.state.dictCreateTask['frequency'];
     var taskCustomIcon = this.state.taskCustomImage;
+    var is_date = this.state.dictCreateTask['is_date']
     // var taskId =
 
     const res = objSecureAPI
@@ -330,6 +331,7 @@ export default class EditSelectTaskScreen extends BaseComponent {
         taskDates,
         taskCustomIcon,
         frequency,
+        is_date
       )
       .then(resJSON => {
         console.log('✅✅✅', resJSON);
