@@ -58,6 +58,7 @@ export default class ScheduleScreen extends BaseComponent {
 
   //#region -> Component Methods
   componentDidMount() {
+    console.log('~~~~~~~')
     super.componentDidMount();
     const upComingDays = Helper.getUpcominSevenDays();
     this.setState({
@@ -67,6 +68,8 @@ export default class ScheduleScreen extends BaseComponent {
     this.getMenuAccessRole();
     this.getChildId();
   }
+
+  
 
   //#endregion
 
@@ -123,6 +126,41 @@ export default class ScheduleScreen extends BaseComponent {
         console.log(error);
       });
   };
+  callRecoverTask(objTask) {
+    this.state.isLoading = true;
+    mApi
+      .restoreTask(objTask.id, this.state.objSelectedChild.id)
+      .then(response => {
+        //console.log("Task Restored ✅✅✅", JSON.stringify(response));
+        if (response.ok) {
+          if (response.data.success) {
+            const objIndex = this.state.selectedTaskSlot.findIndex(
+              obj => obj.id == objTask.id
+            );
+            this.state.selectedTaskSlot[objIndex].status = "";
+            this.state.selectedTaskSlot[objIndex].start_time = "";
+            this.state.objRestoreTask = {};
+            this.setState({
+              isLoading: false
+            });
+            this.getChildId()
+          } else {
+            Helper.showErrorMessage(response.data.message);
+          }
+        } else {
+          this.setState({
+            isLoading: false
+          });
+          Helper.showErrorMessage(response.problem);
+        }
+      })
+      .catch(error => {
+        this.setState({
+          isLoading: false
+        });
+        //console.log(error);
+      });
+  }
 
   toggleDropdown() {
     this.setState({showDropdown: !this.state.showDropdown});
@@ -198,6 +236,11 @@ export default class ScheduleScreen extends BaseComponent {
       });
   }
 
+  setModal(){
+    this.setState({showTaskList:false})
+    this.getChildId()
+  }
+
   //#endregion
 
   //#region -> View Render
@@ -229,6 +272,15 @@ export default class ScheduleScreen extends BaseComponent {
             }}
           />
           <Text style={styles.timer}>{item.task_name}</Text>
+          {item.status == Constants.TASK_STATUS_COMPLETED  ? (
+            <TouchableOpacity
+              style={[styles.taskRecover,{width:'30%'}]}
+              onPress={() => this.callRecoverTask(item)}>
+              <Text style={styles.taskRecoverText}>
+                {'Recover'.toUpperCase()}
+              </Text>
+            </TouchableOpacity>
+          ) : null}
         </View>
         {/*MP*/}
         <View style={styles.ScheduleTask}>
@@ -247,7 +299,18 @@ export default class ScheduleScreen extends BaseComponent {
                           : styles.icon
                       }
                     />
-                    <Text style={[styles.linkText,{color:Colors.snow}]}>{data?.task_name}</Text>
+                    <Text style={[styles.linkText, {color: Colors.snow}]}>
+                      {data?.task_name}
+                    </Text>
+                    {item.status == Constants.TASK_STATUS_COMPLETED  ? (
+                      <TouchableOpacity
+                        style={[styles.taskRecover,{width:'30%'}]}
+                        onPress={() => this.callRecoverTask(item)}>
+                        <Text style={styles.taskRecoverText}>
+                          {'Recover'.toUpperCase()}
+                        </Text>
+                      </TouchableOpacity>
+                    ) : null}
                   </TouchableOpacity>
                 );
               })
@@ -379,6 +442,7 @@ export default class ScheduleScreen extends BaseComponent {
           objFooterSelectedTask={this.state.objFooterSelectedTask}
           onStateChange={state => this.setState({taskComplete: state})}
           navigation={this.props.navigation}
+          onClose={() => this.setModal()}
         />
         <TaskListModel
           visible={this.state.showTaskList}
@@ -391,6 +455,7 @@ export default class ScheduleScreen extends BaseComponent {
           )}
           objSelectedTaskList={this.state.arrTasks}
           onStateChange={state => this.setState({showTaskList: state})}
+          onClose={() => this.setModal()}
         />
       </View>
     );

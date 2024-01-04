@@ -83,6 +83,7 @@ export default class EditScheduleScreen extends BaseComponent {
       daySelectionCalender: false,
       calenderSelectedDay: new Date(Date.now()),
       is_date: 1,
+      is_new:1
     };
   }
 
@@ -137,9 +138,22 @@ export default class EditScheduleScreen extends BaseComponent {
             fromTime: scheduleDetails?.time_from,
             toTime: scheduleDetails?.time_to,
             taskSelectedColor: scheduleDetails?.color,
-            is_date: scheduleDetails?.is_date
+            is_date: scheduleDetails?.is_date,
+            is_new:scheduleDetails?.is_new
           });
-          this.selectedDay(scheduleDetails?.task_date);
+          if (scheduleDetails?.is_date) {
+            // this.setState({arrSelectedDates:[]})
+            this.setState({calenderSelectedDay:scheduleDetails?.task_date})
+          }
+          else{
+            scheduleDetails?.days.split(',').forEach(day => {
+              console.log('++++++----',moment().day(day).format('YYYY-MM-DD'))
+              setTimeout(() => {
+                this.intialSelectedDay(day)
+              }, 300);
+            })
+          }
+          // this.selectedDay(scheduleDetails?.task_date);
           if (scheduleDetails?.is_date) {
             this.setState({calenderSelectedDay:new Date(scheduleDetails?.task_date)})
           }
@@ -186,6 +200,7 @@ export default class EditScheduleScreen extends BaseComponent {
         taskColor: this.state.taskSelectedColor,
         task_date: task_dates?.length === 0 ? resultArray : task_dates,
         is_date: this.state.is_date,
+        is_new: this.state.is_new,
         scheduleDetails,
       };
       console.log('dictCreateTask=====>', dictCreateTask);
@@ -272,13 +287,29 @@ export default class EditScheduleScreen extends BaseComponent {
     );
   }
   selectedDay = date => {
-    console.log('date???????', date);
+    console.log('date???????', date,this.state.arrSelectedDates);
     let temp = this.state.arrSelectedDates.map(obj => {
       if (date === obj.date) {
         return {...obj, selected: !obj.selected};
       }
       return obj;
     });
+    console.log('temp',temp)
+    this.setState({
+      arrSelectedDates: temp,
+      is_date:0
+    });
+  };
+
+  intialSelectedDay = date => {
+    console.log('date???????', date,this.state.arrSelectedDates);
+    let temp = this.state.arrSelectedDates.map(obj => {
+      if (date === moment(obj.date).format('dddd')) {
+        return {...obj, selected: !obj.selected};
+      }
+      return obj;
+    });
+    console.log('temp',temp)
     this.setState({
       arrSelectedDates: temp,
     });

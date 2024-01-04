@@ -116,9 +116,10 @@ export default class RescheduleScreen extends BaseComponent {
         var taskDates = Helper.dateFormater(this.state.selectedDay, 'dddd DD MMMM YYYY', 'YYYY-MM-DD')
         var taskCustomIcon = this.state.selectedTask.type == Constants.TASK_TYPE_CUSTOM ? this.state.selectedTask.cate_image : ''
         var frequency = this.state.frequency ? this.state.frequency : ''
+        var is_date = this.state.selectedTask.is_date
 
         const res = objSecureAPI.addTask(childId, mainCatId, subCatId, taskType, timeSloteName, taskName, taskDescription, taskFromTime,
-            taskToTime, taskTime, taskColor, taskTokenType, taskNumberOfTokens, taskDates, taskCustomIcon, frequency).then((resJSON) => {
+            taskToTime, taskTime, taskColor, taskTokenType, taskNumberOfTokens, taskDates, taskCustomIcon, frequency,is_date).then((resJSON) => {
                 console.log('✅✅✅', resJSON)
                 if (resJSON.ok && resJSON.status == 200) {
                     if (resJSON.data.success) {
@@ -206,10 +207,6 @@ export default class RescheduleScreen extends BaseComponent {
         }
         else if (this.state.selectedTimeSlot.trim() == '') {
             Helper.showErrorMessage(Constants.MESSAGE_SELECT_TIME_RESCHEDULE);
-            return false;
-        }
-        else if (!this.checkAvailableMinutes()) {
-            Helper.showErrorMessage("BC Khabar pade 6e k nai kai 🤬");
             return false;
         }
         return true

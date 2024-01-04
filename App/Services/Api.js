@@ -159,6 +159,7 @@ const createSecure = (baseURL = base_url) => {
   const doSetPin = pin => {
     const data = new FormData();
     data.append('pin', pin);
+    console.log('pinnnnnnnn',pin)
     return api.post('/setpin', data);
   };
 
@@ -364,7 +365,8 @@ const createSecure = (baseURL = base_url) => {
     taskDates,
     taskCustomIcon,
     frequency,
-    is_date
+    is_date,
+    is_new
   ) => {
     const data = new FormData();
     //Parms
@@ -383,10 +385,13 @@ const createSecure = (baseURL = base_url) => {
     data.append('token_type', taskTokenType);
     data.append('no_of_token', taskNumberOfTokens);
     data.append('task_date', taskDates);
-    data.append('is_date',is_date)
+    data.append('is_date',is_date);
+    data.append('is_new',is_new)
     if (frequency) {
       data.append('frequency', frequency);
     }
+
+    console.log('UPDATE_DATA-----',data)
 
     if (
       taskCustomIcon != undefined &&
@@ -471,11 +476,13 @@ const createSecure = (baseURL = base_url) => {
   const childReward = childId =>
     api.post('rewards/crewards', {child_id: childId});
 
-  const updateTaskStatus = (taskId, childId, status) => {
+  const updateTaskStatus = (taskId, childId, status,is_new) => {
     const data = new FormData();
     data.append('tid', taskId);
     data.append('child_id', childId);
     data.append('status', status);
+    data.append('is_new',is_new)
+    console.log('STATUS____',data)
     return api.post('status', data);
   };
 

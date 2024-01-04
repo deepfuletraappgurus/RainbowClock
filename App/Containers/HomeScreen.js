@@ -789,7 +789,7 @@ console.log('HOUR== '+hour+' TIMETYPE== '+TimeType);
               : styles.taskIcon
           }
         />
-       
+       <Text style={styles.timer}>{item.task_name}</Text>
         {item.status == Constants.TASK_STATUS_COMPLETED &&
           item.id == this.state.objRestoreTask.id ? (
             <TouchableOpacity
@@ -1042,6 +1042,10 @@ console.log('HOUR== '+hour+' TIMETYPE== '+TimeType);
       return this.state.swiperData[index];
     });
     return pages;
+  }
+
+  setModal() {
+    this.setState({ modalVisible: false, objRestoreTask: "" })
   }
   render() {
     const renderPagination = (index, total, context) => {
@@ -1313,6 +1317,7 @@ console.log('HOUR== '+hour+' TIMETYPE== '+TimeType);
           objSelectedChild={this.state.objSelectedChild}
           objFooterSelectedTask={this.state.objFooterSelectedTask}
           onStateChange={state => this.setState({ taskComplete: state })}
+          closeParentModal={() => this.setModal()}
         />
       </View>
     );

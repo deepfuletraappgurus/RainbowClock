@@ -62,23 +62,44 @@ export default class TaskListModel extends Component {
   }
   componentWillUnmount() {
     clearInterval(this._timer);
+    this.setState({visible: false});
   }
 
   setModal = visible => {
-    if (!visible) {
-      clearInterval(this._timer);
-      // setTimeout(() => {
-      // this._timer = null
-      // }, 100);
-    }
     this.setState({visible: visible});
-    this.props.onStateChange(visible);
   };
   onPressTask(objTask) {
     this.setState({
       objFooterSelectedTask: objTask,
       taskComplete: true,
     });
+  }
+  callRecoverTask(objTask) {
+    console.log('===========')
+    objSecureAPI
+      .restoreTask(objTask.id, this.state.objSelectedChild.id)
+      .then(response => {
+        console.log("Task Restored ✅✅✅", JSON.stringify(response));
+        if (response.ok) {
+          if (response.data.success) {
+            console.log('********')
+            this?.props?.onClose()
+          } else {
+            Helper.showErrorMessage(response.data.message);
+          }
+        } else {
+          this.setState({
+            isLoading: false
+          });
+          Helper.showErrorMessage(response.problem);
+        }
+      })
+      .catch(error => {
+        this.setState({
+          isLoading: false
+        });
+        //console.log(error);
+      });
   }
 
   renderTaskRow = (item, index) => {
@@ -125,7 +146,7 @@ export default class TaskListModel extends Component {
             <TouchableOpacity
               style={styles.modalCloseTouch}
               onPress={() => {
-                this.setModal(false);
+                this?.props?.onClose()
               }}>
               <Image source={Images.close} style={styles.close} />
             </TouchableOpacity>
@@ -152,9 +173,7 @@ export default class TaskListModel extends Component {
                       return (
                         <TouchableOpacity
                           style={styles.ScheduleTaskItem}
-                          onPress={() =>
-                            this.onPressTask(this.state.objFooterSelectedTask)
-                          }>
+                          onPress={() => this.onPressTask(data)}>
                           <Image
                             source={{uri: data.cate_image}}
                             style={
@@ -170,6 +189,15 @@ export default class TaskListModel extends Component {
                             ]}>
                             {data?.task_name}
                           </Text>
+                          {data.status == Constants.TASK_STATUS_COMPLETED ? (
+                            <TouchableOpacity
+                              style={[styles.taskRecover,{width:'30%',alignSelf:'flex-start'}]}
+                              onPress={() => this.callRecoverTask(data)}>
+                              <Text style={styles.taskRecoverText}>
+                                {'Recover'.toUpperCase()}
+                              </Text>
+                            </TouchableOpacity>
+                          ) : null}
                         </TouchableOpacity>
                       );
                     })
@@ -210,6 +238,8 @@ export default class TaskListModel extends Component {
           objFooterSelectedTask={this.state.objFooterSelectedTask}
           onStateChange={state => this.setState({taskComplete: state})}
           navigation={this.props.navigation}
+          closeParentModal={() => this.setModal(false)}
+          onClose={() => this?.props?.onClose()}
         />
       </Modal>
     );

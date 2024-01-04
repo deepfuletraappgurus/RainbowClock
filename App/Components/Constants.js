@@ -119,7 +119,7 @@ const Constants = {
     MESSAGE_NO_TASK_TOKEN: "Please enter number of tokens for the task.",
     MESSAGE_NO_TASK_ICON: "Please add the icon for the task.",
     MESSAGE_NO_DAY_SELECT: "Please select at least one date to schedule a task.",
-    MESSAGE_NO_FUTURE_TASK: "You can not start or complete tasks for future date and time.",
+    MESSAGE_NO_FUTURE_TASK: "You can not start or complete tasks for future or past date and time.",
     MESSAGE_NO_GREATER_TASK: "The choosen task time should not be greater than the available time slot.",
     MESSAGE_NO_NEWPASSWORD: "Please enter new password.",
     MESSAGE_NO_OLDPASSWORD: "Please enter old assword.",

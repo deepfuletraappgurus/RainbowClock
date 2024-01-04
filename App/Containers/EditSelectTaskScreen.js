@@ -310,6 +310,7 @@ export default class EditSelectTaskScreen extends BaseComponent {
     var frequency = this.state.dictCreateTask['frequency'];
     var taskCustomIcon = this.state.taskCustomImage;
     var is_date = this.state.dictCreateTask['is_date']
+    var is_new = this.state.dictCreateTask['is_new']
     // var taskId =
 
     const res = objSecureAPI
@@ -331,10 +332,11 @@ export default class EditSelectTaskScreen extends BaseComponent {
         taskDates,
         taskCustomIcon,
         frequency,
-        is_date
+        is_date,
+        is_new
       )
       .then(resJSON => {
-        console.log('✅✅✅', resJSON);
+        console.log('✅✅✅--', resJSON);
         if (resJSON.ok && resJSON.status == 200) {
           this.setState({isLoading: false});
           if (resJSON.data.success) {
@@ -360,6 +362,7 @@ export default class EditSelectTaskScreen extends BaseComponent {
                   }
                 }
               });
+              this.props.navigation.pop(2)
             } catch (error) {
               console.log('AsyncStorage Error: ', error);
             }
