@@ -22,8 +22,13 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import moment from 'moment';
 // Styles
 import styles from './Styles/SetupTimeBlockScreenStyles';
+import Icon from 'react-native-vector-icons/FontAwesome';
 
 let days = [];
+const ScheduleType = [
+  {name: 'Fortnightly', isSelect: true},
+  {name: 'Monthly', isSelect: false},
+];
 
 export default class SetupTimeBlockScreen extends BaseComponent {
   static navigationOptions = ({navigation}) => ({
@@ -85,7 +90,8 @@ export default class SetupTimeBlockScreen extends BaseComponent {
       arrSelectedTaskDates: [],
       daySelectionCalender: false,
       calenderSelectedDay: new Date(Date.now()),
-      is_date:1
+      is_date: 1,
+      ScheduleType: ScheduleType,
     };
   }
 
@@ -160,7 +166,7 @@ export default class SetupTimeBlockScreen extends BaseComponent {
         toTime: this.state.toTime,
         taskColor: this.state.taskSelectedColor,
         task_date: task_dates?.length === 0 ? resultArray : task_dates,
-        is_date: this.state.is_date
+        is_date: this.state.is_date,
       };
       console.log('dictCreateTask=====>', dictCreateTask);
       // this.props.navigation.navigate('ScheduleTaskScreen', { dictCreateTask: dictCreateTask })
@@ -248,7 +254,7 @@ export default class SetupTimeBlockScreen extends BaseComponent {
     );
   }
   selectedDay = date => {
-    this.setState({is_date:0})
+    this.setState({is_date: 0});
     let temp = this.state.arrSelectedDates.map(obj => {
       if (date === obj.date) {
         return {...obj, selected: !obj.selected};
@@ -408,7 +414,40 @@ export default class SetupTimeBlockScreen extends BaseComponent {
       selected: false,
     }));
     this.setState({arrSelectedDates: resetDates});
-    this.setState({is_date:1})
+    this.setState({is_date: 1});
+  };
+
+  toggleSelect = index => {
+    this.setState(prevState => {
+      const updatedArray = prevState.ScheduleType.map((item, i) => {
+        if (i === index) {
+          return {...item, isSelect: !item.isSelect};
+        } else {
+          return {...item, isSelect: false};
+        }
+      });
+
+      return {ScheduleType: updatedArray};
+    });
+  };
+
+  renderScheduleTypes = ({item, index}) => {
+    return (
+      <View
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          marginBottom: 10,
+        }}>
+        <Icon
+          onPress={() => this.toggleSelect(index)}
+          name={item?.isSelect ? 'check-square' : 'square'}
+          size={25}
+          color={item?.isSelect ? Colors.darkPink : Colors.frost + 90}
+        />
+        <Text style={[styles.mediumButtonText,{marginLeft:12}]}>{item?.name.toUpperCase()}</Text>
+      </View>
+    );
   };
 
   //#region -> View Render
@@ -752,7 +791,7 @@ export default class SetupTimeBlockScreen extends BaseComponent {
                     </View>
                     <View
                       style={{
-                        marginTop: 60,
+                        marginTop: 12,
                         justifyContent: 'center',
                         alignItems: 'center',
                       }}>
@@ -843,7 +882,6 @@ export default class SetupTimeBlockScreen extends BaseComponent {
                           }}
                         />
                       )}
-
                       <View
                         style={{
                           justifyContent: 'center',
@@ -858,6 +896,21 @@ export default class SetupTimeBlockScreen extends BaseComponent {
                             this.renderDays(item, index)
                           }
                           horizontal={true}
+                        />
+                      </View>
+                      <View
+                        style={{
+                          flex:1
+                          // justifyContent: 'center',
+                        }}>
+                        <FlatList
+                          data={this.state.ScheduleType}
+                          renderItem={this.renderScheduleTypes}
+                          keyExtractor={(item, index) => index + ''}
+                          extraData={this.state}
+                          horizontal
+                          // style={{flex:1,width:'100%'}}
+                          contentContainerStyle={{width:'100%',justifyContent:'space-evenly',marginTop:12 }}
                         />
                       </View>
                     </View>
