@@ -78,7 +78,7 @@ export default class SetupTimeBlockScreen extends BaseComponent {
         'EVENING ROUTINE',
         'NIGHT TIME',
         'SCHOOL',
-        '+CREATE YOUR OWN',
+        '+CUSTOM',
       ],
       isRepeatEveryday: false,
       arrSelectedDates: [],
@@ -178,7 +178,7 @@ export default class SetupTimeBlockScreen extends BaseComponent {
   isValidate = task_dates => {
     if (
       this.state.taskName == '' &&
-      this.state.selectedTask == '+CREATE YOUR OWN'
+      this.state.selectedTask == '+CUSTOM'
     ) {
       Helper.showErrorMessage(Constants.MESSAGE_NO_TASK_NAME);
       return false;
@@ -207,7 +207,7 @@ export default class SetupTimeBlockScreen extends BaseComponent {
   selectTaskName = name => {
     this.setState({
       selectedTask: name,
-      taskName: name === '+CREATE YOUR OWN' ? '' : name,
+      taskName: name === '+CUSTOM' ? '' : name,
     });
     this.toggleDropdown();
   };
@@ -524,7 +524,7 @@ export default class SetupTimeBlockScreen extends BaseComponent {
                         ) : null}
                       </View>
                     </View>
-                    {this.state.selectedTask === '+CREATE YOUR OWN' ? (
+                    {this.state.selectedTask === '+CUSTOM' ? (
                       <View style={[styles.formControl]}>
                         <TextInput
                           style={styles.input}

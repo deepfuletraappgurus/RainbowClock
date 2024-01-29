@@ -490,6 +490,7 @@ const createSecure = (baseURL = base_url) => {
     const data = new FormData();
     data.append('tid', taskId);
     data.append('child_id', childId);
+    console.log('RESTOR_DATA',data)
     return api.post('restore', data);
   };
 

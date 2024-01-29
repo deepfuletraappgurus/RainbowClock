@@ -264,13 +264,13 @@ const drawerStack = createStackNavigator(
                 style={styles.rewardIcon}
               />
               <Text style={styles.rewardText}>
-                {navigation.getParam('specialReward', '0')}
+                {navigation.getParam('standardReward', '0')}
               </Text>
             </View>
             <View style={styles.rewardRow}>
               <Image source={Images.reward} style={styles.rewardIcon} />
               <Text style={styles.rewardText}>
-                {navigation.getParam('standardReward', '0')}
+                {navigation.getParam('specialReward', '0')}
               </Text>
             </View>
           </TouchableOpacity>

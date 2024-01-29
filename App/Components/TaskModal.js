@@ -55,6 +55,7 @@ export default class TaskModal extends BaseComponent {
       is_new:props.objFooterSelectedTask.is_new,
       buttonText:props.objFooterSelectedTask.start_time ? "START TIME" : "PAUSE TIME"
     });
+    console.log('props.objFooterSelectedTask-----',props.objFooterSelectedTask)
   }
   componentWillUnmount() {
     clearInterval(this._timer);

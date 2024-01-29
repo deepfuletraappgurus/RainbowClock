@@ -75,7 +75,7 @@ export default class EditScheduleScreen extends BaseComponent {
         'EVENING ROUTINE',
         'NIGHT TIME',
         'SCHOOL',
-        '+CREATE YOUR OWN',
+        '+CUSTOM',
       ],
       isRepeatEveryday: false,
       arrSelectedDates: [],
@@ -131,7 +131,7 @@ export default class EditScheduleScreen extends BaseComponent {
             scheduleDetails?.name,
           );
           this.setState({
-            selectedTask: taskName ? scheduleDetails?.name : '+CREATE YOUR OWN',
+            selectedTask: taskName ? scheduleDetails?.name : '+CUSTOM',
             taskName: !taskName ? scheduleDetails?.name : '',
           });
           this.setState({
@@ -219,7 +219,7 @@ export default class EditScheduleScreen extends BaseComponent {
   isValidate = task_dates => {
     if (
       this.state.taskName == '' &&
-      this.state.selectedTask == '+CREATE YOUR OWN'
+      this.state.selectedTask == '+CUSTOM'
     ) {
       Helper.showErrorMessage(Constants.MESSAGE_NO_TASK_NAME);
       return false;
@@ -245,7 +245,7 @@ export default class EditScheduleScreen extends BaseComponent {
   selectTaskName = name => {
     this.setState({
       selectedTask: name,
-      taskName: name === '+CREATE YOUR OWN' ? '' : name,
+      taskName: name === '+CUSTOM' ? '' : name,
     });
     this.toggleDropdown();
   };
@@ -540,7 +540,7 @@ export default class EditScheduleScreen extends BaseComponent {
                         ) : null}
                       </View>
                     </View>
-                    {this.state.selectedTask === '+CREATE YOUR OWN' ? (
+                    {this.state.selectedTask === '+CUSTOM' ? (
                       <View style={[styles.formControl]}>
                         <TextInput
                           style={styles.input}

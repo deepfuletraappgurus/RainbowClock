@@ -663,7 +663,7 @@ export default class ParentHomeScreen extends BaseComponent {
                     {this.state.objSelectedChild &&
                       this.state.objSelectedChild.name
                       ? // ? this.state.objSelectedChild.name.toUpperCase() + "’S CLOCK"
-                      this.state.objSelectedChild.name.toUpperCase() +
+                      this.state.school ? 'SCHOOL CLOCK' : this.state.objSelectedChild.name.toUpperCase() +
                       '’S CLOCK'
                       : ''}
                   </Text>
@@ -671,7 +671,7 @@ export default class ParentHomeScreen extends BaseComponent {
                 <Text
                   style={[styles.title, styles.textCenter, styles.titleSmall, { marginBottom: 20 }]}>
                   {/* {'TAP THE CALENDAR TO CREATE A BLOCK OF TIME/SCHEDULE'.toUpperCase()} */}
-                  {/* {'TAP THE CLOCK TO SELECT A BLOCK OF TIME'.toUpperCase()} */}
+                  {'TAP THE CLOCK TO SELECT A BLOCK OF TIME'.toUpperCase()}
                 </Text>
               </View>
               <View style={styles.clockBody}>{this.renderClockView()}</View>

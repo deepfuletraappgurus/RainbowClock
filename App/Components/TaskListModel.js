@@ -54,7 +54,7 @@ export default class TaskListModel extends Component {
       objSelectedDay: props.objSelectedDay,
       objSelectedTaskList: props.objSelectedTaskList,
     });
-    console.log('PROPSSSSS ', props?.objSelectedChild);
+    console.log('PROPSSSSS ', props?.objFooterSelectedTask);
     this.backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
       this.setState({visible: false});
       return true;
@@ -82,8 +82,11 @@ export default class TaskListModel extends Component {
         console.log("Task Restored ✅✅✅", JSON.stringify(response));
         if (response.ok) {
           if (response.data.success) {
-            console.log('********')
-            this?.props?.onClose()
+            console.log('********',response.data.data,'----',this.state.objFooterSelectedTask)
+            this.setState({
+              objFooterSelectedTask:response.data.data
+            })
+            // this?.props?.onClose()
           } else {
             Helper.showErrorMessage(response.data.message);
           }

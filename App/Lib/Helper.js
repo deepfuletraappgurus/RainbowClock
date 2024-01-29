@@ -807,14 +807,24 @@ export function generateClockTaskArray(
     // if(currentTimeSlot<=startTimeSlot || startTimeSlot!=endTimeSlot){
     if (currentTimeSlot <= startTimeSlot || currentTimeSlot <= endTimeSlot) {
       if (duration > 0) {
+        console.log('task---0000', task);
         const dicValue = {
           taskId: task.time,
           color: color,
           value: duration,
           isEmpty: false,
-          startPosition: parseInt(
-            Moment(task.tasks[0].time_from, 'hhmm').format('hhmm'),
-          ),
+          startPosition:
+            task.tasks[0].start_time_meridiem == 'AM' &&
+            task.tasks[0].end_time_meridiem == 'PM'
+              ? parseInt(
+                  Moment(Moment('12:00 PM', 'hh:mm A'), 'hhmm').format('hhmm'),
+                )
+              : parseInt(
+                  Moment(task.tasks[0].time_from, 'hhmm').format('hhmm'),
+                ),
+          // startPosition: parseInt(
+          //   Moment(task.tasks[0].time_from, 'hhmm').format('hhmm'),
+          // ),
           startTimeMeridiem: task.tasks[0].start_time_meridiem,
           endPosition: parseInt(
             Moment(task.tasks[0].time_to, 'hhmm').format('hhmm'),
@@ -1261,11 +1271,11 @@ export function checkTaskTimeAndDate(objTask) {
     .toUpperCase();
 
   if (
-    (objTask.task_date !== this.getMinimumDateForCalender()) ||
-    ((this.getCurrentTime() < taskStartTime &&
+    objTask.task_date !== this.getMinimumDateForCalender() ||
+    (this.getCurrentTime() < taskStartTime &&
       this.getCurrentTime() < taskEndTime) ||
     (this.getCurrentTime() > taskStartTime &&
-      this.getCurrentTime() > taskEndTime))
+      this.getCurrentTime() > taskEndTime)
   ) {
     isFutureTask = true;
   }

@@ -288,18 +288,18 @@ export default class ScheduleScreen extends BaseComponent {
             ? item.tasks.map((data, i) => {
                 return (
                   <TouchableOpacity
-                    style={styles.ScheduleTaskItem}
+                    style={{marginRight:12 }}
                     onPress={() => this.onPressTask(data)}>
                     {/* <Text style={styles.timer}>{data.time_from} {data.start_time_meridiem}-{data.time_to} {data.end_time_meridiem}</Text> */}
                     <Image
                       source={{uri: data.cate_image}}
                       style={
-                        data.status == Constants.TASK_STATUS_COMPLETED
+                        [data.status == Constants.TASK_STATUS_COMPLETED
                           ? styles.fadedIcon
-                          : styles.icon
+                          : styles.icon,{alignSelf:'center'}]
                       }
                     />
-                    <Text style={[styles.linkText, {color: Colors.snow}]}>
+                    <Text style={[styles.timer, {color: Colors.snow,marginBottom:0,marginTop:8}]}>
                       {data?.task_name}
                     </Text>
                     {item.status == Constants.TASK_STATUS_COMPLETED  ? (
