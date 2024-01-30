@@ -290,14 +290,14 @@ export default class HomeScreen extends BaseComponent {
     }
     if (this.state.is_24HrsClock) {
       pieData = this.state.school
-        ? stateData.pieData24Hour_School
-        : stateData.pieData24Hour;
+        ? stateData?.pieData24Hour_School
+        : stateData?.pieData24Hour;
     }
     if (this.state.meridiam == 'AM') {
       //MP
       pieData = this.state.school
-        ? stateData.pieDataAM_School
-        : stateData.pieDataAM;
+        ? stateData?.pieDataAM_School
+        : stateData?.pieDataAM;
     }
     if (this.state.meridiam == 'PM') {
       //MP
@@ -305,8 +305,8 @@ export default class HomeScreen extends BaseComponent {
         ? stateData?.pieDataPM_School
         : stateData?.pieDataPM;
     }
-    console.log('stateData.pieDataPM', pieData);
-    console.log('setWatchData', pieData, this.state.meridiam);
+    // console.log('stateData.pieDataPM', pieData);
+    // console.log('setWatchData', pieData, this.state.meridiam);
     // console.log("stateData.pieDataAM_School", stateData.pieDataAM_School);
 
     if (this.state.currentTaskSlot) {

@@ -816,9 +816,15 @@ export function generateClockTaskArray(
           startPosition:
             task.tasks[0].start_time_meridiem == 'AM' &&
             task.tasks[0].end_time_meridiem == 'PM'
-              ? parseInt(
-                  Moment(Moment('12:00 PM', 'hh:mm A'), 'hhmm').format('hhmm'),
-                )
+              ? currentTimeSlot < 3
+                ? parseInt(
+                    Moment(task.tasks[0].time_from, 'hhmm').format('hhmm'),
+                  )
+                : parseInt(
+                    Moment(Moment('12:00 PM', 'hh:mm A'), 'hhmm').format(
+                      'hhmm',
+                    ),
+                  )
               : parseInt(
                   Moment(task.tasks[0].time_from, 'hhmm').format('hhmm'),
                 ),

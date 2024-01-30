@@ -90,6 +90,7 @@ export default class SetupTimeBlockScreen extends BaseComponent {
   }
 
   componentDidMount() {
+    console.log('NNNNNN',new Date(Date.now()),moment('2024-01-29T21:20:29.321Z').format('DD/MM/YYYY'),new Date('2024-01-29T21:20:29.321Z').getDate())
     super.componentDidMount();
     this.getChildDetail();
     // Helper.checkChoosenTimeIsValidOrNot(this.state.fromTime, (aNewDay, isPastSelectedTime, todayIsSunday) => {
@@ -146,8 +147,7 @@ export default class SetupTimeBlockScreen extends BaseComponent {
       .map(datas => datas.date);
     console.log('===111===', task_dates, this.state.calenderSelectedDay);
     Keyboard.dismiss();
-    const formattedDate = moment
-      .utc(this.state.calenderSelectedDay)
+    const formattedDate = moment(this.state.calenderSelectedDay)
       .format('YYYY-MM-DD');
     const resultArray = [formattedDate];
     if (this.isValidate(task_dates)) {
@@ -162,7 +162,7 @@ export default class SetupTimeBlockScreen extends BaseComponent {
         task_date: task_dates?.length === 0 ? resultArray : task_dates,
         is_date: this.state.is_date
       };
-      console.log('dictCreateTask=====>', dictCreateTask);
+      console.log('dictCreateTask=====>!', dictCreateTask);
       // this.props.navigation.navigate('ScheduleTaskScreen', { dictCreateTask: dictCreateTask })
       this.props.navigation.navigate('SelectTaskScreen', {
         dictCreateTask: dictCreateTask,
@@ -792,7 +792,7 @@ export default class SetupTimeBlockScreen extends BaseComponent {
                                 {marginBottom: 0},
                               ]}>{`On ${moment(
                               this.state.calenderSelectedDay,
-                            ).format('YYYY:MMM:DD')}`}</Text>
+                            ).format('DD MMM YYYY')}`}</Text>
                           )}
                         </>
                         <TouchableOpacity
