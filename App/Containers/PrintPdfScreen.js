@@ -111,6 +111,7 @@ export default class PrintPdfScreen extends BaseComponent {
             height: Dimensions.get('window').height,
             width: Dimensions.get('window').width,
           }}
+          androidHardwareAccelerationDisabled={true}
           nestedScrollEnabled={true}
           renderLoading={this.LoadingIndicatorView}
           startInLoadingState={true}
@@ -120,6 +121,7 @@ export default class PrintPdfScreen extends BaseComponent {
           domStorageEnabled={true}
           decelerationRate="normal"
           thirdPartyCookiesEnabled={true}
+          androidLayerType="software"
         />
       </SafeAreaView>
       //  </View>
