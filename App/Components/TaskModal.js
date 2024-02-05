@@ -134,7 +134,7 @@ export default class TaskModal extends BaseComponent {
       );
       Helper.showConfirmationMessageSingleAction(
         'Super Job!! \n You have completed this task.\n Congratulations you have earned ' +
-          this.state.objFooterSelectedTask.no_of_token +
+          this.state.objFooterSelectedTask.no_of_token + ' ' + this.state.objFooterSelectedTask.token_type +
           ' token',
         'OK',
         this.onActionOK,
@@ -322,12 +322,12 @@ export default class TaskModal extends BaseComponent {
                       })
                     : null}
 
-                  {this.state.objFooterSelectedTask.start_time ? (
+                  {this.state.objFooterSelectedTask.start_time && this.state.objFooterSelectedTask.task_time ? (
                     <View
                       style={{justifyContent: 'center', alignItems: 'center'}}>
                       {this.renderMiniClockView()}
                     </View>
-                  ) : (
+                  ) : this.state.objFooterSelectedTask.task_time ? (
                     <TouchableOpacity
                       style={[styles.button, styles.smallButton]}
                       onPress={() =>
@@ -337,7 +337,7 @@ export default class TaskModal extends BaseComponent {
                         {'START TASK'}
                       </Text>
                     </TouchableOpacity>
-                  )}
+                  ) : null}
                   <TouchableOpacity
                     style={[styles.button, styles.smallButton]}
                     onPress={() => this.pauseTask()}>
@@ -371,10 +371,10 @@ export default class TaskModal extends BaseComponent {
                     {'TASK COMPLETE'}
                   </Text>
                 </TouchableOpacity>
-                <Image
+                {/* <Image
                   source={Images.taskReward}
                   style={[styles.taskRewardImage, {marginRight: -40}]}
-                />
+                /> */}
               </View>
             </SafeAreaView>
           </View>

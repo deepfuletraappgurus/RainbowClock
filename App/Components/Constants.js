@@ -41,7 +41,7 @@ const Constants = {
         { title: 'Reward', img: Images.navIcon2, screen: 'ChildClaimedRewardsScreen' },
         { title: 'Schedule', img: Images.navIcon3, screen: 'ScheduleScreen' },
         { title: 'User Profile', img: Images.navIcon4, screen: 'ChildProfileScreen' },
-        { title: 'Admin Portal', img: Images.navIcon11, screen: 'ParentsPortalPinScreen' },
+        { title: 'Admin Profile', img: Images.navIcon11, screen: 'ParentsPortalPinScreen' },
         // { title: 'Edit Clock', img: Images.navIcon5, screen: 'ParentsPortalPinScreen' },
         { title: 'Change User', img: Images.navIcon6, screen: 'SelectUserScreen' },
         { title: 'Share This App', img: Images.navIcon7, screen: 'ShareScreen' },
@@ -51,12 +51,12 @@ const Constants = {
     ARR_PARENT_PORTAL_DRAWER: [
         { title: 'Clock', img: Images.navIcon1, screen: 'ParentHomeScreen' },
         { title: 'Schedule', img: Images.navIcon3, screen: 'ScheduleScreen' },
-        { title: 'School Hours', img: Images.navIcon9, screen: 'SchoolHoursScreen' },
+        // { title: 'School Hours', img: Images.navIcon9, screen: 'SchoolHoursScreen' },
         { title: 'Reward', img: Images.navIcon2, screen: 'RewardScreen' },
         { title: 'My Tasks', img: Images.navIcon10, screen: 'RescheduleScreen' },
         { title: 'Change User', img: Images.navIcon6, screen: 'ParentsSelectChildScreen' },
         // { title: 'Admin Profile', img: Images.navIcon11, screen: 'ParentsProfileScreen' },
-        { title: 'Admin Portal', img: Images.navIcon11, screen: 'ParentsUpdateProfileScreen' },
+        { title: 'Admin Profile', img: Images.navIcon11, screen: 'ParentsUpdateProfileScreen' },
         { title: 'Exit Admin Portal', img: Images.navIcon12, screen: 'ParentsPortalPinScreen' },
         { title: 'Share This App', img: Images.navIcon7, screen: 'ShareScreen' },
         { title: 'Logout', img: Images.navIcon8, screen: '' },
@@ -119,7 +119,7 @@ const Constants = {
     MESSAGE_NO_TASK_TOKEN: "Please enter number of tokens for the task.",
     MESSAGE_NO_TASK_ICON: "Please add the icon for the task.",
     MESSAGE_NO_DAY_SELECT: "Please select at least one date to schedule a task.",
-    MESSAGE_NO_FUTURE_TASK: "You can not start or complete tasks for future or past date and time.",
+    MESSAGE_NO_FUTURE_TASK: "You can not start or complete tasks for future date and time.",
     MESSAGE_NO_GREATER_TASK: "The choosen task time should not be greater than the available time slot.",
     MESSAGE_NO_NEWPASSWORD: "Please enter new password.",
     MESSAGE_NO_OLDPASSWORD: "Please enter old assword.",
@@ -144,12 +144,13 @@ const Constants = {
     MESSAGE_NO_REPEAT: "It's SUNDAY. \n Please try to repeat the task on some other day",
     MESSAGE_NO_DAY_SELECT_SCHEDULE: "Please select at least one day to schedule a task.",
     MESSAGE_SCHOOL_DAY_VALIDATION:'School Day Must be 6 AM to 6PM',
+    MESSAGE_CREATE_TASK_TIME_VALIDATION:'Here, Strat time and End time Diffrence is not more then 24Hour or not less then 15Min. Please Select time between this. ',
     //Other Messages 
     TEXT_FATCHING_CHILD: 'FETCHING YOUR USERS',
     TEXT_FATCHING_TASKS: 'FETCHING YOUR TASKS...',
     TEXT_NO_TASKS: "YOU DON'T HAVE ANY TASK",
     TEXT_NO_CHILD_ADDED_YET: "YOU HAVEN'T ADDED ANY CHILD YET. LET'S EXPERIENCE THE MY RAINBOW CLOCK BY ADDING YOUR CHILD",
-    ADD_CHILD_CONFIRMATION_NO:'If you wish to add another child later you can do so in the admin portal which you can access from the menu bar.', //MP
+    ADD_CHILD_CONFIRMATION_NO:'If you wish to add another child later you can do so in the Admin Profile which you can access from the menu bar.', //MP
     ADD_CHILD_SUCCESS:'Child has been added successfully!',//MP
     //Planet Messages
     MONDAY_MESSAGE: `It's MONDAY.\nI was named after the moon. I am a natural satellite that orbits the earth.`,

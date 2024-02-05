@@ -156,10 +156,11 @@ export default class SelectTaskScreen extends BaseComponent {
     ) {
       Helper.showErrorMessage(Constants.MESSAGE_NO_TASK_NAME);
       return false;
-    } else if (this.state.taskTime.trim() == '') {
-      Helper.showErrorMessage(Constants.MESSAGE_SELECT_TASK_TIME);
-      return false;
-    }
+    } 
+    // else if (this.state.taskTime.trim() == '') {
+    //   Helper.showErrorMessage(Constants.MESSAGE_SELECT_TASK_TIME);
+    //   return false;
+    // }
     // else if (this.state.taskNumberOfToken.trim() == '') {
     //     Helper.showErrorMessage(Constants.MESSAGE_NO_TASK_TOKEN);
     //     return false;
@@ -277,6 +278,7 @@ export default class SelectTaskScreen extends BaseComponent {
     var frequency = this.state.dictCreateTask['frequency'];
     var taskCustomIcon = this.state.taskCustomImage;
     var is_date = this.state.dictCreateTask['is_date'];
+    var is_school_clock = this.state.dictCreateTask['is_school_clock']
 
     const res = objSecureAPI
       .addTask(
@@ -297,6 +299,7 @@ export default class SelectTaskScreen extends BaseComponent {
         taskCustomIcon,
         frequency,
         is_date,
+        is_school_clock
       )
       .then(resJSON => {
         console.log('✅✅✅---', resJSON);
@@ -675,11 +678,14 @@ export default class SelectTaskScreen extends BaseComponent {
                               style={styles.modalCloseTouch}
                               onPress={() => {
                                 this.setState({isLoading: false});
-                                this.setTaskModelVisible()
+                                this.setTaskModelVisible();
                               }}>
                               <Image
                                 source={Images.close}
-                                style={[styles.close,{tintColor:Colors.black}]}
+                                style={[
+                                  styles.close,
+                                  {tintColor: Colors.black},
+                                ]}
                               />
                             </TouchableOpacity>
                             <Image
@@ -709,6 +715,7 @@ export default class SelectTaskScreen extends BaseComponent {
                                     this.setState({});
                                 }}
                                 onSubmitEditing={event => {}}
+                                maxLength={20}
                               />
                               {/* : 
                                                                 <View style={{flexDirection:'row', alignItems:'center'}}>
@@ -911,7 +918,7 @@ export default class SelectTaskScreen extends BaseComponent {
                       styles.containerBody,
                       {flexDirection: 'column-reverse'},
                     ]}>
-                    {/* <View style={styles.modalFooter}>
+                    <View style={styles.modalFooter}>
                       <TouchableOpacity
                         style={[
                           styles.button,
@@ -923,7 +930,7 @@ export default class SelectTaskScreen extends BaseComponent {
                           {'Save'.toUpperCase()}
                         </Text>
                       </TouchableOpacity>
-                    </View> */}
+                    </View>
                     <View style={styles.modalBody}>
                       <Text style={[styles.h1, styles.textCenter]}>
                         {'CREATE NEW TASK'}
@@ -947,6 +954,7 @@ export default class SelectTaskScreen extends BaseComponent {
                                 this.setState({customTaskName})
                               }
                               onSubmitEditing={event => {}}
+                              maxLength={20}
                             />
                           </View>
                           <View

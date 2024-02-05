@@ -49,10 +49,12 @@ export default class SetupTimeBlockScreen extends BaseComponent {
         />
       </TouchableOpacity>
     ),
+    
   });
   //constructor
   constructor(props) {
     super(props);
+    
     this.state = {
       showDropdown: false,
       taskName: '',
@@ -85,7 +87,8 @@ export default class SetupTimeBlockScreen extends BaseComponent {
       arrSelectedTaskDates: [],
       daySelectionCalender: false,
       calenderSelectedDay: new Date(Date.now()),
-      is_date:1
+      is_date:1,
+      is_school_clock: this.props.navigation.getParam('is_school_clock')
     };
   }
 
@@ -142,33 +145,70 @@ export default class SetupTimeBlockScreen extends BaseComponent {
   };
   //#region -> Class Methods
   moveToScheduleTask = () => {
-    const task_dates = this.state.arrSelectedDates
-      ?.filter(data => data.selected)
-      .map(datas => datas.date);
-    console.log('===111===', task_dates, this.state.calenderSelectedDay);
-    Keyboard.dismiss();
-    const formattedDate = moment(this.state.calenderSelectedDay)
-      .format('YYYY-MM-DD');
-    const resultArray = [formattedDate];
-    if (this.isValidate(task_dates)) {
-      var dictCreateTask = {
-        taskName:
-          this.state.taskName === ''
-            ? this.state.taskNameList[0]
-            : this.state.taskName,
-        fromTime: this.state.fromTime,
-        toTime: this.state.toTime,
-        taskColor: this.state.taskSelectedColor,
-        task_date: task_dates?.length === 0 ? resultArray : task_dates,
-        is_date: this.state.is_date
-      };
-      console.log('dictCreateTask=====>!', dictCreateTask);
-      // this.props.navigation.navigate('ScheduleTaskScreen', { dictCreateTask: dictCreateTask })
-      this.props.navigation.navigate('SelectTaskScreen', {
-        dictCreateTask: dictCreateTask,
-      });
+    console.log('dictCreateTask=====>!',this.state.is_school_clock);
+    if (this.checkTimeValidation()) {
+      Helper.showErrorMessage(Constants.MESSAGE_CREATE_TASK_TIME_VALIDATION);
+    }
+    else{
+      const task_dates = this.state.arrSelectedDates
+        ?.filter(data => data.selected)
+        .map(datas => datas.date);
+      console.log('===111===', task_dates, this.state.calenderSelectedDay);
+      Keyboard.dismiss();
+      const formattedDate = moment(this.state.calenderSelectedDay)
+        .format('YYYY-MM-DD');
+      const resultArray = [formattedDate];
+      if (this.isValidate(task_dates)) {
+        var dictCreateTask = {
+          taskName:
+            this.state.taskName === ''
+              ? this.state.taskNameList[0]
+              : this.state.taskName,
+          fromTime: this.state.fromTime,
+          toTime: this.state.toTime,
+          taskColor: this.state.taskSelectedColor,
+          task_date: task_dates?.length === 0 ? resultArray : task_dates,
+          is_date: this.state.is_date,
+          is_school_clock:this.state.is_school_clock
+        };
+        console.log('dictCreateTask=====>!', dictCreateTask,this.state.fromTimeFormate);
+        // this.props.navigation.navigate('ScheduleTaskScreen', { dictCreateTask: dictCreateTask })
+        this.props.navigation.navigate('SelectTaskScreen', {
+          dictCreateTask: dictCreateTask,
+        });
+      }
     }
   };
+
+  checkTimeValidation = () => {
+    const [fromHours, fromMinutes, fromPeriod] = this.state.fromTime.split(/[:\s]/);
+    const [toHours, toMinutes, toPeriod] = this.state.toTime.split(/[:\s]/);
+
+    let fromHour = parseInt(fromHours, 10);
+    let toHour = parseInt(toHours, 10);
+
+    // Adjust hours if it's PM
+    if (fromPeriod === "PM" && fromHour !== 12) {
+      fromHour += 12;
+    }
+
+    if (toPeriod === "PM" && toHour !== 12) {
+      toHour += 12;
+    }
+
+    const fromTimeInMinutes = fromHour * 60 + parseInt(fromMinutes, 10);
+    const toTimeInMinutes = toHour * 60 + parseInt(toMinutes, 10);
+
+    // Calculate the difference in minutes
+    const timeDifference = Math.abs(toTimeInMinutes - fromTimeInMinutes);
+
+    // Check if the difference is not more than 24 hours or not less than 15 minutes
+    if (timeDifference <= (24 * 60) && timeDifference >= 15) {
+      return false
+    } else {
+      return true
+    }
+  }
 
   setToggleColorPicker = () => {
     Keyboard.dismiss();

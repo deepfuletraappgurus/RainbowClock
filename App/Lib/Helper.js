@@ -519,6 +519,7 @@ export function setupTasksBasedOnMeridiem(
   var arrFilteredData_AM = [];
   var arrFilteredData_PM = [];
   var currentRunningTaskSlot = '';
+  var is_school_clock = []
 
   arrStartWithPM = objArrTasks.filter(item => {
     // console.log("Filter 1", item);
@@ -527,6 +528,12 @@ export function setupTasksBasedOnMeridiem(
   });
 
   arrStartWithPM.reverse();
+
+  is_school_clock = objArrTasks.map(item => {
+    return item.tasks[0].is_school_clock
+  })
+
+  console.log('ARRRR',is_school_clock)
 
   arrStartWithAM = objArrTasks.filter(item => {
     // console.log("Filter 2", item);
@@ -582,6 +589,7 @@ export function setupTasksBasedOnMeridiem(
     currentRunningTaskSlot,
     arrFilteredData_AM,
     arrFilteredData_PM,
+    is_school_clock
   );
 }
 
@@ -607,7 +615,7 @@ export function generateClockTaskArray(
   arrTask,
   valueToCompare,
   todaysSchoolHours,
-  isSchool = false,
+  isSchool,
 ) {
   console.log('cheking data', arrTask, valueToCompare, todaysSchoolHours);
   const school = {FROM: '00:00 AM', TO: '00:00 AM'};
@@ -841,6 +849,7 @@ export function generateClockTaskArray(
           // endTimeMeridiem:task.tasks[0].end_time_meridiem,
           StartTimeSlote: startTimeSlot,
           CurruntTimeSlote: currentTimeSlot,
+          is_school_clock: task.tasks[0].is_school_clock
         };
 
         // if (valueToCompare == 'pm' && dicValue.startTimeMeridiem.toLowerCase() == 'am') {
@@ -1279,9 +1288,7 @@ export function checkTaskTimeAndDate(objTask) {
   if (
     objTask.task_date !== this.getMinimumDateForCalender() ||
     (this.getCurrentTime() < taskStartTime &&
-      this.getCurrentTime() < taskEndTime) ||
-    (this.getCurrentTime() > taskStartTime &&
-      this.getCurrentTime() > taskEndTime)
+      this.getCurrentTime() < taskEndTime)
   ) {
     isFutureTask = true;
   }

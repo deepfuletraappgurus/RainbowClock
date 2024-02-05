@@ -296,7 +296,8 @@ const createSecure = (baseURL = base_url) => {
     taskDates,
     taskCustomIcon,
     frequency,
-    is_date
+    is_date,
+    is_school_clock
   ) => {
     const data = new FormData();
     //Parms
@@ -315,6 +316,7 @@ const createSecure = (baseURL = base_url) => {
     data.append('no_of_token', taskNumberOfTokens);
     data.append('task_date', taskDates);
     data.append('is_date',is_date)
+    data.append('is_school_clock',is_school_clock)
     if (frequency) {
       data.append('frequency', frequency);
     }

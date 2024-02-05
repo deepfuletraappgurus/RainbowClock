@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import React, { Component } from 'react';
+import React, {Component} from 'react';
 import {
   FlatList,
   Image,
@@ -12,8 +12,8 @@ import {
 import Swiper from 'react-native-swiper';
 import Constants from '../Components/Constants';
 import * as Helper from '../Lib/Helper';
-import { Colors, Images, Metrics } from '../Themes';
-import { PieChart } from 'react-native-svg-charts';
+import {Colors, Images, Metrics} from '../Themes';
+import {PieChart} from 'react-native-svg-charts';
 import Api from '../Services/Api';
 import moment from 'moment';
 
@@ -23,17 +23,17 @@ import Tips from 'react-native-tips';
 import styles from './Styles/ParentHomeScreenStyles';
 import BaseComponent from '../Components/BaseComponent';
 import AnalogClock from '../Components/AnalogClock';
-import { value } from 'deprecated-react-native-prop-types/DeprecatedTextInputPropTypes';
-import images from "../Themes/Images";
+import {value} from 'deprecated-react-native-prop-types/DeprecatedTextInputPropTypes';
+import images from '../Themes/Images';
 // Global Variables
 const objSecureAPI = Api.createSecure();
 
 export default class ParentHomeScreen extends BaseComponent {
-  static navigationOptions = ({ navigation }) => ({
+  static navigationOptions = ({navigation}) => ({
     headerStyle: {
       backgroundColor: Colors.navHeaderLight,
       shadowOpacity: 0,
-      shadowOffset: { height: 0 },
+      shadowOffset: {height: 0},
       elevation: 0,
       height: Metrics.navBarHeight,
       borderBottomWidth: 0,
@@ -52,7 +52,7 @@ export default class ParentHomeScreen extends BaseComponent {
             Constants.PARENT_HOME_TIPS,
             JSON.stringify(false),
           );
-        } catch (error) { }
+        } catch (error) {}
       },
     });
 
@@ -88,7 +88,7 @@ export default class ParentHomeScreen extends BaseComponent {
   handleNextTips() {
     const tipsVisible = this.homeTips.next();
     console.log('tipsVisible', tipsVisible);
-    this.setState({ tipsVisible });
+    this.setState({tipsVisible});
   }
 
   //start showing tips in home
@@ -114,8 +114,7 @@ export default class ParentHomeScreen extends BaseComponent {
     // Checking if the Hour is less than equals to 11 then Set the Time format as AM.
     if (hour <= 11) {
       TimeType = 'AM';
-    }
-    else {
+    } else {
       // If the Hour is Not less than equals to 11 then Set the Time format as PM.
       TimeType = 'PM';
     }
@@ -128,7 +127,7 @@ export default class ParentHomeScreen extends BaseComponent {
     });
 
     setTimeout(() => {
-      this.setState({ pauseUserInteraction: false });
+      this.setState({pauseUserInteraction: false});
     }, 3000);
 
     //check tips is already show or not in home if not then start showing tips
@@ -163,7 +162,7 @@ export default class ParentHomeScreen extends BaseComponent {
     AsyncStorage.getItem(Constants.KEY_SELECTED_CHILD, (err, child) => {
       console.log('=======>>>child', child);
       if (child != '') {
-        this.setState({ objSelectedChild: JSON.parse(child) }, () =>
+        this.setState({objSelectedChild: JSON.parse(child)}, () =>
           this.getTaskList(),
         );
       }
@@ -181,7 +180,7 @@ export default class ParentHomeScreen extends BaseComponent {
     } catch (error) {
       console.log('AsyncStorage Error: ', error);
     }
-    this.setState({ pieData });
+    this.setState({pieData});
   }
 
   toggleSchool() {
@@ -197,7 +196,9 @@ export default class ParentHomeScreen extends BaseComponent {
   }
 
   onPressMoveToSetUpTimeBlock = () => {
-    this.props.navigation.navigate('SetupTimeBlockScreen');
+    this.props.navigation.navigate('SetupTimeBlockScreen', {
+      is_school_clock: this.state.school,
+    });
   };
 
   onPressMoveToSchedule = () => {
@@ -205,11 +206,11 @@ export default class ParentHomeScreen extends BaseComponent {
   };
 
   toggleDropdown() {
-    this.setState({ showDropdown: !this.state.showDropdown });
+    this.setState({showDropdown: !this.state.showDropdown});
   }
 
   selectDayForClock = day => {
-    this.setState({ selectedDay: day }, () => this.getTaskList());
+    this.setState({selectedDay: day}, () => this.getTaskList());
     this.toggleDropdown();
   };
 
@@ -220,20 +221,16 @@ export default class ParentHomeScreen extends BaseComponent {
         ? this.state.pieData24Hour_School
         : this.state.pieData24Hour;
     } else if (this.state.meridiam == 'am') {
-      pieData = this.state.school
-        ? this.state.pieDataAM_School
-        : this.state.pieDataAM;
+      pieData = this.state.pieDataAM;
     } else {
-      pieData = this.state.school
-        ? this.state.pieDataPM_School
-        : this.state.pieDataPM;
+      pieData = this.state.pieDataPM;
     }
     if (this.state.currentTaskSlot) {
       Helper.getPaginatedArray(
         this.state.currentTaskSlot[0].tasks,
         4,
         arrFooterTasks => {
-          this.setState({ arrFooterTasks });
+          this.setState({arrFooterTasks});
         },
       );
     }
@@ -244,6 +241,7 @@ export default class ParentHomeScreen extends BaseComponent {
 
   renderClockView() {
     data = this.state.pieData;
+    console.log(':::::::', this.state.pieData);
     const clearColor = Colors.clear;
     var date, TimeType, hour;
 
@@ -256,8 +254,7 @@ export default class ParentHomeScreen extends BaseComponent {
     // Checking if the Hour is less than equals to 11 then Set the Time format as AM.
     if (hour <= 11) {
       TimeType = 'AM';
-    }
-    else {
+    } else {
       // If the Hour is Not less than equals to 11 then Set the Time format as PM.
       TimeType = 'PM';
     }
@@ -275,72 +272,102 @@ export default class ParentHomeScreen extends BaseComponent {
     //   key: `pie-${index}`,
     //   index: index,
     // }));
-    const pieData = data.map(({ value, isEmpty, color }, index) => ({
-      value,
-      svg: {
-        fill:
-          isEmpty && !color
-            ? this.state.school
-              ? Colors.gray
-              : clearColor
-            : color,
-        // fill: this.state.school ?!color ? Colors.black:Colors.blue:Colors.bloodOrange,
-        // fill:color,
-        
-        onPress: () => console.log('press', index),
-      },
-      key: `pie-${index}`,
-      // key: `pie-5`,
-      index: index,
-      
-    }));
+    if (this.state.school) {
+    }
+    const pieData = data.map(
+      ({value, isEmpty, color, is_school_clock}, index) => ({
+        value,
+        svg: {
+          fill:
+            isEmpty && !color
+              ? this.state.school
+                ? Colors.gray
+                : clearColor
+              : color,
+          // fill: this.state.school ?!color ? Colors.black:Colors.blue:Colors.bloodOrange,
+          // fill:color,
+
+          onPress: () => console.log('press', index),
+        },
+        key: `pie-${index}`,
+        // key: `pie-5`,
+        index: index,
+        is_school_clock: is_school_clock,
+      }),
+    );
     // console.log('CLOCK', value+'==> '+ this.state.school);
-    const pieDataTras = data.map(({ taskId, value, isEmpty }, index) => ({
-      value,
-      svg: {
-        fill: clearColor,
-        onPress: () => this.onPressMoveToSetUpTimeBlock(),
-      },
-      key: `pie-${index}`,
-      index: index,
-    }));
+    const pieDataTras = data.map(
+      ({taskId, value, isEmpty, is_school_clock}, index) => ({
+        value,
+        svg: {
+          fill: clearColor,
+          onPress: () => this.onPressMoveToSetUpTimeBlock(),
+        },
+        key: `pie-${index}`,
+        index: index,
+        is_school_clock: is_school_clock,
+      }),
+    );
     // const clockFormateImage = this.state.is_24HrsClock
     //   ? Images.clockFaceDigit24HRS
     //   : Images.clockFaceDigit;
     if (this.state.is_24HrsClock) {
       this.state.clockFormateImage = Images.clockFaceDigit24HRS;
+    } else if (this.state.school) {
+      this.state.clockFormateImage = images.am_pm;
+    } else if (hour >= 0 && hour < 6) {
+      this.state.clockFormateImage = images.am;
+    } else if (hour >= 6 && hour < 12) {
+      this.state.clockFormateImage = images.am_pm;
+    } else if (hour >= 12 && hour < 18) {
+      this.state.clockFormateImage = images.pm;
+    } else if (hour >= 18 && hour < 24) {
+      this.state.clockFormateImage = images.pm_am;
     }
-      else if (hour >= 0 && hour < 6) {
-        this.state.clockFormateImage = images.am
-      }
-      else if (hour >= 6 && hour < 12) {
-        this.state.clockFormateImage = images.am_pm
-      }
-      else if (hour >= 12 && hour < 18) {
-        this.state.clockFormateImage = images.pm
-      }
-      else if (hour >= 18 && hour < 24) {
-        this.state.clockFormateImage = images.pm_am
-      }
-    
-    console.log('PIEDATA', JSON.stringify(data))
+
+    console.log('PIEDATA', this.state.school
+    ? pieData.filter(item => item.is_school_clock === 1)
+    : pieData.filter(
+        item =>
+          item.is_school_clock !== 1 &&
+          item.is_school_clock !== undefined,
+      ));
     return (
       <TouchableOpacity
         style={styles.clock}
         onPress={() => {
           this.onPressMoveToSetUpTimeBlock();
         }}>
-        <Image source={this.state.school ? Images.clockPurpleLight : Images.clock} style={styles.clockImage} />
+        <Image
+          source={this.state.school ? Images.clockPurpleLight : Images.clock}
+          style={styles.clockImage}
+        />
 
         <View style={styles.clockTimerView}>
           <PieChart
             style={styles.clockChartView}
-            data={pieData}
+            data={
+              this.state.school
+                ? pieData.map(obj => {
+                  if (obj.is_school_clock === 1) {
+                    return obj; // If is_school_clock is already 1, leave value unchanged
+                  } else {
+                    return { ...obj, svg: { ...obj.svg, fill: "#ffffff" } }; // Otherwise, update value to 0
+                  }
+                })
+                : pieData.map(obj => {
+                  if (obj.is_school_clock !== 1) {
+                    return obj; // If is_school_clock is already 1, leave value unchanged
+                  } else {
+                    return { ...obj, svg: { ...obj.svg, fill: "#ffffff" } }; // Otherwise, update value to 0
+                  }
+                })
+            }
             innerRadius={0}
             outerRadius={0}
             padAngle={0}
             sort={(a, b) => {
-              console.log('test', a.index, b.index+1);
+              console.log('test', a.index, b.index + 1);
               return a.index > b.index;
             }}
           />
@@ -353,7 +380,18 @@ export default class ParentHomeScreen extends BaseComponent {
 
           <PieChart
             style={styles.clockChartView}
-            data={pieDataTras}
+            data={this.state.school
+              ? pieDataTras.map(obj => {
+                if (obj.is_school_clock !== 1) {
+                  return { ...obj, value: 0 }; // If is_school_clock is already 1, leave value unchanged
+                } else {
+                  return { ...obj, value: 0 }; // Otherwise, update value to 0
+                }
+              })
+              : pieDataTras.filter(
+                  item =>
+                    item.is_school_clock !== 1,
+                )}
             outerRadius="100%"
             innerRadius="1%"
             padAngle={0}
@@ -387,7 +425,7 @@ export default class ParentHomeScreen extends BaseComponent {
     return (
       <TouchableOpacity style={styles.iconTouch}>
         <Image
-          source={{ uri: task.cate_image }}
+          source={{uri: task.cate_image}}
           style={
             task.status == Constants.TASK_STATUS_COMPLETED
               ? styles.fadedIcon
@@ -401,7 +439,7 @@ export default class ParentHomeScreen extends BaseComponent {
 
   //#region -> API Call
   getTaskList = () => {
-    this.setState({ isLoading: true });
+    this.setState({isLoading: true});
     const aDate = Helper.dateFormater(
       this.state.selectedDay,
       'dddd DD MMMM YYYY',
@@ -421,12 +459,12 @@ export default class ParentHomeScreen extends BaseComponent {
                 ? this.callClearRewardNotification()
                 : null;
               Object.keys(tasks).map(item => {
-                arr.push({ time: item, tasks: tasks[item] });
+                arr.push({time: item, tasks: tasks[item]});
               });
-              this.setState({ arrTasks: arr, arrFilteredTasks: arr });
+              this.setState({arrTasks: arr, arrFilteredTasks: arr});
               const todaysSchoolHours =
                 response.data.data[0].school_hours[Helper.getTodaysDay()];
-              console.log('TODAYS 222', response.data.data[0].school_hours)
+              console.log('TODAYS 222', response.data.data[0].school_hours);
               const schoolHoursFrom = moment(
                 todaysSchoolHours ? todaysSchoolHours.FROM : '00:00',
                 'hh:mm A',
@@ -441,7 +479,14 @@ export default class ParentHomeScreen extends BaseComponent {
                 this.state.arrTasks,
                 schoolHoursFrom,
                 schoolHoursTo,
-                (arrAM, arrPM, runningTimeSlot, arrAM_School, arrPM_School) =>
+                (
+                  arrAM,
+                  arrPM,
+                  runningTimeSlot,
+                  arrAM_School,
+                  arrPM_School,
+                  is_school_clock,
+                ) =>
                   setTimeout(() => {
                     this.setupTaskData(
                       arrAM,
@@ -452,6 +497,7 @@ export default class ParentHomeScreen extends BaseComponent {
                       todaysSchoolHours,
                       schoolHoursFromMeradian,
                       schoolHoursToMeradian,
+                      is_school_clock,
                     );
                   }, 200),
               );
@@ -460,12 +506,12 @@ export default class ParentHomeScreen extends BaseComponent {
             Helper.showErrorMessage(response.data.message);
           }
         } else {
-          this.setState({ isLoading: false });
+          this.setState({isLoading: false});
           Helper.showErrorMessage(response.problem);
         }
       })
       .catch(error => {
-        this.setState({ isLoading: false });
+        this.setState({isLoading: false});
         console.log(error);
       });
   };
@@ -479,18 +525,31 @@ export default class ParentHomeScreen extends BaseComponent {
     todaysSchoolHours,
     schoolHoursFromMeradian,
     schoolHoursToMeradian,
+    is_school_clock,
   ) {
     {
       this.state.isLoading = false;
-      const pieDataAM = Helper.generateClockTaskArray(arrAM, 'am');
-      const pieDataPM = Helper.generateClockTaskArray(arrPM, 'pm');
+      const pieDataAM = Helper.generateClockTaskArray(
+        arrAM,
+        'am',
+        is_school_clock,
+      );
+      const pieDataPM = Helper.generateClockTaskArray(
+        arrPM,
+        'pm',
+        is_school_clock,
+      );
+      console.log('PieDataAM', pieDataAM, is_school_clock);
+      console.log('PieDataPM', pieDataPM, is_school_clock);
       // const pieDataAM_School = Helper.generateClockTaskArray(arrAM_School,"am",true);
       // const pieDataPM_School = Helper.generateClockTaskArray(arrPM_School,"pm",true);
       var pieDataAM_School = [];
       var pieDataPM_School = [];
-      console.log('TODAYS School Hours', todaysSchoolHours)
       if (todaysSchoolHours) {
-        console.log('TODAYS School Hours111111', schoolHoursFromMeradian + ' ' + schoolHoursToMeradian)
+        console.log(
+          'TODAYS School Hours111111',
+          schoolHoursFromMeradian + ' ' + schoolHoursToMeradian,
+        );
         if (schoolHoursFromMeradian != schoolHoursToMeradian) {
           console.log(
             'schoolHoursFromMeradian != schoolHoursToMeradian',
@@ -564,12 +623,12 @@ export default class ParentHomeScreen extends BaseComponent {
           if (response.data.success) {
           }
         } else {
-          this.setState({ isLoading: false });
+          this.setState({isLoading: false});
           Helper.showErrorMessage(response.problem);
         }
       })
       .catch(error => {
-        this.setState({ isLoading: false });
+        this.setState({isLoading: false});
         console.log(error);
       });
   }
@@ -634,11 +693,11 @@ export default class ParentHomeScreen extends BaseComponent {
         />
 
         <Tips
-          contentStyle={[styles.contentStyle, { left: null, right: 0 }]}
+          contentStyle={[styles.contentStyle, {left: null, right: 0}]}
           visible={this.state.tipsVisible === 'rewards'}
           onRequestClose={this.handleNextTips}
           text="Setup rewards for your child in the menu"
-          style={[styles.Tips, { left: null, right: 0 }]}
+          style={[styles.Tips, {left: null, right: 0}]}
           tooltipArrowStyle={styles.tooltipArrowStyle}
           textStyle={styles.tipstextStyle}
           tooltipContainerStyle={[
@@ -661,18 +720,27 @@ export default class ParentHomeScreen extends BaseComponent {
                   <Text style={styles.userNameText}>
                     {' '}
                     {this.state.objSelectedChild &&
-                      this.state.objSelectedChild.name
+                    this.state.objSelectedChild.name
                       ? // ? this.state.objSelectedChild.name.toUpperCase() + "’S CLOCK"
-                      this.state.school ? 'SCHOOL CLOCK' : this.state.objSelectedChild.name.toUpperCase() +
-                      '’S CLOCK'
+                        this.state.school
+                        ? 'SCHOOL CLOCK'
+                        : this.state.objSelectedChild.name.toUpperCase() +
+                          '’S CLOCK'
                       : ''}
                   </Text>
                 </View>
-                <Text
-                  style={[styles.title, styles.textCenter, styles.titleSmall, { marginBottom: 20 }]}>
-                  {/* {'TAP THE CALENDAR TO CREATE A BLOCK OF TIME/SCHEDULE'.toUpperCase()} */}
-                  {'TAP THE CLOCK TO SELECT A BLOCK OF TIME'.toUpperCase()}
-                </Text>
+                {!this.state.is_24HrsClock && (
+                  <Text
+                    style={[
+                      styles.title,
+                      styles.textCenter,
+                      styles.titleSmall,
+                      {marginBottom: 20},
+                    ]}>
+                    {/* {'TAP THE CALENDAR TO CREATE A BLOCK OF TIME/SCHEDULE'.toUpperCase()} */}
+                    {'TAP THE CLOCK TO SELECT A BLOCK OF TIME'.toUpperCase()}
+                  </Text>
+                )}
               </View>
               <View style={styles.clockBody}>{this.renderClockView()}</View>
               <View style={styles.clockBottom}>
@@ -748,31 +816,29 @@ export default class ParentHomeScreen extends BaseComponent {
                             <View
                               style={[
                                 styles.shape,
-                                { width: Metrics.screenWidth / 5.5 },
+                                {width: Metrics.screenWidth / 5.5},
                               ]}>
                               <Text style={[styles.shapeText]}>
                                 {'A reward \nhas been \nclaimed!'}
                               </Text>
                             </View>
                           </View>
-                          {this.state.school === true ?(
-                          <Image
-                            source={Images.schoolBus}
-                            style={styles.alarmClock}
-                          />
-                          ):null}
+                          {this.state.school === true ? (
+                            <Image
+                              source={Images.schoolBus}
+                              style={styles.alarmClock}
+                            />
+                          ) : null}
                         </View>
                       </TouchableOpacity>
                     </View>
-                  ) : (
-                   null
-                  )}
-                   {this.state.school === true ?(
-                     <Image
-                     source={Images.schoolBus}
-                     style={styles.alarmClock}
-                   />
-                   ):null}
+                  ) : null}
+                  {this.state.school === true ? (
+                    <Image
+                      source={Images.schoolBus}
+                      style={styles.alarmClock}
+                    />
+                  ) : null}
                 </View>
               </View>
             </View>
@@ -800,8 +866,8 @@ export default class ParentHomeScreen extends BaseComponent {
                     data={this.state.arrWeekDays}
                     extraData={this.state}
                     keyExtractor={(item, index) => index}
-                    renderItem={({ item, index }) => this.renderRow(item, index)}
-                    contentContainerStyle={{ padding: 15 }}
+                    renderItem={({item, index}) => this.renderRow(item, index)}
+                    contentContainerStyle={{padding: 15}}
                   />
                 </View>
               ) : null}
@@ -809,24 +875,24 @@ export default class ParentHomeScreen extends BaseComponent {
           </View>
           <SafeAreaView
             style={[
-              { justifyContent: 'center' },
+              {justifyContent: 'center'},
               this.state.currentTaskSlot && this.state.arrFooterTasks.length > 0
                 ? {
-                  backgroundColor:
-                    this.state.currentTaskSlot[0].tasks[0].color,
-                }
+                    backgroundColor:
+                      this.state.currentTaskSlot[0].tasks[0].color,
+                  }
                 : null,
             ]}>
             <View
               style={[
                 styles.footer,
-                { justifyContent: 'center' },
+                {justifyContent: 'center'},
                 this.state.currentTaskSlot &&
-                  this.state.arrFooterTasks.length > 0
+                this.state.arrFooterTasks.length > 0
                   ? {
-                    backgroundColor:
-                      this.state.currentTaskSlot[0].tasks[0].color,
-                  }
+                      backgroundColor:
+                        this.state.currentTaskSlot[0].tasks[0].color,
+                    }
                   : null,
               ]}>
               {this.state.isLoading ? (

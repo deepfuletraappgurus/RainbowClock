@@ -28,6 +28,7 @@ import * as Animatable from 'react-native-animatable';
 import styles from './Styles/HomeScreenStyles';
 import BaseComponent from '../Components/BaseComponent';
 import images from '../Themes/Images';
+import TaskListModel from '../Components/TaskListModel';
 
 const constDigitColor = 'blue';
 // Global Variables
@@ -94,7 +95,8 @@ export default class HomeScreen extends BaseComponent {
       isQAVisible: true,
       tickCount: 0,
       animationRef: '',
-      needToChangeFooterObj:true
+      needToChangeFooterObj: true,
+      showRecoverModel: false,
     };
     this.handleNextTips = this.handleNextTips.bind(this);
   }
@@ -162,7 +164,9 @@ export default class HomeScreen extends BaseComponent {
     // currentTime > 12 PM && currentTime <= 6 PM
     // currentTime > 6 PM && currentTime <= 12 AM
     console.log('HOUR== ' + hour + ' TIMETYPE== ' + TimeType);
-    if (hour >= 0 && hour < 6) {
+    if (this.state.school) {
+      this.state.clockFormateImage = images.am_pm;
+    } else if (hour >= 0 && hour < 6) {
       this.state.clockFormateImage = images.am;
     }
     if (hour >= 6 && hour < 12) {
@@ -385,6 +389,7 @@ export default class HomeScreen extends BaseComponent {
   }
 
   setModalVisible(visible, timeSlot = '') {
+    console.log(timeSlot,'-----')
     const objSelectdTasks = this.state.arrFilteredTasks.filter(item => {
       return item.time == timeSlot;
     });
@@ -667,12 +672,7 @@ export default class HomeScreen extends BaseComponent {
     const pieData = data?.map(({value, isEmpty, color}, index) => ({
       value,
       svg: {
-        fill:
-          isEmpty && !color
-            ? this.state.school
-              ? Colors.gray
-              : clearColor
-            : color,
+        fill: isEmpty && !color ? clearColor : color,
         onPress: () => console.log('press', index),
       },
       key: `pie-${index}`,
@@ -775,6 +775,7 @@ export default class HomeScreen extends BaseComponent {
   }
 
   renderPage(pageIndex) {
+    console.log('this.state.arrFooterTasks',this.state.arrFooterTasks)
     const itemsCount = this.state.arrFooterTasks[pageIndex].length;
     const item = [...new Array(itemsCount)].map((item, index) => {
       return this.renderFooterItem(pageIndex, index);
@@ -831,18 +832,25 @@ export default class HomeScreen extends BaseComponent {
 
   onPressFooterTask(objTask) {
     if (objTask.status != Constants.TASK_STATUS_COMPLETED) {
+      console.log('11```');
       this.state.modalVisible = false;
       this.setState({
         taskComplete: true,
         objRestoreTask: '',
+        showRecoverModel: false,
       });
       if (this.state.needToChangeFooterObj) {
         this.setState({
-          objFooterSelectedTask:objTask
-        })
+          objFooterSelectedTask: objTask,
+        });
       }
     } else {
+      console.log('21111````',objTask);
+      this.setState({
+        objFooterSelectedTask: objTask,
+      });
       this.setState({objRestoreTask: objTask});
+      this.setModalVisible(true,`${objTask.time_from} - ${objTask.time_to}`)
     }
     Helper.getChildRewardPoints(this.props.navigation);
   }
@@ -1091,8 +1099,8 @@ export default class HomeScreen extends BaseComponent {
               objFooterSelectedTask: response.data.data.tasks[0],
             });
             this.setState({
-              needToChangeFooterObj:false
-            })
+              needToChangeFooterObj: false,
+            });
           } else {
             Helper.showErrorMessage(response.data.message);
           }
@@ -1336,7 +1344,7 @@ export default class HomeScreen extends BaseComponent {
 
         <ImageBackground
           source={
-            this.state.school ? Images.cyanBackground : this.state.imageBg
+            this.state.school ? Images.blueBackground : this.state.imageBg
           }
           style={styles.backgroundImage}>
           {this.state.pieData ? (
@@ -1486,11 +1494,11 @@ export default class HomeScreen extends BaseComponent {
                     {'Select Task'.toUpperCase()}
                   </Text>
                 </TouchableOpacity>
-                <Image
+                {/* <Image
                   // source={Images.rewardClaim}
                   source={Images.taskReward}
                   style={styles.taskRewardImage}
-                />
+                /> */}
               </View>
             </SafeAreaView>
           </View>
@@ -1503,6 +1511,13 @@ export default class HomeScreen extends BaseComponent {
           onStateChange={state => this.setState({taskComplete: state})}
           closeParentModal={() => this.setModal()}
         />
+        {/* <TaskListModel
+          visible={this.state.showRecoverModel}
+          objSelectedChild={this.state.objSelectedChild}
+          objFooterSelectedTask={this.state.objFooterSelectedTask}
+          onStateChange={state => this.setState({showRecoverModel: state})}
+          closeParentModal={() => this.setModal()}
+        /> */}
       </View>
     );
   }

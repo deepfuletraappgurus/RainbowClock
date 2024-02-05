@@ -54,7 +54,7 @@ export default class TaskListModel extends Component {
       objSelectedDay: props.objSelectedDay,
       objSelectedTaskList: props.objSelectedTaskList,
     });
-    console.log('PROPSSSSS ', props?.objFooterSelectedTask);
+    console.log('PROPSSSSS TASK LIST MODEL ', props?.objFooterSelectedTask);
     this.backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
       this.setState({visible: false});
       return true;
@@ -228,10 +228,10 @@ export default class TaskListModel extends Component {
                   {'SELECT TASK'}
                 </Text>
               </TouchableOpacity>
-              <Image
+              {/* <Image
                 source={Images.taskReward}
                 style={[styles.taskRewardImage, {marginRight: -100}]}
-              />
+              /> */}
             </View>
           </SafeAreaView>
         </View>

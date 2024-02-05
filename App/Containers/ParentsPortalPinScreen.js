@@ -293,7 +293,7 @@ export default class ParentsPortalPinScreen extends BaseComponent {
                                 <TouchableOpacity style={[styles.button, styles.buttonPrimary]} onPress={() => this.btnSubmit()}>
                                     {this.state.isLoading ?
                                         <Spinner color={'#FFFFFF'} size={'small'} /> :
-                                        <Text style={styles.buttonText}>{'Access Portal'.toUpperCase()}</Text>}
+                                        <Text style={styles.buttonText}>{'Access Profile'.toUpperCase()}</Text>}
                                 </TouchableOpacity>
                                 <View style={styles.formFooter}>
                                     <TouchableOpacity onPress={() => this.callForgotPin()}>
