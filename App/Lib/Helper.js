@@ -519,7 +519,7 @@ export function setupTasksBasedOnMeridiem(
   var arrFilteredData_AM = [];
   var arrFilteredData_PM = [];
   var currentRunningTaskSlot = '';
-  var is_school_clock = []
+  var is_school_clock = [];
 
   arrStartWithPM = objArrTasks.filter(item => {
     // console.log("Filter 1", item);
@@ -530,10 +530,10 @@ export function setupTasksBasedOnMeridiem(
   arrStartWithPM.reverse();
 
   is_school_clock = objArrTasks.map(item => {
-    return item.tasks[0].is_school_clock
-  })
+    return item.tasks[0].is_school_clock;
+  });
 
-  console.log('ARRRR',is_school_clock)
+  console.log('ARRRR', is_school_clock);
 
   arrStartWithAM = objArrTasks.filter(item => {
     // console.log("Filter 2", item);
@@ -589,7 +589,7 @@ export function setupTasksBasedOnMeridiem(
     currentRunningTaskSlot,
     arrFilteredData_AM,
     arrFilteredData_PM,
-    is_school_clock
+    is_school_clock,
   );
 }
 
@@ -765,11 +765,11 @@ export function generateClockTaskArray(
         task.tasks[0].start_time_meridiem == 'PM' &&
         task.tasks[0].end_time_meridiem == 'PM'
       ) {
-        // duration = endTime.diff(Moment('06:00 PM', 'hh:mm A'), 'minutes');
-        duration = endTime.diff(
-          Moment(task.tasks[0].time_from, 'hh:mm A'),
-          'minutes',
-        );
+        duration = endTime.diff(Moment('06:00 PM', 'hh:mm A'), 'minutes');
+        // duration = endTime.diff(
+        //   Moment(task.tasks[0].time_from, 'hh:mm A'),
+        //   'minutes',
+        // );
         console.log(
           'duration-PMPM',
           duration,
@@ -833,6 +833,10 @@ export function generateClockTaskArray(
                       'hhmm',
                     ),
                   )
+              : currentTimeSlot > 3
+              ? parseInt(
+                  Moment(Moment('06:00 PM', 'hh:mm A'), 'hhmm').format('hhmm'),
+                )
               : parseInt(
                   Moment(task.tasks[0].time_from, 'hhmm').format('hhmm'),
                 ),
@@ -849,7 +853,7 @@ export function generateClockTaskArray(
           // endTimeMeridiem:task.tasks[0].end_time_meridiem,
           StartTimeSlote: startTimeSlot,
           CurruntTimeSlote: currentTimeSlot,
-          is_school_clock: task.tasks[0].is_school_clock
+          is_school_clock: task.tasks[0].is_school_clock,
         };
 
         // if (valueToCompare == 'pm' && dicValue.startTimeMeridiem.toLowerCase() == 'am') {

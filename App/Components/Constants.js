@@ -143,7 +143,7 @@ const Constants = {
     MESSAGE_SELECT_TIME_RESCHEDULE: "Please select a time slot to reschedule a task.",
     MESSAGE_NO_REPEAT: "It's SUNDAY. \n Please try to repeat the task on some other day",
     MESSAGE_NO_DAY_SELECT_SCHEDULE: "Please select at least one day to schedule a task.",
-    MESSAGE_SCHOOL_DAY_VALIDATION:'School Day Must be 6 AM to 6PM',
+    MESSAGE_SCHOOL_DAY_VALIDATION:'School Task Must be 6 AM to 6PM',
     MESSAGE_CREATE_TASK_TIME_VALIDATION:'Here, Strat time and End time Diffrence is not more then 24Hour or not less then 15Min. Please Select time between this. ',
     //Other Messages 
     TEXT_FATCHING_CHILD: 'FETCHING YOUR USERS',

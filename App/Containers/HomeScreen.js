@@ -97,6 +97,7 @@ export default class HomeScreen extends BaseComponent {
       animationRef: '',
       needToChangeFooterObj: true,
       showRecoverModel: false,
+      refresh: false,
     };
     this.handleNextTips = this.handleNextTips.bind(this);
   }
@@ -135,6 +136,7 @@ export default class HomeScreen extends BaseComponent {
   incrementCount() {
     this.setState(prevState => ({tickCount: prevState.tickCount + 1}));
   }
+
   resetCount() {
     this.setState = {
       tickCount: 0,
@@ -287,6 +289,7 @@ export default class HomeScreen extends BaseComponent {
   };
 
   setWatchData(currentIndex) {
+    console.log(']]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]',currentIndex)
     var pieData = '';
     stateData = this.state.dicPieData[this.state.selectedDay];
     if (!stateData) {
@@ -370,26 +373,26 @@ export default class HomeScreen extends BaseComponent {
   }
 
   toggleSchool() {
-    if (this.state.is_24HrsClock) {
-      this.toggleSwitch();
-      this.setState({school: true}); //MP
-    } else {
-      //MP
-      this.setState({school: false});
-    }
+    // if (this.state.is_24HrsClock) {
+    //   this.toggleSwitch();
+    //   this.setState({school: true}); //MP
+    // } else {
+    //   //MP
+    //   this.setState({school: false});
+    // }
     this.setState(
       {
         school: !this.state.school,
       },
       () => {
-        this.createSwiperDataForWeek();
+        // this.createSwiperDataForWeek();
         this.setWatchData(this.state.currentIndex);
       },
     );
   }
 
   setModalVisible(visible, timeSlot = '') {
-    console.log(timeSlot,'-----')
+    console.log(timeSlot, '-----');
     const objSelectdTasks = this.state.arrFilteredTasks.filter(item => {
       return item.time == timeSlot;
     });
@@ -438,45 +441,68 @@ export default class HomeScreen extends BaseComponent {
   }
 
   seeAnswerOfJoke() {
-    if (this.state.tickCount == 3) {
-      this.state.tickCount = 0;
+    if (this.state.tickCount === 2) {
+      this.setState({tickCount: 0}, () => {
+        this.handleStateUpdates();
+      });
     } else {
-      this.incrementCount();
+      this.setState(
+        prevState => ({tickCount: prevState.tickCount + 1}),
+        () => {
+          this.handleStateUpdates();
+        },
+      );
     }
-    this.state.isQAVisible = this.state.tickCount != 2 ? true : false;
+  }
 
-    this.state.isAnswerOfJokeVisible = this.state.tickCount == 1 ? true : false;
-    // this.state.isAnswerOfJokeVisible ? '' : this.startAnswerCounter()
-    // this.state.isAnswerOfJokeVisible =  true;
-    this.state.swiperData[this.state.currentIndex] = this.renderSwiperView();
-    // this.state.swiperData[this.state.currentIndex] = this.renderSwiperView()
+  handleStateUpdates = () => {
+    console.log(
+      'this.state.tickCount--------------------------',
+      this.state.tickCount,
+    );
+    const isQAVisible = this.state.tickCount !== 2;
+    const isAnswerOfJokeVisible = this.state.tickCount === 1;
+
+    const currentIndex = this.state.currentIndex;
+    const swiperData = [...this.state.swiperData];
+    swiperData[currentIndex] = this.renderSwiperView();
+
     console.log(
       'this....222',
       this.state.tickCount,
-      this.state.isAnswerOfJokeVisible,
-      this.state.isQAVisible,
-      this.state.currentIndex,
+      isAnswerOfJokeVisible,
+      isQAVisible,
+      currentIndex,
     );
 
-    // console.log('this.state.isAnswerOfJokeVisible',this.state.isQAVisible,this.state.isAnswerOfJokeVisible)
-    if (!this.state.isQAVisible) {
+    if (!isQAVisible) {
       console.log('ddddddd===00');
-      // this.state.isAnswerOfJokeVisible = false;
-      // this.setState({ isQAVisible: true});
+      // Handle state updates or any other logic
     }
-    if (this.state.isAnswerOfJokeVisible && this.state.isQAVisible) {
+    if (this.state.tickCount === 1) {
       console.log('ddddddd===01');
-      //  this.setState({ isQAVisible: false  });
-      this.startAnswerCounter();
+      // Handle state updates or any other logic
+      this.startAnswerCounter(); // Assuming this is a method to handle some counter
     }
 
-    // this.setState({ isQAVisible: false});
-  }
+    // Updating states that are not directly dependent on previous state
+    this.setState({
+      isQAVisible: isQAVisible,
+      isAnswerOfJokeVisible: isAnswerOfJokeVisible,
+      swiperData: swiperData,
+    });
+  };
 
   startAnswerCounter() {
+    
     this._timer = setTimeout(
       function () {
-        this.hideAwnswer();
+        this.setState(
+          prevState => ({tickCount: 2}),
+          () => {
+            this.hideAwnswer();
+          },
+        )
       }.bind(this),
       10000,
     );
@@ -486,11 +512,16 @@ export default class HomeScreen extends BaseComponent {
   }; //MP
 
   hideAwnswer() {
+    console.log('8888888888888888888888888888888888')
     this.state.isAnswerOfJokeVisible = false;
     this.state.isQAVisible = false;
     this.state.swiperData[this.state.currentIndex] = this.renderSwiperView();
     this.createSwiperDataForWeek();
-    this.setState({isQAVisible: false, isAnswerOfJokeVisible: false});
+    this.setState({
+      isQAVisible: false,
+      isAnswerOfJokeVisible: false,
+      tickCount: 2,
+    });
   }
   renderSwiperView = (currentIndex = this.state.currentIndex) => {
     const date = Helper.dateFormater(
@@ -608,6 +639,12 @@ export default class HomeScreen extends BaseComponent {
                   </View>
                 ) : (
                   <View style={styles.shapeContainer}>
+                    {console.log(
+                      '----------------------------------',
+                      this.state.tickCount,
+                      this.state.isAnswerOfJokeVisible,
+                      this.state.isQAVisible,
+                    )}
                     {
                       // this.state.isQAVisible ? <View style={[styles.shapeView]}>
                       //   <Image source={Images.shapeRight} style={[styles.shapeRight, { tintColor: Colors.darkPink }]} />
@@ -617,7 +654,7 @@ export default class HomeScreen extends BaseComponent {
                       //     <Text style={styles.shapeText}>{this.state.isAnswerOfJokeVisible ? this.state.jokeData.answer : this.state.jokeData.question}</Text>
                       //   </TouchableOpacity>
                       // </View> : null
-                      this.state.isQAVisible ? (
+                      this.state.tickCount !== 3 ? (
                         <View style={[styles.shapeView]}>
                           <Image
                             source={Images.shapeRight}
@@ -626,13 +663,15 @@ export default class HomeScreen extends BaseComponent {
                               {tintColor: Colors.darkPink},
                             ]}
                           />
-                          <View style={styles.shapeJoke}>
-                            <Text style={styles.shapeText}>
-                              {this.state.isAnswerOfJokeVisible
-                                ? this.state.jokeData.answer
-                                : this.state.jokeData.question}
-                            </Text>
-                          </View>
+                          {this.state.tickCount == 2 ? null : (
+                            <View style={styles.shapeJoke}>
+                              <Text style={styles.shapeText}>
+                                {this.state.tickCount == 1
+                                  ? this.state.jokeData.answer
+                                  : this.state.jokeData.question}
+                              </Text>
+                            </View>
+                          )}
                         </View>
                       ) : null
                     }
@@ -775,7 +814,7 @@ export default class HomeScreen extends BaseComponent {
   }
 
   renderPage(pageIndex) {
-    console.log('this.state.arrFooterTasks',this.state.arrFooterTasks)
+    console.log('this.state.arrFooterTasks', this.state.arrFooterTasks);
     const itemsCount = this.state.arrFooterTasks[pageIndex].length;
     const item = [...new Array(itemsCount)].map((item, index) => {
       return this.renderFooterItem(pageIndex, index);
@@ -845,12 +884,12 @@ export default class HomeScreen extends BaseComponent {
         });
       }
     } else {
-      console.log('21111````',objTask);
+      console.log('21111````', objTask);
       this.setState({
         objFooterSelectedTask: objTask,
       });
       this.setState({objRestoreTask: objTask});
-      this.setModalVisible(true,`${objTask.time_from} - ${objTask.time_to}`)
+      this.setModalVisible(true, `${objTask.time_from} - ${objTask.time_to}`);
     }
     Helper.getChildRewardPoints(this.props.navigation);
   }
@@ -1129,7 +1168,7 @@ export default class HomeScreen extends BaseComponent {
     this.setState({currentIndex: index}, () => {
       // this,_timer_task = setTimeout(() => {
       this.getTaskList(index);
-      // }, 3000);
+      // }, 10000);
     });
   };
 

@@ -58,7 +58,7 @@ export default class ScheduleScreen extends BaseComponent {
 
   //#region -> Component Methods
   componentDidMount() {
-    console.log('~~~~~~~')
+    console.log('~~~~~~~');
     super.componentDidMount();
     const upComingDays = Helper.getUpcominSevenDays();
     this.setState({
@@ -68,8 +68,6 @@ export default class ScheduleScreen extends BaseComponent {
     this.getMenuAccessRole();
     this.getChildId();
   }
-
-  
 
   //#endregion
 
@@ -135,28 +133,28 @@ export default class ScheduleScreen extends BaseComponent {
         if (response.ok) {
           if (response.data.success) {
             const objIndex = this.state.selectedTaskSlot.findIndex(
-              obj => obj.id == objTask.id
+              obj => obj.id == objTask.id,
             );
-            this.state.selectedTaskSlot[objIndex].status = "";
-            this.state.selectedTaskSlot[objIndex].start_time = "";
+            this.state.selectedTaskSlot[objIndex].status = '';
+            this.state.selectedTaskSlot[objIndex].start_time = '';
             this.state.objRestoreTask = {};
             this.setState({
-              isLoading: false
+              isLoading: false,
             });
-            this.getChildId()
+            this.getChildId();
           } else {
             Helper.showErrorMessage(response.data.message);
           }
         } else {
           this.setState({
-            isLoading: false
+            isLoading: false,
           });
           Helper.showErrorMessage(response.problem);
         }
       })
       .catch(error => {
         this.setState({
-          isLoading: false
+          isLoading: false,
         });
         //console.log(error);
       });
@@ -236,9 +234,9 @@ export default class ScheduleScreen extends BaseComponent {
       });
   }
 
-  setModal(){
-    this.setState({showTaskList:false})
-    this.getChildId()
+  setModal() {
+    this.setState({showTaskList: false});
+    this.getChildId();
   }
 
   //#endregion
@@ -263,18 +261,21 @@ export default class ScheduleScreen extends BaseComponent {
         <View style={{flex: 1, flexDirection: 'row'}}>
           {/*MP*/}
           <Text style={styles.timer}>{item.time}</Text>
-          <Image
-            source={Images.bell}
-            style={{
-              width: Metrics.screenWidth / 16,
-              height: Metrics.screenWidth / 16,
-              resizeMode: 'contain',
-            }}
-          />
+          {item?.is_school_clock && (
+            <Image
+              source={Images.bell}
+              style={{
+                width: Metrics.screenWidth / 16,
+                height: Metrics.screenWidth / 16,
+                resizeMode: 'contain',
+              }}
+            />
+          )}
+
           <Text style={styles.timer}>{item.task_name}</Text>
-          {item.status == Constants.TASK_STATUS_COMPLETED  ? (
+          {item.status == Constants.TASK_STATUS_COMPLETED ? (
             <TouchableOpacity
-              style={[styles.taskRecover,{width:'30%'}]}
+              style={[styles.taskRecover, {width: '30%'}]}
               onPress={() => this.callRecoverTask(item)}>
               <Text style={styles.taskRecoverText}>
                 {'Recover'.toUpperCase()}
@@ -288,23 +289,28 @@ export default class ScheduleScreen extends BaseComponent {
             ? item.tasks.map((data, i) => {
                 return (
                   <TouchableOpacity
-                    style={{marginRight:12 }}
+                    style={{marginRight: 12}}
                     onPress={() => this.onPressTask(data)}>
                     {/* <Text style={styles.timer}>{data.time_from} {data.start_time_meridiem}-{data.time_to} {data.end_time_meridiem}</Text> */}
                     <Image
                       source={{uri: data.cate_image}}
-                      style={
-                        [data.status == Constants.TASK_STATUS_COMPLETED
+                      style={[
+                        data.status == Constants.TASK_STATUS_COMPLETED
                           ? styles.fadedIcon
-                          : styles.icon,{alignSelf:'center'}]
-                      }
+                          : styles.icon,
+                        {alignSelf: 'center'},
+                      ]}
                     />
-                    <Text style={[styles.timer, {color: Colors.snow,marginBottom:0,marginTop:8}]}>
+                    <Text
+                      style={[
+                        styles.timer,
+                        {color: Colors.snow, marginBottom: 0, marginTop: 8},
+                      ]}>
                       {data?.task_name}
                     </Text>
-                    {item.status == Constants.TASK_STATUS_COMPLETED  ? (
+                    {item.status == Constants.TASK_STATUS_COMPLETED ? (
                       <TouchableOpacity
-                        style={[styles.taskRecover,{width:'30%'}]}
+                        style={[styles.taskRecover, {width: '30%'}]}
                         onPress={() => this.callRecoverTask(item)}>
                         <Text style={styles.taskRecoverText}>
                           {'Recover'.toUpperCase()}

@@ -316,7 +316,7 @@ const createSecure = (baseURL = base_url) => {
     data.append('no_of_token', taskNumberOfTokens);
     data.append('task_date', taskDates);
     data.append('is_date',is_date)
-    data.append('is_school_clock',is_school_clock)
+    data.append('is_school_clock',is_school_clock.toString())
     if (frequency) {
       data.append('frequency', frequency);
     }

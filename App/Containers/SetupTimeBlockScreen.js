@@ -11,6 +11,7 @@ import {
   TouchableOpacity,
   View,
   Platform,
+  Alert,
 } from 'react-native';
 import ColorPalette from 'react-native-color-palette';
 import DatePicker from '@react-native-community/datetimepicker';
@@ -49,12 +50,11 @@ export default class SetupTimeBlockScreen extends BaseComponent {
         />
       </TouchableOpacity>
     ),
-    
   });
   //constructor
   constructor(props) {
     super(props);
-    
+
     this.state = {
       showDropdown: false,
       taskName: '',
@@ -87,13 +87,18 @@ export default class SetupTimeBlockScreen extends BaseComponent {
       arrSelectedTaskDates: [],
       daySelectionCalender: false,
       calenderSelectedDay: new Date(Date.now()),
-      is_date:1,
-      is_school_clock: this.props.navigation.getParam('is_school_clock')
+      is_date: 1,
+      is_school_clock: this.props.navigation.getParam('is_school_clock'),
     };
   }
 
   componentDidMount() {
-    console.log('NNNNNN',new Date(Date.now()),moment('2024-01-29T21:20:29.321Z').format('DD/MM/YYYY'),new Date('2024-01-29T21:20:29.321Z').getDate())
+    console.log(
+      'NNNNNN',
+      new Date(Date.now()),
+      moment('2024-01-29T21:20:29.321Z').format('DD/MM/YYYY'),
+      new Date('2024-01-29T21:20:29.321Z').getDate(),
+    );
     super.componentDidMount();
     this.getChildDetail();
     // Helper.checkChoosenTimeIsValidOrNot(this.state.fromTime, (aNewDay, isPastSelectedTime, todayIsSunday) => {
@@ -145,18 +150,18 @@ export default class SetupTimeBlockScreen extends BaseComponent {
   };
   //#region -> Class Methods
   moveToScheduleTask = () => {
-    console.log('dictCreateTask=====>!',this.state.is_school_clock);
+    console.log('dictCreateTask=====>!', this.state.is_school_clock);
     if (this.checkTimeValidation()) {
       Helper.showErrorMessage(Constants.MESSAGE_CREATE_TASK_TIME_VALIDATION);
-    }
-    else{
+    } else {
       const task_dates = this.state.arrSelectedDates
         ?.filter(data => data.selected)
         .map(datas => datas.date);
       console.log('===111===', task_dates, this.state.calenderSelectedDay);
       Keyboard.dismiss();
-      const formattedDate = moment(this.state.calenderSelectedDay)
-        .format('YYYY-MM-DD');
+      const formattedDate = moment(this.state.calenderSelectedDay).format(
+        'YYYY-MM-DD',
+      );
       const resultArray = [formattedDate];
       if (this.isValidate(task_dates)) {
         var dictCreateTask = {
@@ -169,9 +174,13 @@ export default class SetupTimeBlockScreen extends BaseComponent {
           taskColor: this.state.taskSelectedColor,
           task_date: task_dates?.length === 0 ? resultArray : task_dates,
           is_date: this.state.is_date,
-          is_school_clock:this.state.is_school_clock
+          is_school_clock: this.state.is_school_clock,
         };
-        console.log('dictCreateTask=====>!', dictCreateTask,this.state.fromTimeFormate);
+        console.log(
+          'dictCreateTask=====>!',
+          dictCreateTask,
+          this.state.fromTimeFormate,
+        );
         // this.props.navigation.navigate('ScheduleTaskScreen', { dictCreateTask: dictCreateTask })
         this.props.navigation.navigate('SelectTaskScreen', {
           dictCreateTask: dictCreateTask,
@@ -181,18 +190,19 @@ export default class SetupTimeBlockScreen extends BaseComponent {
   };
 
   checkTimeValidation = () => {
-    const [fromHours, fromMinutes, fromPeriod] = this.state.fromTime.split(/[:\s]/);
+    const [fromHours, fromMinutes, fromPeriod] =
+      this.state.fromTime.split(/[:\s]/);
     const [toHours, toMinutes, toPeriod] = this.state.toTime.split(/[:\s]/);
 
     let fromHour = parseInt(fromHours, 10);
     let toHour = parseInt(toHours, 10);
 
     // Adjust hours if it's PM
-    if (fromPeriod === "PM" && fromHour !== 12) {
+    if (fromPeriod === 'PM' && fromHour !== 12) {
       fromHour += 12;
     }
 
-    if (toPeriod === "PM" && toHour !== 12) {
+    if (toPeriod === 'PM' && toHour !== 12) {
       toHour += 12;
     }
 
@@ -203,12 +213,12 @@ export default class SetupTimeBlockScreen extends BaseComponent {
     const timeDifference = Math.abs(toTimeInMinutes - fromTimeInMinutes);
 
     // Check if the difference is not more than 24 hours or not less than 15 minutes
-    if (timeDifference <= (24 * 60) && timeDifference >= 15) {
-      return false
+    if (timeDifference <= 24 * 60 && timeDifference >= 15) {
+      return false;
     } else {
-      return true
+      return true;
     }
-  }
+  };
 
   setToggleColorPicker = () => {
     Keyboard.dismiss();
@@ -216,10 +226,7 @@ export default class SetupTimeBlockScreen extends BaseComponent {
   };
 
   isValidate = task_dates => {
-    if (
-      this.state.taskName == '' &&
-      this.state.selectedTask == '+CUSTOM'
-    ) {
+    if (this.state.taskName == '' && this.state.selectedTask == '+CUSTOM') {
       Helper.showErrorMessage(Constants.MESSAGE_NO_TASK_NAME);
       return false;
     } else if (this.state.fromTime.trim() == '') {
@@ -288,7 +295,7 @@ export default class SetupTimeBlockScreen extends BaseComponent {
     );
   }
   selectedDay = date => {
-    this.setState({is_date:0})
+    this.setState({is_date: 0});
     let temp = this.state.arrSelectedDates.map(obj => {
       if (date === obj.date) {
         return {...obj, selected: !obj.selected};
@@ -305,6 +312,27 @@ export default class SetupTimeBlockScreen extends BaseComponent {
   }
 
   onTimeSelected(event, value) {
+    if (this.state.is_school_clock) {
+      const selectedTime = new Date(value);
+      const minTime = new Date();
+      minTime.setHours(6, 0, 0, 0); // 6:00 AM
+
+      const maxTime = new Date();
+      maxTime.setHours(18, 0, 0, 0);
+      if (selectedTime < minTime) {
+        // If selected time is before the minimum time, set it to the minimum time
+        Alert.alert(
+          Constants.APP_NAME,
+          Constants.MESSAGE_SCHOOL_DAY_VALIDATION,
+        );
+      } else if (selectedTime > maxTime) {
+        // If selected time is after the maximum time, set it to the maximum time
+        Alert.alert(
+          Constants.APP_NAME,
+          Constants.MESSAGE_SCHOOL_DAY_VALIDATION,
+        );
+      }
+    }
     if (value instanceof Date) {
       // If value is already a Date object, use it directly
       this.setState({
@@ -348,6 +376,27 @@ export default class SetupTimeBlockScreen extends BaseComponent {
   }
 
   onToTimeSelected(event, value) {
+    if (this.state.is_school_clock) {
+      const selectedTime = new Date(value);
+      const minTime = new Date();
+      minTime.setHours(6, 0, 0, 0); // 6:00 AM
+
+      const maxTime = new Date();
+      maxTime.setHours(18, 0, 0, 0);
+      if (selectedTime < minTime) {
+        // If selected time is before the minimum time, set it to the minimum time
+        Alert.alert(
+          Constants.APP_NAME,
+          Constants.MESSAGE_SCHOOL_DAY_VALIDATION,
+        );
+      } else if (selectedTime > maxTime) {
+        // If selected time is after the maximum time, set it to the maximum time
+        Alert.alert(
+          Constants.APP_NAME,
+          Constants.MESSAGE_SCHOOL_DAY_VALIDATION,
+        );
+      }
+    }
     if (value instanceof Date) {
       // If value is already a Date object, use it directly
       this.setState({
@@ -448,7 +497,7 @@ export default class SetupTimeBlockScreen extends BaseComponent {
       selected: false,
     }));
     this.setState({arrSelectedDates: resetDates});
-    this.setState({is_date:1})
+    this.setState({is_date: 1});
   };
 
   //#region -> View Render
