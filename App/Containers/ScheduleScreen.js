@@ -253,7 +253,7 @@ export default class ScheduleScreen extends BaseComponent {
   }
 
   renderTaskRow = (item, index) => {
-    console.log('-------ITEM', item);
+    console.log('-------ITEM', item?.is_school_clock,typeof item?.is_school_clock);
     return (
       <TouchableOpacity
         style={[styles.ScheduleItem, {backgroundColor: item.tasks[0].color}]}
@@ -261,7 +261,7 @@ export default class ScheduleScreen extends BaseComponent {
         <View style={{flex: 1, flexDirection: 'row'}}>
           {/*MP*/}
           <Text style={styles.timer}>{item.time}</Text>
-          {item?.is_school_clock && (
+          {item?.tasks[0]?.is_school_clock == true ? (
             <Image
               source={Images.bell}
               style={{
@@ -270,7 +270,7 @@ export default class ScheduleScreen extends BaseComponent {
                 resizeMode: 'contain',
               }}
             />
-          )}
+          ) : null}
 
           <Text style={styles.timer}>{item.task_name}</Text>
           {item.status == Constants.TASK_STATUS_COMPLETED ? (

@@ -316,7 +316,7 @@ const createSecure = (baseURL = base_url) => {
     data.append('no_of_token', taskNumberOfTokens);
     data.append('task_date', taskDates);
     data.append('is_date',is_date)
-    data.append('is_school_clock',is_school_clock.toString())
+    data.append('is_school_clock',is_school_clock?.toString())
     if (frequency) {
       data.append('frequency', frequency);
     }
@@ -348,6 +348,24 @@ const createSecure = (baseURL = base_url) => {
 
     return api.post('/addtask', data);
   };
+
+  const checkTaskAvaibalilty = (
+    fromTime,
+    toTime,
+    task_date,
+    child_id
+  ) => {
+    const data = new FormData();
+    //Parms
+    data.append('child_id', child_id);
+    data.append('time_from', fromTime);
+    data.append('time_to', toTime);
+    data.append('task_date', task_date);
+
+    console.log('!!!!!DATA!!!!!DATA',data)
+
+    return api.post('/check_time_exist', data);
+  }
 
   const updateTask = (
     taskId,
@@ -523,6 +541,7 @@ const createSecure = (baseURL = base_url) => {
     doUpdateParentProfile,
     clearRewardNotification,
     addTask,
+    checkTaskAvaibalilty,
     updateTask,
     childTasksList,
     childRewardPoints,

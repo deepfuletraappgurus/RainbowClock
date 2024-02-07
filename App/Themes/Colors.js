@@ -43,6 +43,7 @@ const colors = {
   carrot:'#ff858b',
   darkCarrot:'#de5e66',
   black:'#000',
+  white: '#ffffff',
   
   titleColor:'#11113d',
   gray:'rgba(210,211,213, 1.0)'

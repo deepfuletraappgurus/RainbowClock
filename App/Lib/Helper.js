@@ -7,6 +7,7 @@ import Api from '../Services/Api';
 import * as Helper from './Helper';
 import {StackActions, NavigationActions} from 'react-navigation';
 import EventEmitter from './EventEmitter';
+import moment from 'moment';
 
 export async function storeItem(key, item) {
   try {
@@ -717,7 +718,7 @@ export function generateClockTaskArray(
     var endTime = Moment(task.tasks[0].time_to, 'hh:mm A');
     // var startTime = Moment(task.tasks[0].time_from, 'hh:mm A')
     console.log(
-      'times',
+      'times---------',
       startTime.format('hh:mm A'),
       endTime.format('hh:mm A'),
     );
@@ -748,11 +749,12 @@ export function generateClockTaskArray(
           endTime.format('hh:mm A'),
         );
       } else if (
-        valueToCompare == 'pm' &&
+        valueToCompare == 'am' &&
         task.tasks[0].start_time_meridiem == 'AM' &&
         task.tasks[0].end_time_meridiem == 'PM'
       ) {
-        duration = endTime.diff(Moment('12:00 PM', 'hh:mm A'), 'minutes');
+        duration = endTime.diff(Moment(task.tasks[0].time_from, 'hh:mm A'),
+        'minutes',);
         // duration = endTime.diff(Moment(task.tasks[0].time_from, 'hh:mm A'), 'minutes');
         console.log(
           'duration-AMPM',
@@ -762,14 +764,53 @@ export function generateClockTaskArray(
         );
       } else if (
         valueToCompare == 'pm' &&
+        task.tasks[0].start_time_meridiem == 'AM' &&
+        task.tasks[0].end_time_meridiem == 'PM'
+      ) {
+        if (moment(endTime, 'hh:mm A').hours() > 12) {
+          duration = endTime.diff(
+            Moment(task.tasks[0].time_from, 'hh:mm A'),
+            'minutes',
+          );
+        } else {
+          duration = endTime.diff(
+            Moment(Moment('06:00 PM', 'hh:mm A'), 'hh:mm A'),
+            'minutes',
+          );
+        }
+        duration = endTime.diff(Moment('12:00 PM', 'hh:mm A'), 'minutes');
+        // duration = endTime.diff(Moment(task.tasks[0].time_from, 'hh:mm A'), 'minutes');
+        console.log(
+          'duration-PMAM',
+          duration,
+          Moment(task.tasks[0].time_from, 'hh:mm A').format('hh:mm A'),
+          endTime.format('hh:mm A'),
+        );
+      } else if (
+        valueToCompare == 'pm' &&
         task.tasks[0].start_time_meridiem == 'PM' &&
         task.tasks[0].end_time_meridiem == 'PM'
       ) {
-        duration = endTime.diff(Moment('06:00 PM', 'hh:mm A'), 'minutes');
-        // duration = endTime.diff(
-        //   Moment(task.tasks[0].time_from, 'hh:mm A'),
-        //   'minutes',
-        // );
+        if (currentTimeSlot > 3) {
+          if (moment(startTime, 'hh:mm A').hours() > 18) {
+            duration = endTime.diff(
+              Moment(task.tasks[0].time_from, 'hh:mm A'),
+              'minutes',
+            );
+          } else {
+            duration = endTime.diff(
+              Moment(Moment('06:00 PM', 'hh:mm A'), 'hh:mm A'),
+              'minutes',
+            );
+          }
+        } else {
+          duration = endTime.diff(
+            Moment(task.tasks[0].time_from, 'hh:mm A'),
+            'minutes',
+          );
+        }
+        // duration = endTime.diff(Moment('06:00 PM', 'hh:mm A'), 'minutes');
+
         console.log(
           'duration-PMPM',
           duration,
@@ -833,10 +874,19 @@ export function generateClockTaskArray(
                       'hhmm',
                     ),
                   )
-              : currentTimeSlot > 3
-              ? parseInt(
-                  Moment(Moment('06:00 PM', 'hh:mm A'), 'hhmm').format('hhmm'),
-                )
+              : task.tasks[0].start_time_meridiem == 'PM' &&
+                task.tasks[0].end_time_meridiem == 'PM'
+              ? currentTimeSlot > 3
+                ? moment(startTime, 'hh:mm A').hours() > 18
+                  ? parseInt(
+                      Moment(task.tasks[0].time_from, 'hhmm').format('hhmm'),
+                    )
+                  : parseInt(
+                      Moment(Moment('06:00 AM', 'hh:mm A')).format('hhmm'),
+                    )
+                : parseInt(
+                    Moment(task.tasks[0].time_from, 'hhmm').format('hhmm'),
+                  )
               : parseInt(
                   Moment(task.tasks[0].time_from, 'hhmm').format('hhmm'),
                 ),

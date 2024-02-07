@@ -349,14 +349,14 @@ export default class ParentHomeScreen extends BaseComponent {
             data={
               this.state.school
                 ? pieData.map(obj => {
-                  if (obj.is_school_clock === "true") {
+                  if (obj.is_school_clock === true) {
                     return obj; // If is_school_clock is already 1, leave value unchanged
                   } else {
                     return { ...obj, svg: { ...obj.svg, fill: "#ffffff" } }; // Otherwise, update value to 0
                   }
                 })
                 : pieData.map(obj => {
-                  if (obj.is_school_clock !== "true") {
+                  if (obj.is_school_clock !== true) {
                     return obj; // If is_school_clock is already 1, leave value unchanged
                   } else {
                     return { ...obj, svg: { ...obj.svg, fill: "#ffffff" } }; // Otherwise, update value to 0
@@ -382,7 +382,7 @@ export default class ParentHomeScreen extends BaseComponent {
             style={styles.clockChartView}
             data={this.state.school
               ? pieDataTras.map(obj => {
-                if (obj.is_school_clock !== "true") {
+                if (obj.is_school_clock !== true) {
                   return { ...obj, value: 0 }; // If is_school_clock is already 1, leave value unchanged
                 } else {
                   return { ...obj, value: 0 }; // Otherwise, update value to 0
@@ -390,7 +390,7 @@ export default class ParentHomeScreen extends BaseComponent {
               })
               : pieDataTras.filter(
                   item =>
-                    item.is_school_clock !== "true",
+                    item.is_school_clock !== true,
                 )}
             outerRadius="100%"
             innerRadius="1%"

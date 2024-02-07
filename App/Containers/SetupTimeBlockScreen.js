@@ -12,6 +12,7 @@ import {
   View,
   Platform,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
 import ColorPalette from 'react-native-color-palette';
 import DatePicker from '@react-native-community/datetimepicker';
@@ -23,8 +24,13 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import moment from 'moment';
 // Styles
 import styles from './Styles/SetupTimeBlockScreenStyles';
+import Api from '../Services/Api';
+import Spinner from '../Components/Spinner';
+import colors from '../Themes/Colors';
 
 let days = [];
+
+const objSecureAPI = Api.createSecure();
 
 export default class SetupTimeBlockScreen extends BaseComponent {
   static navigationOptions = ({navigation}) => ({
@@ -150,9 +156,11 @@ export default class SetupTimeBlockScreen extends BaseComponent {
   };
   //#region -> Class Methods
   moveToScheduleTask = () => {
+    this.setState({isLoading: true});
     console.log('dictCreateTask=====>!', this.state.is_school_clock);
     if (this.checkTimeValidation()) {
       Helper.showErrorMessage(Constants.MESSAGE_CREATE_TASK_TIME_VALIDATION);
+      this.setState({isLoading: false});
     } else {
       const task_dates = this.state.arrSelectedDates
         ?.filter(data => data.selected)
@@ -176,17 +184,72 @@ export default class SetupTimeBlockScreen extends BaseComponent {
           is_date: this.state.is_date,
           is_school_clock: this.state.is_school_clock,
         };
+
+        const res = objSecureAPI
+          .checkTaskAvaibalilty(
+            this.state.fromTime,
+            this.state.toTime,
+            task_dates?.length === 0 ? resultArray.join() : task_dates.join(),
+            this.state.childData?.id,
+          )
+          .then(resJSON => {
+            console.log('✅✅✅---CHECKAVAIL', resJSON);
+            if (resJSON.ok && resJSON.status == 200) {
+              this.setState({isLoading: false});
+              if (resJSON.data.success) {
+                console.log('✅✅✅', JSON.stringify(resJSON.data.data[0]));
+                try {
+                  if (resJSON?.data?.show_popup) {
+                    Helper.showConfirmationMessageActions(
+                      resJSON.data.message,
+                      'No',
+                      'Yes',
+                      this.onActionNo,
+                      () => this.onActionYes(dictCreateTask),
+                    );
+                  }
+                  else{
+                    this.props.navigation.navigate('SelectTaskScreen', {
+                      dictCreateTask: dictCreateTask,
+                    });
+                  }
+                } catch (error) {
+                  console.log('AsyncStorage Error: ', error);
+                }
+              } else {
+                Helper.showErrorMessage(resJSON.data.message);
+              }
+            } else if (resJSON.status == 500) {
+              this.setState({isLoading: false});
+              Helper.showErrorMessage(resJSON.data.message);
+            } else {
+              this.setState({isLoading: false});
+              Helper.showErrorMessage(Constants.SERVER_ERROR);
+            }
+          });
+
         console.log(
           'dictCreateTask=====>!',
           dictCreateTask,
           this.state.fromTimeFormate,
         );
         // this.props.navigation.navigate('ScheduleTaskScreen', { dictCreateTask: dictCreateTask })
-        this.props.navigation.navigate('SelectTaskScreen', {
-          dictCreateTask: dictCreateTask,
-        });
+      } else {
+        this.setState({isLoading: false});
       }
     }
+  };
+
+  onActionYes = dictCreateTask => {
+    console.log('yes');
+    this.setState({isLoading: false});
+    this.props.navigation.navigate('SelectTaskScreen', {
+      dictCreateTask: dictCreateTask,
+    });
+  };
+  onActionNo = () => {
+    console.log('No');
+    this.setState({isLoading: false});
   };
 
   checkTimeValidation = () => {
@@ -219,6 +282,8 @@ export default class SetupTimeBlockScreen extends BaseComponent {
       return true;
     }
   };
+
+  checkTimeAvailability = () => {};
 
   setToggleColorPicker = () => {
     Keyboard.dismiss();
@@ -550,10 +615,24 @@ export default class SetupTimeBlockScreen extends BaseComponent {
                     <TouchableOpacity
                       style={styles.nextButton}
                       onPress={() => this.moveToScheduleTask()}>
-                      <Image
-                        source={Images.circleArrowRight}
-                        style={styles.circleArrow}
-                      />
+                      {this.state.isLoading ? (
+                        <View
+                          style={{
+                            backgroundColor: colors.yellow,
+                            borderRadius: 55,
+                            width: 55,
+                            height: 55,
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                          }}>
+                          <ActivityIndicator color={colors.white} size={30} style={{zIndex:1000}}/>
+                        </View>
+                      ) : (
+                        <Image
+                          source={Images.circleArrowRight}
+                          style={styles.circleArrow}
+                        />
+                      )}
                     </TouchableOpacity>
                   </View>
                   <View style={[styles.form, {flexGrow: 1}]}>
