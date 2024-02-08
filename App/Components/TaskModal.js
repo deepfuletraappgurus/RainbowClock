@@ -38,7 +38,12 @@ export default class TaskModal extends BaseComponent {
       loading: false,
       currentTaskRemainTime: 0,
       playing: false,
-      buttonText: this.props.objFooterSelectedTask.start_time ? 'START TIME' : 'PAUSE TIME',
+      buttonText:
+        this.props.objFooterSelectedTask.task_time == null
+          ? 'START TIME'
+          : this.props.objFooterSelectedTask.start_time
+          ? 'START TIME'
+          : 'PAUSE TIME',
       counterVisible: false,
       reward: '',
       task_id: this.props.objFooterSelectedTask?.id,
@@ -52,10 +57,18 @@ export default class TaskModal extends BaseComponent {
       objFooterSelectedTask: props.objFooterSelectedTask,
       objSelectedChild: props.objSelectedChild,
       task_id: props.objFooterSelectedTask.id,
-      is_new:props.objFooterSelectedTask.is_new,
-      buttonText:props.objFooterSelectedTask.start_time ? "START TIME" : "PAUSE TIME"
+      is_new: props.objFooterSelectedTask.is_new,
+      buttonText:
+        props.objFooterSelectedTask.task_time == null
+          ? 'START TIME'
+          : props.objFooterSelectedTask.start_time
+          ? 'START TIME'
+          : 'PAUSE TIME',
     });
-    console.log('props.objFooterSelectedTask-----',props.objFooterSelectedTask)
+    console.log(
+      'props.objFooterSelectedTask-----',
+      props.objFooterSelectedTask,
+    );
   }
   componentWillUnmount() {
     clearInterval(this._timer);
@@ -74,7 +87,7 @@ export default class TaskModal extends BaseComponent {
       this?.props?.closeParentModal();
     }
     if (this?.props?.onClose instanceof Function) {
-      this?.props?.onClose()
+      this?.props?.onClose();
     }
     this.props.onStateChange(visible);
   };
@@ -134,7 +147,9 @@ export default class TaskModal extends BaseComponent {
       );
       Helper.showConfirmationMessageSingleAction(
         'Super Job!! \n You have completed this task.\n Congratulations you have earned ' +
-          this.state.objFooterSelectedTask.no_of_token + ' ' + this.state.objFooterSelectedTask.token_type +
+          this.state.objFooterSelectedTask.no_of_token +
+          ' ' +
+          this.state.objFooterSelectedTask.token_type +
           ' token',
         'OK',
         this.onActionOK,
@@ -151,7 +166,7 @@ export default class TaskModal extends BaseComponent {
     clearInterval(this._timer);
     this.setState({visible: false});
     // this?.props?.closeParentModal();
-    this.setModal(false)
+    this.setModal(false);
     this.props.onStateChange(false);
   };
 
@@ -176,13 +191,16 @@ export default class TaskModal extends BaseComponent {
           this.state.is_new,
         )
         .then(response => {
-          console.log('TASK STATUS UPDATED ✅✅✅', response.data.data[0]["updated_task"]["id"]);
+          console.log(
+            'TASK STATUS UPDATED ✅✅✅',
+            response.data.data[0]['updated_task']['id'],
+          );
           if (response.ok) {
             if (response.data.success) {
               this.setState({
-                task_id:response.data.data[0]["updated_task"]["id"],
-                is_new:response.data.data[0]["updated_task"]["is_new"]
-              })
+                task_id: response.data.data[0]['updated_task']['id'],
+                is_new: response.data.data[0]['updated_task']['is_new'],
+              });
               this.setState({playing: true});
               if (taskStatus == Constants.TASK_STATUS_COMPLETED) {
                 this.state.objFooterSelectedTask.status =
@@ -322,7 +340,8 @@ export default class TaskModal extends BaseComponent {
                       })
                     : null}
 
-                  {this.state.objFooterSelectedTask.start_time && this.state.objFooterSelectedTask.task_time ? (
+                  {this.state.objFooterSelectedTask.start_time &&
+                  this.state.objFooterSelectedTask.task_time ? (
                     <View
                       style={{justifyContent: 'center', alignItems: 'center'}}>
                       {this.renderMiniClockView()}

@@ -325,13 +325,15 @@ export default class ParentHomeScreen extends BaseComponent {
       this.state.clockFormateImage = images.pm_am;
     }
 
-    console.log('PIEDATA', this.state.school
-    ? pieData.filter(item => item.is_school_clock === 1)
-    : pieData.filter(
-        item =>
-          item.is_school_clock !== 1 &&
-          item.is_school_clock !== undefined,
-      ));
+    console.log(
+      'PIEDATA',
+      this.state.school
+        ? pieData.filter(item => item.is_school_clock === 1)
+        : pieData.filter(
+            item =>
+              item.is_school_clock !== 1 && item.is_school_clock !== undefined,
+          ),
+    );
     return (
       <TouchableOpacity
         style={styles.clock}
@@ -347,21 +349,23 @@ export default class ParentHomeScreen extends BaseComponent {
           <PieChart
             style={styles.clockChartView}
             data={
-              this.state.school
+              this.state.is_24HrsClock
+                ? pieData
+                : this.state.school
                 ? pieData.map(obj => {
-                  if (obj.is_school_clock === true) {
-                    return obj; // If is_school_clock is already 1, leave value unchanged
-                  } else {
-                    return { ...obj, svg: { ...obj.svg, fill: "#ffffff" } }; // Otherwise, update value to 0
-                  }
-                })
+                    if (obj.is_school_clock === true) {
+                      return obj; // If is_school_clock is already 1, leave value unchanged
+                    } else {
+                      return {...obj, svg: {...obj.svg, fill: '#ffffff'}}; // Otherwise, update value to 0
+                    }
+                  })
                 : pieData.map(obj => {
-                  if (obj.is_school_clock !== true) {
-                    return obj; // If is_school_clock is already 1, leave value unchanged
-                  } else {
-                    return { ...obj, svg: { ...obj.svg, fill: "#ffffff" } }; // Otherwise, update value to 0
-                  }
-                })
+                    if (obj.is_school_clock !== true) {
+                      return obj; // If is_school_clock is already 1, leave value unchanged
+                    } else {
+                      return {...obj, svg: {...obj.svg, fill: '#ffffff'}}; // Otherwise, update value to 0
+                    }
+                  })
             }
             innerRadius={0}
             outerRadius={0}
@@ -380,18 +384,19 @@ export default class ParentHomeScreen extends BaseComponent {
 
           <PieChart
             style={styles.clockChartView}
-            data={this.state.school
-              ? pieDataTras.map(obj => {
-                if (obj.is_school_clock !== true) {
-                  return { ...obj, value: 0 }; // If is_school_clock is already 1, leave value unchanged
-                } else {
-                  return { ...obj, value: 0 }; // Otherwise, update value to 0
-                }
-              })
-              : pieDataTras.filter(
-                  item =>
-                    item.is_school_clock !== true,
-                )}
+            data={
+              this.state.is_24HrsClock
+                ? pieDataTras
+                : this.state.school
+                ? pieDataTras.map(obj => {
+                    if (obj.is_school_clock !== true) {
+                      return {...obj, value: 0}; // If is_school_clock is already 1, leave value unchanged
+                    } else {
+                      return {...obj, value: 0}; // Otherwise, update value to 0
+                    }
+                  })
+                : pieDataTras.filter(item => item.is_school_clock !== true)
+            }
             outerRadius="100%"
             innerRadius="1%"
             padAngle={0}

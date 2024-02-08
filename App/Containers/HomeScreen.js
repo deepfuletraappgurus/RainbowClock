@@ -166,20 +166,6 @@ export default class HomeScreen extends BaseComponent {
     // currentTime > 12 PM && currentTime <= 6 PM
     // currentTime > 6 PM && currentTime <= 12 AM
     console.log('HOUR== ' + hour + ' TIMETYPE== ' + TimeType);
-    if (this.state.school) {
-      this.state.clockFormateImage = images.am_pm;
-    } else if (hour >= 0 && hour < 6) {
-      this.state.clockFormateImage = images.am;
-    }
-    if (hour >= 6 && hour < 12) {
-      this.state.clockFormateImage = images.am_pm;
-    }
-    if (hour >= 12 && hour < 18) {
-      this.state.clockFormateImage = images.pm;
-    }
-    if (hour >= 18 && hour < 24) {
-      this.state.clockFormateImage = images.pm_am;
-    }
     this.getJokeOfTheDay(this.state.currentIndex);
 
     //this.getJokeOfTheDay(this.state.currentIndex)
@@ -289,28 +275,22 @@ export default class HomeScreen extends BaseComponent {
   };
 
   setWatchData(currentIndex) {
-    console.log(']]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]',currentIndex)
+    console.log(']]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]', currentIndex);
     var pieData = '';
     stateData = this.state.dicPieData[this.state.selectedDay];
     if (!stateData) {
       pieData = [];
     }
     if (this.state.is_24HrsClock) {
-      pieData = this.state.school
-        ? stateData?.pieData24Hour_School
-        : stateData?.pieData24Hour;
+      pieData =  stateData?.pieData24Hour;
     }
     if (this.state.meridiam == 'AM') {
       //MP
-      pieData = this.state.school
-        ? stateData?.pieDataAM_School
-        : stateData?.pieDataAM;
+      pieData =  stateData?.pieDataAM;
     }
     if (this.state.meridiam == 'PM') {
       //MP
-      pieData = this.state.school
-        ? stateData?.pieDataPM_School
-        : stateData?.pieDataPM;
+      pieData = stateData?.pieDataPM;
     }
     // console.log('stateData.pieDataPM', pieData);
     // console.log('setWatchData', pieData, this.state.meridiam);
@@ -494,7 +474,6 @@ export default class HomeScreen extends BaseComponent {
   };
 
   startAnswerCounter() {
-    
     this._timer = setTimeout(
       function () {
         this.setState(
@@ -502,7 +481,7 @@ export default class HomeScreen extends BaseComponent {
           () => {
             this.hideAwnswer();
           },
-        )
+        );
       }.bind(this),
       10000,
     );
@@ -512,7 +491,7 @@ export default class HomeScreen extends BaseComponent {
   }; //MP
 
   hideAwnswer() {
-    console.log('8888888888888888888888888888888888')
+    console.log('8888888888888888888888888888888888');
     this.state.isAnswerOfJokeVisible = false;
     this.state.isQAVisible = false;
     this.state.swiperData[this.state.currentIndex] = this.renderSwiperView();
@@ -705,60 +684,63 @@ export default class HomeScreen extends BaseComponent {
 
   renderClockView() {
     data = this.state.pieData;
+    date = new Date();
+
+    // Getting current hour from Date object.
+    hour = date.getHours();
+
+    // Checking if the Hour is less than equals to 11 then Set the Time format as AM.
+    if (hour <= 11) {
+      TimeType = 'AM';
+    } else {
+      // If the Hour is Not less than equals to 11 then Set the Time format as PM.
+      TimeType = 'PM';
+    }
     //console.log("data",data);
 
     const clearColor = Colors.clear;
-    const pieData = data?.map(({value, isEmpty, color}, index) => ({
-      value,
-      svg: {
-        fill: isEmpty && !color ? clearColor : color,
-        onPress: () => console.log('press', index),
-      },
-      key: `pie-${index}`,
-      index: index,
-    }));
-    console.log('pieData', pieData);
-
-    const pieDataTrans = data?.map(({taskId, value, isEmpty}, index) => ({
-      value,
-      svg: {
-        fill: clearColor,
-        onPress: () =>
-          isEmpty
-            ? console.log('PRESS ✅', data)
-            : this.setModalVisible(true, taskId),
-      },
-      key: `pie-${index}`,
-      index: index,
-    }));
-
-    //console.log("pieDataTrans", pieDataTrans);
-
-    // const clockFormateImage = this.state.is_24HrsClock
-    //   ? Images.clockFaceDigit24HRS
-    //   : Images.clockFaceDigit;
-    // const clockFormateImage = this.state.is_24HrsClock
-    //   ? Images.am
-    //   : Images.pm;
-    // const data1 = [50, 40]
-    // 10, 40, 95, -4, -24, 85, 91, 35, 53, -53, 24, 50, -20, -80]
-
-    const randomColor = () =>
-      ('#' + ((Math.random() * 0xffffff) << 0).toString(16) + '000000').slice(
-        0,
-        7,
-      );
-
-    const pieData1 = data
-      .filter(value => value > 0)
-      .map((value, index) => ({
+    const pieData = data?.map(
+      ({value, isEmpty, color, is_school_clock}, index) => ({
         value,
         svg: {
-          fill: randomColor(),
+          fill: isEmpty && !color ? clearColor : color,
           onPress: () => console.log('press', index),
         },
         key: `pie-${index}`,
-      }));
+        index: index,
+        is_school_clock: is_school_clock,
+      }),
+    );
+    console.log('pieData', pieData);
+
+    const pieDataTrans = data?.map(
+      ({taskId, value, isEmpty, is_school_clock}, index) => ({
+        value,
+        svg: {
+          fill: clearColor,
+          onPress: () =>
+            isEmpty
+              ? console.log('PRESS ✅', data)
+              : this.setModalVisible(true, taskId),
+        },
+        key: `pie-${index}`,
+        index: index,
+        is_school_clock: is_school_clock,
+      }),
+    );
+    if (this.state.is_24HrsClock) {
+      this.state.clockFormateImage = Images.clockFaceDigit24HRS;
+    } else if (this.state.school) {
+      this.state.clockFormateImage = images.am_pm;
+    } else if (hour >= 0 && hour < 6) {
+      this.state.clockFormateImage = images.am;
+    } else if (hour >= 6 && hour < 12) {
+      this.state.clockFormateImage = images.am_pm;
+    } else if (hour >= 12 && hour < 18) {
+      this.state.clockFormateImage = images.pm;
+    } else if (hour >= 18 && hour < 24) {
+      this.state.clockFormateImage = images.pm_am;
+    }
 
     return (
       <TouchableOpacity
@@ -774,11 +756,28 @@ export default class HomeScreen extends BaseComponent {
         <View style={styles.clockTimerView}>
           <PieChart
             style={styles.clockChartView}
-            data={pieData}
+            data={
+              this.state.school
+                ? pieData.map(obj => {
+                    if (obj.is_school_clock === true) {
+                      return obj; // If is_school_clock is already 1, leave value unchanged
+                    } else {
+                      return {...obj, svg: {...obj.svg, fill: '#ffffff'}}; // Otherwise, update value to 0
+                    }
+                  })
+                : pieData.map(obj => {
+                    if (obj.is_school_clock !== true) {
+                      return obj; // If is_school_clock is already 1, leave value unchanged
+                    } else {
+                      return {...obj, svg: {...obj.svg, fill: '#ffffff'}}; // Otherwise, update value to 0
+                    }
+                  })
+            }
             innerRadius={0}
             outerRadius={0}
             padAngle={0}
             sort={(a, b) => {
+              console.log('test', a.index, b.index + 1);
               return a.index > b.index;
             }}
           />
@@ -792,7 +791,17 @@ export default class HomeScreen extends BaseComponent {
 
           <PieChart
             style={styles.clockChartView}
-            data={pieDataTrans}
+            data={
+              this.state.school
+                ? pieDataTrans.map(obj => {
+                    if (obj.is_school_clock !== true) {
+                      return {...obj, value: 0}; // If is_school_clock is already 1, leave value unchanged
+                    } else {
+                      return {...obj, value: 0}; // Otherwise, update value to 0
+                    }
+                  })
+                : pieDataTrans.filter(item => item.is_school_clock !== true)
+            }
             outerRadius="100%"
             innerRadius="1%"
             padAngle={0}
@@ -980,7 +989,14 @@ export default class HomeScreen extends BaseComponent {
                 this.state.arrTasks,
                 schoolHoursFrom,
                 schoolHoursTo,
-                (arrAM, arrPM, runningTimeSlot, arrAM_School, arrPM_School) =>
+                (
+                  arrAM,
+                  arrPM,
+                  runningTimeSlot,
+                  arrAM_School,
+                  arrPM_School,
+                  is_school_clock,
+                ) =>
                   setTimeout(() => {
                     this.setupTaskData(
                       arrAM,
@@ -992,6 +1008,7 @@ export default class HomeScreen extends BaseComponent {
                       schoolHoursFromMeradian,
                       schoolHoursToMeradian,
                       index,
+                      is_school_clock,
                     );
                   }, 200),
               );
@@ -1024,6 +1041,7 @@ export default class HomeScreen extends BaseComponent {
     schoolHoursFromMeradian,
     schoolHoursToMeradian,
     currentIndex,
+    is_school_clock,
   ) {
     {
       console.log('arrPM', JSON.stringify(arrPM));
@@ -1033,14 +1051,14 @@ export default class HomeScreen extends BaseComponent {
       const pieDataAM = Helper.generateClockTaskArray(
         arrAM,
         'am',
-        todaysSchoolHours,
+        is_school_clock,
       );
       const pieDataPM = Helper.generateClockTaskArray(
         arrPM,
         'pm',
-        todaysSchoolHours,
+        is_school_clock,
       );
-      console.log('A', pieDataAM, pieDataPM);
+      console.log('A', pieDataAM, pieDataPM,is_school_clock);
       // const pieDataAM_School = Helper.generateClockTaskArray(arrAM_School,"am",true);
       // const pieDataPM_School = Helper.generateClockTaskArray(arrPM_School,"pm",true);
       var pieDataAM_School = [];
@@ -1207,7 +1225,9 @@ export default class HomeScreen extends BaseComponent {
     // currentTime > 12 PM && currentTime <= 6 PM
     // currentTime > 6 PM && currentTime <= 12 AM
     console.log('HOUR== ' + hour + ' TIMETYPE== ' + TimeType);
-    if (hour >= 0 && hour < 6) {
+    if (this.state.school) {
+      this.state.clockFormateImage = images.am_pm;
+    } else if (hour >= 0 && hour < 6) {
       this.state.clockFormateImage = images.am;
     }
     if (hour >= 6 && hour < 12) {

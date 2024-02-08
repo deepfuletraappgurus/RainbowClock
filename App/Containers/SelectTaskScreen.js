@@ -450,7 +450,7 @@ export default class SelectTaskScreen extends BaseComponent {
     }
 
     const aModelVisible =
-      item && !this.state.arrSelectedTasksSubCatIds.includes(item.id)
+      item
         ? !this.state.selectTaskModel
         : false;
     this.setState({selectTaskModel: aModelVisible, showDropdown: false});
