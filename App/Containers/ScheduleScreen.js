@@ -342,9 +342,7 @@ export default class ScheduleScreen extends BaseComponent {
                 </View>
               ) : this.state.arrTasks.length > 0 && !this.state.isLoading ? (
                 <FlatList
-                  data={this.state.arrTasks.sort((a, b) =>
-                    a.time.localeCompare(b.time),
-                  )}
+                  data={this.state.arrTasks}
                   extraData={this.state}
                   keyExtractor={(item, index) => index + ''}
                   renderItem={({item, index}) =>
