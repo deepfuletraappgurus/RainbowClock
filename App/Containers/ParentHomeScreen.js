@@ -221,7 +221,108 @@ export default class ParentHomeScreen extends BaseComponent {
         ? this.state.pieData24Hour_School
         : this.state.pieData24Hour;
     } else if (this.state.meridiam == 'am') {
-      pieData = this.state.pieDataAM;
+      var date, hour;
+
+      date = new Date();
+
+      hour = date.getHours();
+      if (hour >= 6) {
+        const filteredData = [];
+        let isBefore6PM = true;
+
+        for (const item of this.state?.pieDataPM.sort((a, b) => {
+          if (a.startTimeMeridiem === 'AM' && b.startTimeMeridiem === 'PM') {
+            return -1;
+          } else if (
+            a.startTimeMeridiem === 'PM' &&
+            b.startTimeMeridiem === 'AM'
+          ) {
+            return 1;
+          } else {
+            return 0;
+          }
+        })) {
+          if (item.taskId) {
+            const startTime = item.taskId.split(' - ')[0]; // Extract start time
+            const startTimeHours = parseInt(startTime.split(':')[0]); // Extract hours portion
+            const startTimeMeridiem = startTime.split(' ')[1]; // Extract meridiem portion
+
+            if (startTimeMeridiem == 'PM' && startTimeHours >= 6) {
+              break; // Stop adding items if a task after 6 PM is encountered
+            }
+          }
+
+          filteredData.push(item); // Include the current item
+        }
+
+        console.log('--------!!', filteredData, this.state?.pieDataPM);
+
+        const sixPMMinutes = 18 * 60;
+
+        // Iterate over tasks
+        filteredData.forEach(task => {
+          // Extract end time in minutes
+          const endTime = parseInt(
+            task?.taskId?.split(' - ')[1]?.split(' ')[0],
+          );
+          const endTimeMeridiem = task?.endTimeMeridiem === 'PM' ? 12 : 0;
+          const endTimeMinutes = ((endTime % 12) + endTimeMeridiem) * 60;
+
+          // If end time is greater than 6:00 PM
+          if (endTimeMinutes > sixPMMinutes) {
+            // Calculate difference in minutes
+            const difference = endTimeMinutes - sixPMMinutes;
+            // Reduce value property by difference
+            task.value -= difference;
+          }
+        });
+        console.log('**************', filteredData);
+        let lastIndex = -1;
+        for (let i = filteredData.length - 1; i >= 0; i--) {
+          if (filteredData[i].isEmpty) {
+            lastIndex = i;
+            break;
+          }
+        }
+
+        // Remove last object with isEmpty true
+        if (lastIndex !== -1) {
+          filteredData.splice(lastIndex, 1);
+        }
+
+        console.log(
+          '======1111111111111---------------11',
+          filteredData,
+          this.state?.pieDataPM,
+        );
+
+        x = this.state?.pieDataAM.filter(obj => !obj.is_school_clock);
+
+        function timeDifferenceInMinutes(startTime, baseTime) {
+          const start = new Date(`2024-01-01 ${startTime}`);
+          const base = new Date(`2024-01-01 ${baseTime}`);
+          return (start - base) / (1000 * 60); // Difference in minutes
+        }
+
+        // Find the object with taskId containing 'AM -'
+        const targetObject = x.find(
+          obj => obj.taskId && obj.taskId.includes('AM -'),
+        );
+
+        // Extract the start time from the taskId
+        const startTime = targetObject.taskId.split(' ')[0];
+
+        // Calculate the time difference between startTime and 6:00 AM
+        const timeDifference = timeDifferenceInMinutes(startTime, '06:00');
+
+        // Update the value property of the first object in the x
+        if (x.length > 0) {
+          x[0].value = timeDifference;
+        }
+        pieData = filteredData.concat(x);
+      } else {
+        pieData = this.state?.pieDataAM;
+      }
     } else {
       pieData = this.state.pieDataPM;
     }
