@@ -737,10 +737,17 @@ export function generateClockTaskArray(
       // console.log("duration1", duration);
     } else {
       if (valueToCompare == 'am' && task.tasks[0].end_time_meridiem == 'AM') {
-        duration = endTime.diff(
-          Moment(task.tasks[0].time_from, 'hh:mm A'),
-          'minutes',
-        );
+        if (currentTimeSlot == 2) {
+          duration = endTime.diff(
+            Moment(Moment('06:00 AM', 'hh:mm A'), 'hh:mm A'),
+            'minutes',
+          );
+        } else {
+          duration = endTime.diff(
+            Moment(task.tasks[0].time_from, 'hh:mm A'),
+            'minutes',
+          );
+        }
         // duration = endTime.diff(Moment('12:00 AM', 'hh:mm A'), 'minutes');
         console.log(
           'duration-AMAM',
@@ -753,8 +760,10 @@ export function generateClockTaskArray(
         task.tasks[0].start_time_meridiem == 'AM' &&
         task.tasks[0].end_time_meridiem == 'PM'
       ) {
-        duration = endTime.diff(Moment(task.tasks[0].time_from, 'hh:mm A'),
-        'minutes',);
+        duration = endTime.diff(
+          Moment(task.tasks[0].time_from, 'hh:mm A'),
+          'minutes',
+        );
         // duration = endTime.diff(Moment(task.tasks[0].time_from, 'hh:mm A'), 'minutes');
         console.log(
           'duration-AMPM',
@@ -887,6 +896,15 @@ export function generateClockTaskArray(
                 : parseInt(
                     Moment(task.tasks[0].time_from, 'hhmm').format('hhmm'),
                   )
+              : task.tasks[0].start_time_meridiem == 'AM' &&
+                task.tasks[0].end_time_meridiem == 'AM'
+              ? currentTimeSlot == 2
+                ? parseInt(
+                  Moment(Moment('06:00 AM', 'hh:mm A')).format('hhmm'),
+                )
+                : parseInt(
+                  Moment(task.tasks[0].time_from, 'hhmm').format('hhmm'),
+                )
               : parseInt(
                   Moment(task.tasks[0].time_from, 'hhmm').format('hhmm'),
                 ),
