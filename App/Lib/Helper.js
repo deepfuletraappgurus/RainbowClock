@@ -738,10 +738,21 @@ export function generateClockTaskArray(
     } else {
       if (valueToCompare == 'am' && task.tasks[0].end_time_meridiem == 'AM') {
         if (currentTimeSlot == 2) {
-          duration = endTime.diff(
-            Moment(Moment('06:00 AM', 'hh:mm A'), 'hh:mm A'),
-            'minutes',
-          );
+          if (
+            startTime.isBefore(
+              moment().set({hour: 6, minute: 0, second: 0, millisecond: 0}),
+            )
+          ) {
+            duration = endTime.diff(
+              Moment(Moment('06:00 AM', 'hh:mm A'), 'hh:mm A'),
+              'minutes',
+            );
+          } else {
+            duration = endTime.diff(
+              Moment(task.tasks[0].time_from, 'hh:mm A'),
+              'minutes',
+            );
+          }
         } else {
           duration = endTime.diff(
             Moment(task.tasks[0].time_from, 'hh:mm A'),
@@ -899,12 +910,23 @@ export function generateClockTaskArray(
               : task.tasks[0].start_time_meridiem == 'AM' &&
                 task.tasks[0].end_time_meridiem == 'AM'
               ? currentTimeSlot == 2
-                ? parseInt(
-                  Moment(Moment('06:00 AM', 'hh:mm A')).format('hhmm'),
-                )
+                ? startTime.isBefore(
+                    moment().set({
+                      hour: 6,
+                      minute: 0,
+                      second: 0,
+                      millisecond: 0,
+                    }),
+                  )
+                  ? parseInt(
+                      Moment(Moment('06:00 AM', 'hh:mm A')).format('hhmm'),
+                    )
+                  : parseInt(
+                      Moment(task.tasks[0].time_from, 'hhmm').format('hhmm'),
+                    )
                 : parseInt(
-                  Moment(task.tasks[0].time_from, 'hhmm').format('hhmm'),
-                )
+                    Moment(task.tasks[0].time_from, 'hhmm').format('hhmm'),
+                  )
               : parseInt(
                   Moment(task.tasks[0].time_from, 'hhmm').format('hhmm'),
                 ),

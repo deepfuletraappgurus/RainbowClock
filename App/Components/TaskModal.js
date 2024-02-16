@@ -147,10 +147,15 @@ export default class TaskModal extends BaseComponent {
       );
       Helper.showConfirmationMessageSingleAction(
         'Super Job!! \n You have completed this task.\n Congratulations you have earned ' +
-          this.state.objFooterSelectedTask.no_of_token +
-          ' ' +
-          this.state.objFooterSelectedTask.token_type +
-          ' token',
+          ((this.state.objFooterSelectedTask.no_of_token ==
+          null || this.state.objFooterSelectedTask.no_of_token == undefined
+          ? 0
+          : this.state.objFooterSelectedTask.no_of_token) +
+              ' ' +
+              (this.state.objFooterSelectedTask.token_type ==
+              null || this.state.objFooterSelectedTask.token_type == undefined
+          ? ''
+          : this.state.objFooterSelectedTask.token_type) + ' token'),
         'OK',
         this.onActionOK,
       );

@@ -536,7 +536,7 @@ export default class ParentHomeScreen extends BaseComponent {
       this.state.isLoading = false;
       const pieDataAM = Helper.generateClockTaskArray(
         arrAM,
-        'am--',
+        'am',
         is_school_clock,
       );
       const pieDataPM = Helper.generateClockTaskArray(
