@@ -615,13 +615,12 @@ export function getTimeSlot(hour, timeMeridiem) {
 export function generateClockTaskArray(
   arrTask,
   valueToCompare,
-  todaysSchoolHours,
   isSchool,
+  currentTimeSlot
 ) {
-  console.log('cheking data', arrTask, valueToCompare, todaysSchoolHours);
+  console.log('cheking data', arrTask, valueToCompare,isSchool,currentTimeSlot);
   const school = {FROM: '00:00 AM', TO: '00:00 AM'};
-  todaysSchoolHours =
-    todaysSchoolHours == undefined ? school : todaysSchoolHours;
+  todaysSchoolHours = school;
   var remender = 720;
   if (!arrTask || arrTask.length == 0) {
     const dicValue = {
@@ -646,7 +645,9 @@ export function generateClockTaskArray(
     // If the Hour is Not less than equals to 11 then Set the Time format as PM.
     TimeType = 'PM';
   }
-  var currentTimeSlot = getTimeSlot(hour, TimeType).toString();
+  if (currentTimeSlot == undefined) {
+     currentTimeSlot = getTimeSlot(hour, TimeType).toString();
+  }
 
   arrTask.forEach(baseTask => {
     var task;
