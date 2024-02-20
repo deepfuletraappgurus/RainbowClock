@@ -79,7 +79,7 @@ export default class ParentHomeScreen extends BaseComponent {
       isRewardClaimed: false,
       tipsVisible: null,
       pauseUserInteraction: true,
-      pieDataAMPM : []
+      pieDataAMPM: [],
     };
 
     this.handleNextTips = this.handleNextTips.bind(this);
@@ -222,83 +222,95 @@ export default class ParentHomeScreen extends BaseComponent {
         ? this.state.pieData24Hour_School
         : this.state.pieData24Hour;
     } else if (this.state.meridiam == 'am') {
-      if (hour >= 6) {
-        function filterTasks(tasks) {
-          let endIndex = -1;
-          for (let i = 0; i < tasks.length; i++) {
-            const task = tasks[i];
-            if (!task.taskId) continue;
-            const startTime = moment(task.taskId.split(' - ')[0], 'hh:mm A');
-            const endTime = moment(task.taskId.split(' - ')[1], 'hh:mm A');
-            const sixPM = moment('06:00 PM', 'hh:mm A');
-            if (endTime.isAfter(sixPM)) {
-              if (startTime.isBefore(sixPM)) {
-                // Adjust the value property to the difference between 6:00 PM and start time
-                task.value = sixPM.diff(startTime, 'minutes');
-              } else {
-                endIndex = i;
+      var date, TimeType, hour;
+      date = new Date();
+      hour = date.getHours();
+      console.log('hhhhhhhhhhhhh', hour,this.state.pieDataAMPM);
+      if (
+        this.state.pieDataAMPM.length == 1 &&
+        this.state.pieDataAMPM[0].isEmpty
+      ) {
+        pieData = this.state?.pieDataAM;
+      }
+      else{
+        if (hour >= 6) {
+          function filterTasks(tasks) {
+            let endIndex = -1;
+            for (let i = 0; i < tasks.length; i++) {
+              const task = tasks[i];
+              if (!task.taskId) continue;
+              const startTime = moment(task.taskId.split(' - ')[0], 'hh:mm A');
+              const endTime = moment(task.taskId.split(' - ')[1], 'hh:mm A');
+              const sixPM = moment('06:00 PM', 'hh:mm A');
+              if (endTime.isAfter(sixPM)) {
+                if (startTime.isBefore(sixPM)) {
+                  // Adjust the value property to the difference between 6:00 PM and start time
+                  task.value = sixPM.diff(startTime, 'minutes');
+                } else {
+                  endIndex = i;
+                }
+                break;
               }
-              break;
+            }
+            if (endIndex !== -1) {
+              return tasks.slice(0, endIndex);
+            } else {
+              return tasks;
             }
           }
-          if (endIndex !== -1) {
-            return tasks.slice(0, endIndex);
-          } else {
-            return tasks;
+  
+          // Filter tasks
+          const filteredTasks = filterTasks(this.state.pieDataAMPM);
+          this.state.pieDataAMPM = filteredTasks;
+          let secondLastTaskEndTime =
+            this.state.pieDataAMPM[
+              this.state.pieDataAMPM.length - 2
+            ]?.taskId.split(' - ')[1];
+          if (
+            typeof secondLastTaskEndTime !== 'undefined' ||
+            secondLastTaskEndTime !== undefined
+          ) {
+            let endTimeMeridiem =
+              this.state.pieDataAMPM[this.state.pieDataAMPM.length - 2]
+                .endTimeMeridiem;
+  
+            // Create moment objects for end time and 6:00 PM
+            let endTaskTime = moment(
+              secondLastTaskEndTime + ' ' + endTimeMeridiem,
+              'hh:mm A',
+            );
+            let sixPMTime = moment('06:00 PM', 'hh:mm A');
+  
+            // Calculate the difference between end time and 6:00 PM
+            let timeDifference = sixPMTime.diff(endTaskTime, 'minutes');
+  
+            // Update the value property of the last task
+            this.state.pieDataAMPM[this.state.pieDataAMPM.length - 1].value =
+              timeDifference;
+  
+            console.log('this.state?.pieDataAMPM', this.state?.pieDataAMPM);
           }
-        }
-
-        // Filter tasks
-        const filteredTasks = filterTasks(this.state.pieDataAMPM);
-        this.state.pieDataAMPM = filteredTasks;
-        let secondLastTaskEndTime =
-          this.state.pieDataAMPM[this.state.pieDataAMPM.length - 2]?.taskId.split(
-            ' - ',
-          )[1];
-        if (
-          typeof secondLastTaskEndTime !== 'undefined' ||
-          secondLastTaskEndTime !== undefined
-        ) {
-          let endTimeMeridiem =
-            this.state.pieDataAMPM[this.state.pieDataAMPM.length - 2]
-              .endTimeMeridiem;
-
-          // Create moment objects for end time and 6:00 PM
-          let endTaskTime = moment(
-            secondLastTaskEndTime + ' ' + endTimeMeridiem,
-            'hh:mm A',
+          // Extract the end time from the taskId
+  
+          const startTime = parseInt(
+            this.state.pieDataAM[1]?.taskId.split(' ')[0].split(':')[0],
           );
-          let sixPMTime = moment('06:00 PM', 'hh:mm A');
-
-          // Calculate the difference between end time and 6:00 PM
-          let timeDifference = sixPMTime.diff(endTaskTime, 'minutes');
-
-          // Update the value property of the last task
-          this.state.pieDataAMPM[this.state.pieDataAMPM.length - 1].value =
-            timeDifference;
-
-          console.log('this.state?.pieDataAMPM', this.state?.pieDataAMPM);
-        }
-        // Extract the end time from the taskId
-
-        const startTime = parseInt(
-          this.state.pieDataAM[1]?.taskId.split(' ')[0].split(':')[0],
-        );
-
-        // Check if the start time is greater than or equal to 6:00 AM
-        if (startTime <= 6) {
-          // Update the value property of the first element to 0
-          this.state.pieDataAM[0].value = 0;
+  
+          // Check if the start time is greater than or equal to 6:00 AM
+          if (startTime <= 6) {
+            // Update the value property of the first element to 0
+            this.state.pieDataAM[0].value = 0;
+          } else {
+            // Calculate the difference between 6:00 AM and the start time of the second element in minutes
+            const differenceInMinutes = (6 - startTime) * 60;
+            // Update the value property of the first element with the calculated difference
+            this.state.pieDataAM[0].value = Math.abs(isNaN(differenceInMinutes) ? 360 : differenceInMinutes);
+          }
+          console.log('this.state.pieDataAM===', this.state.pieDataAM);
+          pieData = this.state?.pieDataAMPM.concat(this.state.pieDataAM);
         } else {
-          // Calculate the difference between 6:00 AM and the start time of the second element in minutes
-          const differenceInMinutes = (6 - startTime) * 60;
-          // Update the value property of the first element with the calculated difference
-          this.state.pieDataAM[0].value = Math.abs(differenceInMinutes);
+          pieData = this.state?.pieDataAM;
         }
-        console.log('this.state.pieDataAM===', this.state.pieDataAM);
-        pieData = this.state?.pieDataAMPM.concat(this.state.pieDataAM);
-      } else {
-        pieData = this.state?.pieDataAM;
       }
     } else {
       pieData = this.state.pieDataPM;
@@ -628,7 +640,27 @@ export default class ParentHomeScreen extends BaseComponent {
         is_school_clock,
         3,
       );
-      console.log('PieDataAM', pieDataAM, is_school_clock, JSON.stringify(arrAM), JSON.stringify(arrPM));
+
+      const pieDataAM24Hour = Helper.generateClockTaskArray(
+        arrAM,
+        'am',
+        is_school_clock,
+        true
+      );
+      const pieDataPM24Hour = Helper.generateClockTaskArray(
+        arrPM,
+        'pm',
+        is_school_clock,
+        true
+      );
+      console.log(
+        'PieDataAM',
+        pieDataAM,
+        is_school_clock,
+        JSON.stringify(arrAM),
+        JSON.stringify(arrPM),
+      );
+      console.log('++++++++++',pieDataAM,pieDataPM,pieDataAMPM)
       console.log('PieDataPM', pieDataPM, is_school_clock);
       // const pieDataAM_School = Helper.generateClockTaskArray(arrAM_School,"am",true);
       // const pieDataPM_School = Helper.generateClockTaskArray(arrPM_School,"pm",true);
@@ -684,7 +716,7 @@ export default class ParentHomeScreen extends BaseComponent {
         }
       }
       this.state.currentTaskSlot = runningTimeSlot;
-      pieData24Hour = [...pieDataAM, ...pieDataPM];
+      pieData24Hour = [...pieDataAM24Hour, ...pieDataPM24Hour];
       pieData24Hour_School = [...pieDataAM_School, ...pieDataPM_School];
       meridian = Helper.getCurrentTimeMeridian();
 
@@ -697,7 +729,7 @@ export default class ParentHomeScreen extends BaseComponent {
           pieDataAM_School,
           pieDataPM_School,
           pieData24Hour_School,
-          pieDataAMPM
+          pieDataAMPM,
         },
         () => this.setWatchData(),
       );
