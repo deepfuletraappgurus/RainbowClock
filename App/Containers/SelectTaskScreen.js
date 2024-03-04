@@ -322,6 +322,7 @@ export default class SelectTaskScreen extends BaseComponent {
                 if (action) {
                   if (this.state.taskType === Constants.TASK_TYPE_DEFAULT) {
                     this.setTaskModelVisible();
+                    this.moveToParentHomeScreen()
                   } else {
                     this.setCreateTask();
                     this.getTaskCategories();
@@ -693,6 +694,7 @@ export default class SelectTaskScreen extends BaseComponent {
                               style={styles.taskIconLarge}
                             />
                             <TouchableOpacity
+                            activeOpacity={1}
                               style={[
                                 styles.button,
                                 {

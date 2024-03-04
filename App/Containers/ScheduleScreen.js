@@ -187,7 +187,7 @@ export default class ScheduleScreen extends BaseComponent {
     this.toggleDropdown();
   };
 
-  onPressTask(objTask) {
+  onPressTask(objTask,item) {
     if (
       objTask.status != Constants.TASK_STATUS_COMPLETED &&
       !this.state.isMenuAsParentPortal
@@ -195,6 +195,12 @@ export default class ScheduleScreen extends BaseComponent {
       this.setState({
         objFooterSelectedTask: objTask,
         taskComplete: true,
+      });
+    }
+    else{
+      this.setState({
+        showTaskList: true,
+        item: item,
       });
     }
   }
@@ -290,7 +296,7 @@ export default class ScheduleScreen extends BaseComponent {
                 return (
                   <TouchableOpacity
                     style={{marginRight: 12}}
-                    onPress={() => this.onPressTask(data)}>
+                    onPress={() => this.onPressTask(data,item)}>
                     {/* <Text style={styles.timer}>{data.time_from} {data.start_time_meridiem}-{data.time_to} {data.end_time_meridiem}</Text> */}
                     <Image
                       source={{uri: data.cate_image}}

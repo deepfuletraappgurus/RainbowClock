@@ -147,15 +147,16 @@ export default class TaskModal extends BaseComponent {
       );
       Helper.showConfirmationMessageSingleAction(
         'Super Job!! \n You have completed this task.\n Congratulations you have earned ' +
-          ((this.state.objFooterSelectedTask.no_of_token ==
-          null || this.state.objFooterSelectedTask.no_of_token == undefined
-          ? 0
-          : this.state.objFooterSelectedTask.no_of_token) +
-              ' ' +
-              (this.state.objFooterSelectedTask.token_type ==
-              null || this.state.objFooterSelectedTask.token_type == undefined
-          ? ''
-          : this.state.objFooterSelectedTask.token_type) + ' token'),
+          ((this.state.objFooterSelectedTask.no_of_token == null ||
+          this.state.objFooterSelectedTask.no_of_token == undefined
+            ? 0
+            : this.state.objFooterSelectedTask.no_of_token) +
+            ' ' +
+            (this.state.objFooterSelectedTask.token_type == null ||
+            this.state.objFooterSelectedTask.token_type == undefined
+              ? ''
+              : this.state.objFooterSelectedTask.token_type) +
+            ' token'),
         'OK',
         this.onActionOK,
       );
@@ -344,6 +345,26 @@ export default class TaskModal extends BaseComponent {
                         );
                       })
                     : null}
+                  {this.state.objFooterSelectedTask && (
+                    <>
+                      <Image
+                        source={{
+                          uri: this.state.objFooterSelectedTask?.cate_image,
+                        }}
+                        style={styles.bigTaskIcon}
+                      />
+                      <Text
+                        style={[
+                          styles.heading2,
+                          styles.textCenter,
+                          styles.marginBottom,
+                        ]}>
+                        {Helper.checkNull(
+                          this.state.objFooterSelectedTask?.task_name,
+                        ).toUpperCase()}
+                      </Text>
+                    </>
+                  )}
 
                   {this.state.objFooterSelectedTask.start_time &&
                   this.state.objFooterSelectedTask.task_time ? (
@@ -362,13 +383,15 @@ export default class TaskModal extends BaseComponent {
                       </Text>
                     </TouchableOpacity>
                   ) : null}
-                  <TouchableOpacity
-                    style={[styles.button, styles.smallButton]}
-                    onPress={() => this.pauseTask()}>
-                    <Text style={styles.mediumButtonText}>
-                      {this.state.buttonText}
-                    </Text>
-                  </TouchableOpacity>
+                  {this.state.objFooterSelectedTask.task_time && (
+                    <TouchableOpacity
+                      style={[styles.button, styles.smallButton]}
+                      onPress={() => this.pauseTask()}>
+                      <Text style={styles.mediumButtonText}>
+                        {this.state.buttonText}
+                      </Text>
+                    </TouchableOpacity>
+                  )}
                 </View>
               </View>
               <View

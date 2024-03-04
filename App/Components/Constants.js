@@ -41,7 +41,7 @@ const Constants = {
         { title: 'Reward', img: Images.navIcon2, screen: 'ChildClaimedRewardsScreen' },
         { title: 'Schedule', img: Images.navIcon3, screen: 'ScheduleScreen' },
         { title: 'User Profile', img: Images.navIcon4, screen: 'ChildProfileScreen' },
-        { title: 'Admin Profile', img: Images.navIcon11, screen: 'ParentsPortalPinScreen' },
+        { title: 'Admin Portal', img: Images.navIcon11, screen: 'ParentsPortalPinScreen' },
         // { title: 'Edit Clock', img: Images.navIcon5, screen: 'ParentsPortalPinScreen' },
         { title: 'Change User', img: Images.navIcon6, screen: 'SelectUserScreen' },
         { title: 'Share This App', img: Images.navIcon7, screen: 'ShareScreen' },
@@ -144,7 +144,7 @@ const Constants = {
     MESSAGE_NO_REPEAT: "It's SUNDAY. \n Please try to repeat the task on some other day",
     MESSAGE_NO_DAY_SELECT_SCHEDULE: "Please select at least one day to schedule a task.",
     MESSAGE_SCHOOL_DAY_VALIDATION:'School Task Must be 6 AM to 6PM',
-    MESSAGE_CREATE_TASK_TIME_VALIDATION:'Here, Strat time and End time Diffrence is not more then 24Hour or not less then 15Min. Please Select time between this. ',
+    MESSAGE_CREATE_TASK_TIME_VALIDATION:'Start and End times cannot be more than 24 hours or less than 15min.  Please select a time frame between this.',
     //Other Messages 
     TEXT_FATCHING_CHILD: 'FETCHING YOUR USERS',
     TEXT_FATCHING_TASKS: 'FETCHING YOUR TASKS...',

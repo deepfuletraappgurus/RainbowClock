@@ -615,17 +615,10 @@ export function getTimeSlot(hour, timeMeridiem) {
 export function generateClockTaskArray(
   arrTask,
   valueToCompare,
-  isSchool,
   currentTimeSlot,
   is24Hour,
 ) {
-  console.log(
-    'cheking data',
-    arrTask,
-    valueToCompare,
-    isSchool,
-    currentTimeSlot,
-  );
+  console.log('cheking data', arrTask, valueToCompare, currentTimeSlot);
   const school = {FROM: '00:00 AM', TO: '00:00 AM'};
   todaysSchoolHours = school;
   var remender = 720;
@@ -971,116 +964,128 @@ export function generateClockTaskArray(
         // if(check==1){
 
         data.push(dicValue);
-        console.log('DicValue', JSON.stringify(dicValue));
+        console.log('DicValue', JSON.stringify(dicValue),data);
       }
-    }
-    if (currentTimeSlot <= startTimeSlot || currentTimeSlot <= endTimeSlot) {
-      if (duration > 0) {
-        console.log('task---0000', task);
-        const dicValue = {
-          taskId: task.time,
-          color: color,
-          value: duration,
-          isEmpty: false,
-          startPosition:
-            task.tasks[0].start_time_meridiem == 'AM' &&
-            task.tasks[0].end_time_meridiem == 'PM'
-              ? currentTimeSlot < 3
-                ? parseInt(
-                    Moment(task.tasks[0].time_from, 'hhmm').format('hhmm'),
-                  )
-                : parseInt(
-                    Moment(Moment('12:00 PM', 'hh:mm A'), 'hhmm').format(
-                      'hhmm',
-                    ),
-                  )
-              : task.tasks[0].start_time_meridiem == 'PM' &&
-                task.tasks[0].end_time_meridiem == 'PM'
-              ? currentTimeSlot > 3
-                ? moment(startTime, 'hh:mm A').hours() > 18
+    } else {
+      if (currentTimeSlot <= startTimeSlot || currentTimeSlot <= endTimeSlot) {
+        if (duration > 0) {
+          console.log('task---0000', task);
+          const dicValue = {
+            taskId: task.time,
+            color: color,
+            value: duration,
+            isEmpty: false,
+            startPosition:
+              task.tasks[0].start_time_meridiem == 'AM' &&
+              task.tasks[0].end_time_meridiem == 'PM'
+                ? currentTimeSlot < 3
                   ? parseInt(
                       Moment(task.tasks[0].time_from, 'hhmm').format('hhmm'),
                     )
                   : parseInt(
-                      Moment(Moment('06:00 AM', 'hh:mm A')).format('hhmm'),
+                      Moment(Moment('12:00 PM', 'hh:mm A'), 'hhmm').format(
+                        'hhmm',
+                      ),
                     )
-                : parseInt(
-                    Moment(task.tasks[0].time_from, 'hhmm').format('hhmm'),
-                  )
-              : task.tasks[0].start_time_meridiem == 'AM' &&
-                task.tasks[0].end_time_meridiem == 'AM'
-              ? currentTimeSlot == 2
-                ? startTime.isBefore(
-                    moment().set({
-                      hour: 6,
-                      minute: 0,
-                      second: 0,
-                      millisecond: 0,
-                    }),
-                  )
-                  ? parseInt(
-                      Moment(Moment('06:00 AM', 'hh:mm A')).format('hhmm'),
+                : task.tasks[0].start_time_meridiem == 'PM' &&
+                  task.tasks[0].end_time_meridiem == 'PM'
+                ? currentTimeSlot > 3
+                  ? moment(startTime, 'hh:mm A').hours() > 18
+                    ? parseInt(
+                        Moment(task.tasks[0].time_from, 'hhmm').format('hhmm'),
+                      )
+                    : parseInt(
+                        Moment(Moment('06:00 AM', 'hh:mm A')).format('hhmm'),
+                      )
+                  : parseInt(
+                      Moment(task.tasks[0].time_from, 'hhmm').format('hhmm'),
                     )
+                : task.tasks[0].start_time_meridiem == 'AM' &&
+                  task.tasks[0].end_time_meridiem == 'AM'
+                ? currentTimeSlot == 2
+                  ? startTime.isBefore(
+                      moment().set({
+                        hour: 6,
+                        minute: 0,
+                        second: 0,
+                        millisecond: 0,
+                      }),
+                    )
+                    ? parseInt(
+                        Moment(Moment('06:00 AM', 'hh:mm A')).format('hhmm'),
+                      )
+                    : parseInt(
+                        Moment(task.tasks[0].time_from, 'hhmm').format('hhmm'),
+                      )
                   : parseInt(
                       Moment(task.tasks[0].time_from, 'hhmm').format('hhmm'),
                     )
                 : parseInt(
                     Moment(task.tasks[0].time_from, 'hhmm').format('hhmm'),
-                  )
-              : parseInt(
-                  Moment(task.tasks[0].time_from, 'hhmm').format('hhmm'),
-                ),
-          // startPosition: parseInt(
-          //   Moment(task.tasks[0].time_from, 'hhmm').format('hhmm'),
-          // ),
-          startTimeMeridiem: task.tasks[0].start_time_meridiem,
-          endPosition: parseInt(
-            Moment(task.tasks[0].time_to, 'hhmm').format('hhmm'),
-          ),
-          endTimeMeridiem: isTaskValueToCompare
-            ? 'AM'
-            : task.tasks[0].end_time_meridiem,
-          // endTimeMeridiem:task.tasks[0].end_time_meridiem,
-          StartTimeSlote: startTimeSlot,
-          CurruntTimeSlote: currentTimeSlot,
-          is_school_clock: task.tasks[0].is_school_clock,
-        };
+                  ),
+            // startPosition: parseInt(
+            //   Moment(task.tasks[0].time_from, 'hhmm').format('hhmm'),
+            // ),
+            startTimeMeridiem: task.tasks[0].start_time_meridiem,
+            endPosition: parseInt(
+              Moment(task.tasks[0].time_to, 'hhmm').format('hhmm'),
+            ),
+            endTimeMeridiem: isTaskValueToCompare
+              ? 'AM'
+              : task.tasks[0].end_time_meridiem,
+            // endTimeMeridiem:task.tasks[0].end_time_meridiem,
+            StartTimeSlote: startTimeSlot,
+            CurruntTimeSlote: currentTimeSlot,
+            is_school_clock: task.tasks[0].is_school_clock,
+          };
 
-        // if (valueToCompare == 'pm' && dicValue.startTimeMeridiem.toLowerCase() == 'am') {
-        //     // duration = Helper.convertDiffrenceInTimeToMinutes(dicValue.endPosition, 0, valueToCompare, dicValue.endTimeMeridiem)
-        //     dicValue.startPosition = 1200
-        //     dicValue.startTimeMeridiem = valueToCompare
-        //     dicValue.value = duration   //here some staff add wrong value
-        // }
-        remender -= duration;
-        console.log(
-          'TimeSlot == LAST ',
-          startTimeSlot +
-            ' // ' +
-            endTimeSlot +
-            ' Current== ' +
-            currentTimeSlot,
-        );
-        // if(check==1){
+          // if (valueToCompare == 'pm' && dicValue.startTimeMeridiem.toLowerCase() == 'am') {
+          //     // duration = Helper.convertDiffrenceInTimeToMinutes(dicValue.endPosition, 0, valueToCompare, dicValue.endTimeMeridiem)
+          //     dicValue.startPosition = 1200
+          //     dicValue.startTimeMeridiem = valueToCompare
+          //     dicValue.value = duration   //here some staff add wrong value
+          // }
+          remender -= duration;
+          console.log(
+            'TimeSlot == LAST ',
+            startTimeSlot +
+              ' // ' +
+              endTimeSlot +
+              ' Current== ' +
+              currentTimeSlot,
+          );
+          // if(check==1){
 
-        data.push(dicValue);
-        console.log('DicValue', JSON.stringify(dicValue));
+          data.push(dicValue);
+          console.log('DicValue', JSON.stringify(dicValue));
+        }
       }
     }
   });
   const sortedData = data.sort(
     Helper.compareValues('startPosition', valueToCompare),
   );
-  const fullSortedData = Helper.compareMissingValues(
-    data,
-    valueToCompare,
-    isSchool,
-  );
+  console.log('________',data.sort((a, b) => {
+    // Extracting the time part of taskId and converting it to milliseconds
+    const timeA = new Date("1970-01-01T" + a.taskId.split(" - ")[0]).getTime();
+    const timeB = new Date("1970-01-01T" + b.taskId.split(" - ")[0]).getTime();
+    
+    // Comparing the times
+    return timeA - timeB;
+  }),sortedData)
+  const fullSortedData = Helper.compareMissingValues(data.sort((a, b) => {
+    // Extracting the start time from taskId using moment
+    const timeA = moment(a.taskId.split(" - ")[0], "hh:mm A");
+    const timeB = moment(b.taskId.split(" - ")[0], "hh:mm A");
+    
+    // Comparing the times
+    return timeA.diff(timeB);
+  }), valueToCompare);
 
   return fullSortedData;
 }
 
-export function compareMissingValues(sortedData, valueToCompare, isSchool) {
+export function compareMissingValues(sortedData, valueToCompare) {
   console.log('YES YES YES YES✅✅✅sortedData', sortedData, valueToCompare);
   var arrFullData = [];
   var remainingTimeVal = 720;
@@ -1107,6 +1112,7 @@ export function compareMissingValues(sortedData, valueToCompare, isSchool) {
             startTimeMeridiem: 'PM',
             endPosition: element.endPosition,
             endTimeMeridiem: element.endTimeMeridiem,
+            is_school_clock: element.is_school_clock,
           };
           remainingTimeVal -= value;
           arrFullData.push(dicValue);
