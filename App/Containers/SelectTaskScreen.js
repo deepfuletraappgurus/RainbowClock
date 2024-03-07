@@ -608,11 +608,14 @@ export default class SelectTaskScreen extends BaseComponent {
                       />
                     </TouchableOpacity>
                   )}
+                  {
+                    console.log('this.state.arrAllCategories',this.state.arrAllCategories)
+                  }
                   {this.state.showDropdown ? (
                     <View style={[styles.dropdown, styles.dropdownLarge]}>
                       <FlatList
                         keyboardShouldPersistTaps={'always'}
-                        data={this.state.arrAllCategories}
+                        data={this.state.arrAllCategories.sort((a, b) => a.name.localeCompare(b.name))}
                         extraData={this.state}
                         keyExtractor={(item, index) => index}
                         renderItem={({item, index}) =>
@@ -935,7 +938,7 @@ export default class SelectTaskScreen extends BaseComponent {
                     </View>
                     <View style={styles.modalBody}>
                       <Text style={[styles.h1, styles.textCenter]}>
-                        {'CREATE NEW TASK'}
+                        {'CREATE CUSTOM TASK'}
                       </Text>
                       <View style={styles.content}>
                         <View style={styles.form}>
@@ -959,27 +962,7 @@ export default class SelectTaskScreen extends BaseComponent {
                               maxLength={20}
                             />
                           </View>
-                          <View
-                            style={[
-                              styles.formControl,
-                              styles.formControlSmall,
-                            ]}>
-                            <TextInput
-                              style={styles.input}
-                              value={this.state.customTaskDescription.toUpperCase()}
-                              placeholder={'Further Information'.toUpperCase()}
-                              autoCapitalize="characters"
-                              placeholderTextColor={'#fff'}
-                              underlineColorAndroid={'transparent'}
-                              returnKeyType={'next'}
-                              onChangeText={customTaskDescription =>
-                                this.setState({customTaskDescription})
-                              }
-                              onSubmitEditing={event => {
-                                Keyboard.dismiss();
-                              }}
-                            />
-                          </View>
+                          
                           <View style={styles.iconContainer}>
                             <View style={styles.imageUploader}>
                               <View style={styles.uploadView}>

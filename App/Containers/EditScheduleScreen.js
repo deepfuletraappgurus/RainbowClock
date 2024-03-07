@@ -10,6 +10,8 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  Platform,
+  Alert,
 } from 'react-native';
 import ColorPalette from 'react-native-color-palette';
 import DatePicker from '@react-native-community/datetimepicker';
@@ -23,6 +25,44 @@ import moment from 'moment';
 import styles from './Styles/SetupTimeBlockScreenStyles';
 
 let days = [];
+
+let colours = [
+  '#f2c745',
+  '#E74C3C',
+  '#9B59B6',
+  '#2980B9',
+  '#3498DB',
+  '#1ABC9C',
+  '#16A085',
+  '#27AE60',
+  '#2ECC71',
+  '#C0392B',
+  '#F39C12',
+  '#E67E22',
+  '#D35400',
+  '#de3038',
+  '#BDC3C7',
+  '#95A5A6',
+  '#7F8C8D',
+  '#34495E',
+  '#2C3E50',
+  '#000000',
+  '#47363c',
+  '#9ee841',
+  '#68869b',
+  '#2fdf1d',
+  '#79bc79',
+  '#a24a75',
+  '#627f8b',
+  '#42675c',
+  '#c777fd',
+  '#d601d5',
+  '#c048fc',
+  '#5a9662',
+  '#a5a080',
+  '#F1C40F',
+  '#c33794',
+];
 
 export default class EditScheduleScreen extends BaseComponent {
   static navigationOptions = ({navigation}) => ({
@@ -74,8 +114,6 @@ export default class EditScheduleScreen extends BaseComponent {
         'AFTERNOON ROUTINE',
         'EVENING ROUTINE',
         'NIGHT TIME',
-        'SCHOOL',
-        '+CUSTOM',
       ],
       isRepeatEveryday: false,
       arrSelectedDates: [],
@@ -83,7 +121,8 @@ export default class EditScheduleScreen extends BaseComponent {
       daySelectionCalender: false,
       calenderSelectedDay: new Date(Date.now()),
       is_date: 1,
-      is_new:1
+      is_new: 1,
+      is_school_clock: false,
     };
   }
 
@@ -139,23 +178,27 @@ export default class EditScheduleScreen extends BaseComponent {
             toTime: scheduleDetails?.time_to,
             taskSelectedColor: scheduleDetails?.color,
             is_date: scheduleDetails?.is_date,
-            is_new:scheduleDetails?.is_new
+            is_new: scheduleDetails?.is_new,
+            is_school_clock: scheduleDetails?.is_school_clock,
+            time: moment(scheduleDetails?.time_from, 'h:mm A').toDate(),
+            toTimeDate: moment(scheduleDetails?.time_to, 'h:mm A').toDate(),
           });
           if (scheduleDetails?.is_date) {
             // this.setState({arrSelectedDates:[]})
-            this.setState({calenderSelectedDay:scheduleDetails?.task_date})
-          }
-          else{
+            this.setState({calenderSelectedDay: scheduleDetails?.task_date});
+          } else {
             scheduleDetails?.days.split(',').forEach(day => {
-              console.log('++++++----',moment().day(day).format('YYYY-MM-DD'))
+              console.log('++++++----', moment().day(day).format('YYYY-MM-DD'));
               setTimeout(() => {
-                this.intialSelectedDay(day)
+                this.intialSelectedDay(day);
               }, 300);
-            })
+            });
           }
           // this.selectedDay(scheduleDetails?.task_date);
           if (scheduleDetails?.is_date) {
-            this.setState({calenderSelectedDay:new Date(scheduleDetails?.task_date)})
+            this.setState({
+              calenderSelectedDay: new Date(scheduleDetails?.task_date),
+            });
           }
         }
       },
@@ -177,38 +220,87 @@ export default class EditScheduleScreen extends BaseComponent {
 
   //#region -> Class Methods
   moveToScheduleTask = () => {
-    const task_dates = this.state.arrSelectedDates
-      ?.filter(data => data.selected)
-      .map(datas => datas.date);
-    Keyboard.dismiss();
-    const formattedDate = moment
-      .utc(this.state.calenderSelectedDay)
-      .format('YYYY-MM-DD');
-    const resultArray = [formattedDate];
-    if (this.isValidate(task_dates)) {
-      const scheduleDetails = this.props.navigation.getParam(
-        'scheduleDetails',
-        {},
-      );
-      var dictCreateTask = {
-        taskName:
-          this.state.taskName === ''
-            ? this.state.taskNameList[0]
-            : this.state.taskName,
-        fromTime: this.state.fromTime,
-        toTime: this.state.toTime,
-        taskColor: this.state.taskSelectedColor,
-        task_date: task_dates?.length === 0 ? resultArray : task_dates,
-        is_date: this.state.is_date,
-        is_new: this.state.is_new,
-        scheduleDetails,
-      };
-      console.log('dictCreateTask=====>', dictCreateTask);
-      // this.props.navigation.navigate('ScheduleTaskScreen', { dictCreateTask: dictCreateTask })
-      this.props.navigation.navigate('EditSelectTaskScreen', {
-        dictCreateTask: dictCreateTask,
-      });
+    if (this.checkTimeValidation()) {
+      Helper.showErrorMessage(Constants.MESSAGE_CREATE_TASK_TIME_VALIDATION);
+      this.setState({isLoading: false});
+    } else {
+      const task_dates = this.state.arrSelectedDates
+        ?.filter(data => data.selected)
+        .map(datas => datas.date);
+      Keyboard.dismiss();
+      const formattedDate = moment
+        .utc(this.state.calenderSelectedDay)
+        .format('YYYY-MM-DD');
+      const resultArray = [formattedDate];
+      if (this.isValidate(task_dates)) {
+        const scheduleDetails = this.props.navigation.getParam(
+          'scheduleDetails',
+          {},
+        );
+        var dictCreateTask = {
+          taskName:
+            this.state.taskName === ''
+              ? this.state.taskNameList[0]
+              : this.state.taskName,
+          fromTime: this.state.fromTime,
+          toTime: this.state.toTime,
+          taskColor: this.state.taskSelectedColor,
+          task_date: task_dates?.length === 0 ? resultArray : task_dates,
+          is_date: this.state.is_date,
+          is_new: this.state.is_new,
+          scheduleDetails,
+        };
+        Helper.showConfirmationMessageActions(
+          'Are You Sure, You want to Update This Task?',
+          'No',
+          'Yes',
+          this.onActionNo,
+          () => this.onActionYes(dictCreateTask),
+        );
+        console.log('dictCreateTask=====>', dictCreateTask);
+      }
     }
+  };
+
+  checkTimeValidation = () => {
+    const [fromHours, fromMinutes, fromPeriod] =
+      this.state.fromTime.split(/[:\s]/);
+    const [toHours, toMinutes, toPeriod] = this.state.toTime.split(/[:\s]/);
+
+    let fromHour = parseInt(fromHours, 10);
+    let toHour = parseInt(toHours, 10);
+
+    // Adjust hours if it's PM
+    if (fromPeriod === 'PM' && fromHour !== 12) {
+      fromHour += 12;
+    }
+
+    if (toPeriod === 'PM' && toHour !== 12) {
+      toHour += 12;
+    }
+
+    const fromTimeInMinutes = fromHour * 60 + parseInt(fromMinutes, 10);
+    const toTimeInMinutes = toHour * 60 + parseInt(toMinutes, 10);
+
+    // Calculate the difference in minutes
+    const timeDifference = Math.abs(toTimeInMinutes - fromTimeInMinutes);
+
+    // Check if the difference is not more than 24 hours or not less than 15 minutes
+    if (timeDifference <= 24 * 60 && timeDifference >= 15) {
+      return false;
+    } else {
+      return true;
+    }
+  };
+
+  onActionYes = dictCreateTask => {
+    console.log('yes');
+    this.props.navigation.navigate('EditSelectTaskScreen', {
+      dictCreateTask: dictCreateTask,
+    });
+  };
+  onActionNo = () => {
+    console.log('No');
   };
 
   setToggleColorPicker = () => {
@@ -217,10 +309,7 @@ export default class EditScheduleScreen extends BaseComponent {
   };
 
   isValidate = task_dates => {
-    if (
-      this.state.taskName == '' &&
-      this.state.selectedTask == '+CUSTOM'
-    ) {
+    if (this.state.taskName == '' && this.state.selectedTask == '+CUSTOM') {
       Helper.showErrorMessage(Constants.MESSAGE_NO_TASK_NAME);
       return false;
     } else if (this.state.fromTime.trim() == '') {
@@ -274,7 +363,7 @@ export default class EditScheduleScreen extends BaseComponent {
         <View
           style={[
             item?.selected ? styles.daySelected : styles.dayUnSelected,
-            {marginHorizontal: 10, width: 20, height: 20},
+            {width: 25, height: 25},
           ]}>
           {this.state.isRepeatEveryday ? (
             <Image source={Images.tick} style={styles.tickRepeatTask} />
@@ -286,82 +375,184 @@ export default class EditScheduleScreen extends BaseComponent {
       </TouchableOpacity>
     );
   }
+
+  renderColours(item, index) {
+    return (
+      <TouchableOpacity
+        style={{
+          backgroundColor: item,
+          width: 40,
+          height: 40,
+          borderRadius: 40,
+          marginRight: 15,
+          borderColor:
+            this.state.taskSelectedColor === item ? Colors.BgLateEvening : null,
+          borderWidth: this.state.taskSelectedColor === item ? 3 : 0,
+        }}
+        onPress={() => {
+          this.setState({
+            taskSelectedColor: item,
+            toggleColorPicker: false,
+          });
+        }}></TouchableOpacity>
+    );
+  }
+
   selectedDay = date => {
-    console.log('date???????', date,this.state.arrSelectedDates);
+    console.log('date???????', date, this.state.arrSelectedDates);
     let temp = this.state.arrSelectedDates.map(obj => {
       if (date === obj.date) {
         return {...obj, selected: !obj.selected};
       }
       return obj;
     });
-    console.log('temp',temp)
+    console.log('temp', temp);
     this.setState({
       arrSelectedDates: temp,
-      is_date:0
+      is_date: 0,
     });
   };
 
   intialSelectedDay = date => {
-    console.log('date???????', date,this.state.arrSelectedDates);
+    console.log('date???????', date, this.state.arrSelectedDates);
     let temp = this.state.arrSelectedDates.map(obj => {
       if (date === moment(obj.date).format('dddd')) {
         return {...obj, selected: !obj.selected};
       }
       return obj;
     });
-    console.log('temp',temp)
+    console.log('temp', temp);
     this.setState({
       arrSelectedDates: temp,
     });
   };
   showTimePicker() {
-    this.setState({timePicker: true});
+    this.setState({timePicker: true, toTimePicker: false});
     // this.setState({time: Helper.dateFormater(new Date(this.state.fromTime), "hh:mm A", 'hh:mm A')})
     // this.state.timePicker = true ;
   }
   onTimeSelected(event, value) {
-    this.state.time = value;
-    this.setState({timePicker: false});
+    if (this.state.is_school_clock) {
+      const selectedTime = new Date(value);
+      const minTime = new Date();
+      minTime.setHours(6, 0, 0, 0); // 6:00 AM
 
-    this.state.time = Helper.dateFormater(
-      new Date(value),
-      'hh:mm A',
-      'hh:mm A',
-    );
-    this.state.fromTimeFormate = Helper.dateFormater(
-      new Date(value),
-      'hh:mm A',
-      'A',
-    );
-    //this.changeFromDate(value)
-    // console.log('onTimeSelected', this.state.time)
-    this.setState({fromTime: this.state.time.toString()});
-    // console.log('changeFromDateJS', this.state.time.toString())
-    this.setState({time: new Date(Date.now())});
+      const maxTime = new Date();
+      maxTime.setHours(18, 0, 0, 0);
+      if (selectedTime < minTime) {
+        // If selected time is before the minimum time, set it to the minimum time
+        Alert.alert(
+          Constants.APP_NAME,
+          Constants.MESSAGE_SCHOOL_DAY_VALIDATION,
+        );
+      } else if (selectedTime > maxTime) {
+        // If selected time is after the maximum time, set it to the maximum time
+        Alert.alert(
+          Constants.APP_NAME,
+          Constants.MESSAGE_SCHOOL_DAY_VALIDATION,
+        );
+      }
+    }
+    if (value instanceof Date) {
+      // If value is already a Date object, use it directly
+      this.setState({
+        time: value,
+        fromTime: Helper.dateFormater(value, 'hh:mm A', 'hh:mm A').toString(),
+        fromTimeFormate: Helper.dateFormater(value, 'hh:mm a', 'A'),
+      });
+    } else {
+      // If value is not a Date object, try converting it to a Date
+      const dateValue = new Date(value);
+      if (!isNaN(dateValue.getTime())) {
+        // Check if the conversion was successful
+        this.setState({
+          time: dateValue,
+          fromTime: Helper.dateFormater(
+            dateValue,
+            'hh:mm A',
+            'hh:mm A',
+          ).toString(),
+          fromTimeFormate: Helper.dateFormater(dateValue, 'hh:mm a', 'A'),
+        });
+      } else {
+        // Handle the case where the conversion fails
+        console.error('Invalid date format for toTime:', value);
+      }
+    }
+    if (Platform.OS === 'android') {
+      if (event.type === 'set') {
+        this.setState({timePicker: false});
+      }
+    } else {
+      if (event.type === 'dismissed') {
+        this.setState({timePicker: false});
+      }
+    }
   }
 
   showToTimePicker() {
-    this.setState({toTimePicker: true});
+    this.setState({toTimePicker: true, timePicker: false});
   }
   onToTimeSelected(event, value) {
-    this.state.toTimeDate = value;
-    this.setState({toTimePicker: false});
+    console.log('=========================', event, value);
+    if (this.state.is_school_clock) {
+      const selectedTime = new Date(value);
+      const minTime = new Date();
+      minTime.setHours(6, 0, 0, 0); // 6:00 AM
 
-    this.state.toTimeDate = Helper.dateFormater(
-      new Date(value),
-      'hh:mm A',
-      'hh:mm A',
-    );
-    this.state.toTimeFormate = Helper.dateFormater(
-      new Date(value),
-      'hh:mm A',
-      'A',
-    );
-    //this.changeFromDate(value)
-    console.log('onTimeSelected', this.state.toTimeDate);
-    this.setState({toTime: this.state.toTimeDate.toString()});
-    console.log('changeFromDateJS', this.state.toTime);
-    this.setState({toTimeDate: new Date(Date.now())});
+      const maxTime = new Date();
+      maxTime.setHours(18, 0, 0, 0);
+      if (selectedTime < minTime) {
+        // If selected time is before the minimum time, set it to the minimum time
+        Alert.alert(
+          Constants.APP_NAME,
+          Constants.MESSAGE_SCHOOL_DAY_VALIDATION,
+        );
+      } else if (selectedTime > maxTime) {
+        // If selected time is after the maximum time, set it to the maximum time
+        Alert.alert(
+          Constants.APP_NAME,
+          Constants.MESSAGE_SCHOOL_DAY_VALIDATION,
+        );
+      }
+    }
+    if (value instanceof Date) {
+      // If value is already a Date object, use it directly
+      this.setState({
+        toTimeDate: value,
+        toTime: Helper.dateFormater(value, 'hh:mm A', 'hh:mm A').toString(),
+        toTimeFormate: Helper.dateFormater(value, 'hh:mm a', 'A'),
+      });
+    } else {
+      // If value is not a Date object, try converting it to a Date
+      const dateValue = new Date(value);
+      if (!isNaN(dateValue.getTime())) {
+        // Check if the conversion was successful
+        this.setState({
+          toTimeDate: dateValue,
+          toTime: Helper.dateFormater(
+            dateValue,
+            'hh:mm A',
+            'hh:mm A',
+          ).toString(),
+          toTimeFormate: Helper.dateFormater(dateValue, 'hh:mm a', 'A'),
+        });
+      } else {
+        // Handle the case where the conversion fails
+        console.error('Invalid date format for toTime:', value);
+      }
+    }
+
+    console.log('aaaa', event.type);
+    if (Platform.OS === 'android') {
+      if (event.type === 'set') {
+        this.setState({toTimePicker: false});
+      }
+    } else {
+      if (event.type === 'dismissed') {
+        this.setState({toTimePicker: false});
+      }
+    }
   }
 
   onDaySelectationCalenderPress() {
@@ -425,17 +616,17 @@ export default class EditScheduleScreen extends BaseComponent {
       selected: false,
     }));
     this.setState({arrSelectedDates: resetDates});
-    this.setState({is_date:1})
+    this.setState({is_date: 1});
   };
   //#region -> View Render
   render() {
     const selectedDays = this.state.arrSelectedDates
-    .filter(dateObj => dateObj.selected)
-    .map(dateObj => moment(dateObj.date).format('ddd'));
+      .filter(dateObj => dateObj.selected)
+      .map(dateObj => moment(dateObj.date).format('ddd'));
 
-  const allSelected = this.state.arrSelectedDates.every(
-    dateObj => dateObj.selected,
-  );
+    const allSelected = this.state.arrSelectedDates.every(
+      dateObj => dateObj.selected,
+    );
     return (
       <View style={styles.mainContainer}>
         <KeyboardAvoidingView
@@ -468,7 +659,15 @@ export default class EditScheduleScreen extends BaseComponent {
                     ]}>
                     <TouchableOpacity
                       style={styles.nextButton}
-                      onPress={() => this.props.navigation.goBack()}>
+                      onPress={() => {
+                        Helper.showConfirmationMessageActions(
+                          'Are You Sure, You don not want to Update This Task?',
+                          'No',
+                          'Yes',
+                          this.onActionNo,
+                          () => this.props.navigation.goBack(),
+                        );
+                      }}>
                       <Image
                         source={Images.circleArrowLeft}
                         style={styles.circleArrow}
@@ -484,7 +683,11 @@ export default class EditScheduleScreen extends BaseComponent {
                     </TouchableOpacity>
                   </View>
                   <View style={[styles.form, {flexGrow: 1}]}>
-                    <View style={[styles.formControl, {zIndex: 999}]}>
+                    <View
+                      style={[
+                        styles.formControl,
+                        {zIndex: 999, marginBottom: 25},
+                      ]}>
                       {/* <TextInput
                                                 style={styles.input}
                                                 autoCapitalize='characters'
@@ -496,49 +699,53 @@ export default class EditScheduleScreen extends BaseComponent {
                                                 onChangeText={(taskName) => this.setState({ taskName })}
                                                 onSubmitEditing={(event) => { Keyboard.dismiss(); }}
                                             /> */}
-                      <View
-                        style={[
-                          styles.dropdownContainer,
-                          {justifyContent: 'center', zIndex: 999},
-                        ]}>
-                        <TouchableOpacity
+
+                      {!this.state.is_school_clock && (
+                        <View
                           style={[
-                            styles.dropdownButton,
-                            styles.dropdownButtonLarge,
-                            this.state.showDropdown
-                              ? styles.bottomRadiusNull
-                              : null,
-                          ]}
-                          onPress={() => this.toggleDropdown()}>
-                          <Text
+                            styles.dropdownContainer,
+                            {justifyContent: 'center', zIndex: 999},
+                          ]}>
+                          <TouchableOpacity
                             style={[
-                              styles.dropdownButtonText,
-                              styles.dropdownLargeButtonText,
-                            ]}>
-                            {this.state.selectedTask == ''
-                              ? this.state.taskNameList[0]
-                              : this.state.selectedTask}
-                          </Text>
-                          <Image
-                            source={Images.downarrow}
-                            style={styles.downarrow}
-                          />
-                        </TouchableOpacity>
-                        {this.state.showDropdown ? (
-                          <View style={[styles.dropdown, styles.dropdownLarge]}>
-                            <FlatList
-                              keyboardShouldPersistTaps={'always'}
-                              data={this.state.taskNameList}
-                              extraData={this.state}
-                              keyExtractor={(item, index) => index}
-                              renderItem={({item, index}) =>
-                                this.renderRow(item, index)
-                              }
-                              contentContainerStyle={{padding: 15}}
+                              styles.dropdownButton,
+                              styles.dropdownButtonLarge,
+                              this.state.showDropdown
+                                ? styles.bottomRadiusNull
+                                : null,
+                            ]}
+                            onPress={() => this.toggleDropdown()}>
+                            <Text
+                              style={[
+                                styles.dropdownButtonText,
+                                styles.dropdownLargeButtonText,
+                              ]}>
+                              {this.state.selectedTask == ''
+                                ? this.state.taskNameList[0]
+                                : this.state.selectedTask}
+                            </Text>
+                            <Image
+                              source={Images.downarrow}
+                              style={styles.downarrow}
                             />
-                          </View>
-                        ) : null}
-                      </View>
+                          </TouchableOpacity>
+                          {this.state.showDropdown ? (
+                            <View
+                              style={[styles.dropdown, styles.dropdownLarge]}>
+                              <FlatList
+                                keyboardShouldPersistTaps={'always'}
+                                data={this.state.taskNameList}
+                                extraData={this.state}
+                                keyExtractor={(item, index) => index}
+                                renderItem={({item, index}) =>
+                                  this.renderRow(item, index)
+                                }
+                                contentContainerStyle={{padding: 15}}
+                              />
+                            </View>
+                          ) : null}
+                        </View>
+                      )}
                     </View>
                     {this.state.selectedTask === '+CUSTOM' ? (
                       <View style={[styles.formControl]}>
@@ -558,7 +765,7 @@ export default class EditScheduleScreen extends BaseComponent {
                       </View>
                     ) : null}
 
-                    <View style={styles.frm}>
+                    <View style={[styles.frm, {marginTop: 0}]}>
                       <Text style={styles.label}>{'TIME'.toUpperCase()}</Text>
                       <View style={styles.frmRow}>
                         <View style={styles.frmInline}>
@@ -580,70 +787,10 @@ export default class EditScheduleScreen extends BaseComponent {
                             onPress={() => {
                               this.showTimePicker();
                             }}
-                            style={{width: '100%', height: 40}}>
-                            {this.state.timePicker && (
-                              <DatePicker
-                                value={this.state.time}
-                                placeholder={'HH:mm'}
-                                mode={'time'}
-                                display={'default'}
-                                is24Hour={false}
-                                style={{width: '100%', height: '100%'}}
-                                confirmBtnText="Confirm"
-                                cancelBtnText="Cancel"
-                                showIcon={false}
-                                onChange={(event, data) => {
-                                  this.setState({timePicker: false}, () => {
-                                    this.onTimeSelected(event, data);
-                                    console.log(
-                                      'onChangeForTime',
-                                      this.state.time,
-                                    );
-                                  });
-                                }}
-                                customStyles={{
-                                  dateInput: {
-                                    marginLeft: 0,
-                                    borderWidth: 0,
-                                    width: '100%',
-                                    alignItems: 'flex-start',
-                                    paddingLeft: 10,
-                                  },
-                                  btnTextConfirm: {
-                                    color: 'gray',
-                                  },
-                                  dateText: {
-                                    color: Colors.titleColor,
-                                  },
-                                }}
-                              />
-                            )}
-                          </TouchableOpacity>
-                          {/* <TouchableOpacity style={styles.inputView}>
-                                                        <DatePicker full transparent style={[styles.rowSectionWhite,{width: '100%'}]}
-                                                            // style={{ width: '100%' }}
-                                                            placeholder='HH:MM'
-                                                            date={this.state.fromTime}
-                                                            mode='time'
-                                                            format="hh:mm A"
-                                                            // minDate={Helper.getCurrentTime()}
-                                                            confirmBtnText="Confirm"
-                                                            cancelBtnText="Cancel"
-                                                            showIcon={false}
-                                                            onDateChange={(fromTime) => { this.setState({ fromTime }) }}
-                                                            customStyles={{
-                                                                dateInput: {
-                                                                    marginLeft: 0,
-                                                                    borderWidth: 0,
-                                                                    width: '100%',
-                                                                    alignItems: 'center',
-                                                                },
-                                                                btnTextConfirm: {
-                                                                    color: 'gray',
-                                                                }
-                                                            }}
-                                                        />
-                                                    </TouchableOpacity> */}
+                            style={{
+                              width: '100%',
+                              height: 40,
+                            }}></TouchableOpacity>
                         </View>
                         <Text style={styles.coloun}>-</Text>
                         <View style={styles.frmInline}>
@@ -666,152 +813,108 @@ export default class EditScheduleScreen extends BaseComponent {
                             // <TouchableOpacity style={[styles.inputView, {paddingHorizontal:0, overflow:'hidden'}]}
                             onPress={() => {
                               this.showToTimePicker();
-                            }}>
-                            {/* {this.state.fromTime.length == 0 ? */}
-                            {/* <View style={{ position: 'absolute', left: 0, top: 0, right: 0, bottom: 0, backgroundColor: Colors.transparent, alignItems: 'center', justifyContent: 'center' }}>
-                                                                <Text style={{ color: '#c9c9c9' }}>HH:MM</Text>
-                                                            </View> */}
-                            {this.state.toTimePicker && (
-                              <DatePicker
-                                value={this.state.toTimeDate}
-                                placeholder={'HH:mm'}
-                                mode={'time'}
-                                display={'default'}
-                                is24Hour={false}
-                                style={{width: '100%', height: '100%'}}
-                                confirmBtnText="Confirm"
-                                cancelBtnText="Cancel"
-                                showIcon={false}
-                                onChange={(event, data) => {
-                                  this.setState({toTimePicker: false}, () => {
-                                    this.onToTimeSelected(event, data);
-                                    console.log(
-                                      'onChangeForTime',
-                                      this.state.toTimeDate,
-                                    );
-                                  });
-                                }}
-                                customStyles={{
-                                  dateInput: {
-                                    marginLeft: 0,
-                                    borderWidth: 0,
-                                    width: '100%',
-                                    alignItems: 'flex-start',
-                                    paddingLeft: 10,
-                                  },
-                                  btnTextConfirm: {
-                                    color: 'gray',
-                                  },
-                                  dateText: {
-                                    color: Colors.titleColor,
-                                  },
-                                }}
-                              />
-                            )}
-                          </TouchableOpacity>
-                        
+                            }}></TouchableOpacity>
                         </View>
-                        
                       </View>
                     </View>
-                    <View style={[styles.frm, {zIndex: 899}]}>
-                      <View style={[styles.inline, {position: 'relative'}]}>
-                        <Text
-                          style={[
-                            styles.label,
-                            {marginBottom: 0, paddingBottom: 0},
-                          ]}>
-                          {'Colour'.toUpperCase()}
-                        </Text>
-                        <TouchableOpacity
-                          style={[
-                            styles.colorPreview,
-                            {backgroundColor: this.state.taskSelectedColor},
-                          ]}
-                          onPress={() =>
-                            this.setToggleColorPicker()
-                          }></TouchableOpacity>
-                        {this.state.toggleColorPicker ? (
-                          <View style={styles.ColorPalette}>
-                            <ColorPalette
-                              onChange={color =>
-                                this.setState({
-                                  taskSelectedColor: color,
-                                  toggleColorPicker: false,
-                                })
-                              }
-                              defaultColor={this.state.taskSelectedColor}
-                              scaleToWindow
-                              paletteStyles={{
-                                backgroundColor: Colors.snow,
-                                padding: 4,
-                                borderRadius: 5,
-                                maxWidth: Metrics.screenWidth - 20,
-                              }}
-                              colors={[
-                                '#f2c745',
-                                '#E74C3C',
-                                '#9B59B6',
-                                '#2980B9',
-                                '#3498DB',
-                                '#1ABC9C',
-                                '#16A085',
-                                '#27AE60',
-                                '#2ECC71',
-                                '#C0392B',
-                                '#F39C12',
-                                '#E67E22',
-                                '#D35400',
-                                '#de3038',
-                                '#BDC3C7',
-                                '#95A5A6',
-                                '#7F8C8D',
-                                '#34495E',
-                                '#2C3E50',
-                                '#000000',
-                                '#47363c',
-                                '#9ee841',
-                                '#68869b',
-                                '#2fdf1d',
-                                '#79bc79',
-                                '#a24a75',
-                                '#627f8b',
-                                '#42675c',
-                                '#c777fd',
-                                '#d601d5',
-                                '#c048fc',
-                                '#5a9662',
-                                '#a5a080',
-                                '#F1C40F',
-                                '#c33794',
-                              ]}
-                              title={''}
-                            />
-                          </View>
-                        ) : null}
+                    <View style={[styles.frm, {marginBottom: 10}]}>
+                      <View style={[styles.frmRow, styles.frmRowMinus]}>
+                        {this.state.timePicker && (
+                          <DatePicker
+                            value={this.state.time}
+                            placeholder={'HH:mm'}
+                            mode={'time'}
+                            display={
+                              Platform.OS === 'ios' ? 'spinner' : 'default'
+                            }
+                            is24Hour={false}
+                            style={{width: '100%', height: '100%'}}
+                            confirmBtnText="Confirm"
+                            cancelBtnText="Cancel"
+                            showIcon={false}
+                            // onChange={(event,data) => { this.setState({timePicker: true},()=> {
+                            //     this.onTimeSelected(event,data)
+                            //     console.log('onChangeForTime', this.state.time)
+                            // })}}
+                            onChange={(event, value) => {
+                              this.onTimeSelected(event, value);
+                              console.log('onChangeForTime', this.state.time);
+                            }}
+                            customStyles={{
+                              dateInput: {
+                                marginLeft: 0,
+                                borderWidth: 0,
+                                width: '100%',
+                                alignItems: 'flex-start',
+                                paddingLeft: 10,
+                              },
+                              btnTextConfirm: {
+                                color: 'gray',
+                              },
+                              dateText: {
+                                color: Colors.titleColor,
+                              },
+                            }}
+                          />
+                        )}
+                        {this.state.toTimePicker && (
+                          <DatePicker
+                            value={this.state.toTimeDate}
+                            placeholder={'HH:mm'}
+                            mode={'time'}
+                            display={
+                              Platform.OS === 'ios' ? 'spinner' : 'default'
+                            }
+                            is24Hour={false}
+                            style={{width: '100%', height: '100%'}}
+                            confirmBtnText="Confirm"
+                            cancelBtnText="Cancel"
+                            showIcon={false}
+                            onChange={(event, data) => {
+                              this.onToTimeSelected(event, data);
+                              console.log(
+                                'onChangeForTime',
+                                this.state.toTimeDate,
+                              );
+                            }}
+                            customStyles={{
+                              dateInput: {
+                                marginLeft: 0,
+                                borderWidth: 0,
+                                width: '100%',
+                                alignItems: 'flex-start',
+                                paddingLeft: 10,
+                              },
+                              btnTextConfirm: {
+                                color: 'gray',
+                              },
+                              dateText: {
+                                color: Colors.titleColor,
+                              },
+                            }}
+                          />
+                        )}
                       </View>
                     </View>
                     <View
                       style={{
-                        marginTop: 60,
-                        justifyContent: 'center',
-                        alignItems: 'center',
+                        marginTop: 0,
+                        paddingTop: 25,
+                        borderTopColor: Colors.snow,
+                        borderTopWidth: 0.5,
+                        width: '100%',
+                        // justifyContent: 'center',
+                        // alignItems: 'center',
                       }}>
-                      <Text style={[styles.label, {textAlign: 'center'}]}>
-                        {
-                          'Select day/s below if you would like this time block to repeat for a month.'
-                        }
+                      <Text style={[styles.label, {textAlign: 'left'}]}>
+                        {'Select day/s below if you would like this time block to repeat.'.toUpperCase()}
                       </Text>
-
                       <View
                         style={{
                           alignSelf: 'flex-start',
-                          marginHorizontal: 15,
-                          borderTopWidth: 0.3,
-                          width: '92%',
+                          // marginHorizontal: 15,
+                          width: '100%',
                           flex: 1,
-                          paddingVertical: 15,
-                          borderTopColor: Colors.snow,
                           justifyContent: 'space-between',
                           alignItems: 'center',
                           flexDirection: 'row',
@@ -834,7 +937,9 @@ export default class EditScheduleScreen extends BaseComponent {
                                 {marginBottom: 0},
                               ]}>{`On ${moment(
                               this.state.calenderSelectedDay,
-                            ).format('YYYY:MMM:DD')}`}</Text>
+                            ).format('DD MMM YYYY')} - ${moment(
+                              this.state.calenderSelectedDay,
+                            ).format('dddd')}`}</Text>
                           )}
                         </>
                         <TouchableOpacity
@@ -900,6 +1005,40 @@ export default class EditScheduleScreen extends BaseComponent {
                             this.renderDays(item, index)
                           }
                           horizontal={true}
+                          contentContainerStyle={{
+                            flex: 1,
+                            justifyContent: 'space-between',
+                            marginTop: 10,
+                          }}
+                        />
+                      </View>
+
+                      <View
+                        style={{
+                          alignSelf: 'flex-start',
+                          // marginHorizontal: 15,
+                          width: '100%',
+                          flex: 1,
+                          justifyContent: 'space-between',
+                          borderTopColor: Colors.snow,
+                          borderTopWidth: 0.5,
+                          paddingVertical: 15,
+                          marginVertical: 15,
+                          paddingTop: 25,
+                        }}>
+                        <Text style={[styles.label, {textAlign: 'left'}]}>
+                          {'Colours'.toUpperCase()}
+                        </Text>
+
+                        <FlatList
+                          data={colours}
+                          extraData={this.state}
+                          keyExtractor={(item, index) => index}
+                          renderItem={({item, index}) =>
+                            this.renderColours(item, index)
+                          }
+                          horizontal={true}
+                          showsHorizontalScrollIndicator={false}
                         />
                       </View>
                     </View>

@@ -30,6 +30,44 @@ import colors from '../Themes/Colors';
 
 let days = [];
 
+let colours = [
+  '#f2c745',
+  '#E74C3C',
+  '#9B59B6',
+  '#2980B9',
+  '#3498DB',
+  '#1ABC9C',
+  '#16A085',
+  '#27AE60',
+  '#2ECC71',
+  '#C0392B',
+  '#F39C12',
+  '#E67E22',
+  '#D35400',
+  '#de3038',
+  '#BDC3C7',
+  '#95A5A6',
+  '#7F8C8D',
+  '#34495E',
+  '#2C3E50',
+  '#000000',
+  '#47363c',
+  '#9ee841',
+  '#68869b',
+  '#2fdf1d',
+  '#79bc79',
+  '#a24a75',
+  '#627f8b',
+  '#42675c',
+  '#c777fd',
+  '#d601d5',
+  '#c048fc',
+  '#5a9662',
+  '#a5a080',
+  '#F1C40F',
+  '#c33794',
+];
+
 const objSecureAPI = Api.createSecure();
 
 export default class SetupTimeBlockScreen extends BaseComponent {
@@ -85,8 +123,6 @@ export default class SetupTimeBlockScreen extends BaseComponent {
         'AFTERNOON ROUTINE',
         'EVENING ROUTINE',
         'NIGHT TIME',
-        'SCHOOL',
-        '+CUSTOM',
       ],
       isRepeatEveryday: false,
       arrSelectedDates: [],
@@ -207,8 +243,7 @@ export default class SetupTimeBlockScreen extends BaseComponent {
                       this.onActionNo,
                       () => this.onActionYes(dictCreateTask),
                     );
-                  }
-                  else{
+                  } else {
                     this.props.navigation.navigate('SelectTaskScreen', {
                       dictCreateTask: dictCreateTask,
                     });
@@ -347,7 +382,7 @@ export default class SetupTimeBlockScreen extends BaseComponent {
         <View
           style={[
             item?.selected ? styles.daySelected : styles.dayUnSelected,
-            {marginHorizontal: 10, width: 20, height: 20},
+            {width: 25, height: 25},
           ]}>
           {this.state.isRepeatEveryday ? (
             <Image source={Images.tick} style={styles.tickRepeatTask} />
@@ -357,6 +392,28 @@ export default class SetupTimeBlockScreen extends BaseComponent {
           {formatDate}
         </Text>
       </TouchableOpacity>
+    );
+  }
+
+  renderColours(item, index) {
+    return (
+      <TouchableOpacity
+        style={{
+          backgroundColor: item,
+          width: 40,
+          height: 40,
+          borderRadius: 40,
+          marginRight: 15,
+          borderColor:
+            this.state.taskSelectedColor === item ? colors.BgLateEvening : null,
+          borderWidth: this.state.taskSelectedColor === item ? 3 : 0,
+        }}
+        onPress={() => {
+          this.setState({
+            taskSelectedColor: item,
+            toggleColorPicker: false,
+          });
+        }}></TouchableOpacity>
     );
   }
   selectedDay = date => {
@@ -373,7 +430,7 @@ export default class SetupTimeBlockScreen extends BaseComponent {
   };
 
   showTimePicker() {
-    this.setState({timePicker: true});
+    this.setState({timePicker: true, toTimePicker: false});
   }
 
   onTimeSelected(event, value) {
@@ -436,7 +493,7 @@ export default class SetupTimeBlockScreen extends BaseComponent {
   }
 
   showToTimePicker() {
-    this.setState({toTimePicker: true});
+    this.setState({toTimePicker: true, timePicker: false});
     this.state.toTimePicker = true;
   }
 
@@ -625,7 +682,11 @@ export default class SetupTimeBlockScreen extends BaseComponent {
                             justifyContent: 'center',
                             alignItems: 'center',
                           }}>
-                          <ActivityIndicator color={colors.white} size={30} style={{zIndex:1000}}/>
+                          <ActivityIndicator
+                            color={colors.white}
+                            size={30}
+                            style={{zIndex: 1000}}
+                          />
                         </View>
                       ) : (
                         <Image
@@ -636,7 +697,11 @@ export default class SetupTimeBlockScreen extends BaseComponent {
                     </TouchableOpacity>
                   </View>
                   <View style={[styles.form, {flexGrow: 1}]}>
-                    <View style={[styles.formControl, {zIndex: 999}]}>
+                    <View
+                      style={[
+                        styles.formControl,
+                        {zIndex: 999, marginBottom: 25},
+                      ]}>
                       {/* <TextInput
                                                 style={styles.input}
                                                 autoCapitalize='characters'
@@ -648,49 +713,52 @@ export default class SetupTimeBlockScreen extends BaseComponent {
                                                 onChangeText={(taskName) => this.setState({ taskName })}
                                                 onSubmitEditing={(event) => { Keyboard.dismiss(); }}
                                             /> */}
-                      <View
-                        style={[
-                          styles.dropdownContainer,
-                          {justifyContent: 'center', zIndex: 999},
-                        ]}>
-                        <TouchableOpacity
+                      {!this.state.is_school_clock && (
+                        <View
                           style={[
-                            styles.dropdownButton,
-                            styles.dropdownButtonLarge,
-                            this.state.showDropdown
-                              ? styles.bottomRadiusNull
-                              : null,
-                          ]}
-                          onPress={() => this.toggleDropdown()}>
-                          <Text
+                            styles.dropdownContainer,
+                            {justifyContent: 'center', zIndex: 999},
+                          ]}>
+                          <TouchableOpacity
                             style={[
-                              styles.dropdownButtonText,
-                              styles.dropdownLargeButtonText,
-                            ]}>
-                            {this.state.selectedTask == ''
-                              ? this.state.taskNameList[0]
-                              : this.state.selectedTask}
-                          </Text>
-                          <Image
-                            source={Images.downarrow}
-                            style={styles.downarrow}
-                          />
-                        </TouchableOpacity>
-                        {this.state.showDropdown ? (
-                          <View style={[styles.dropdown, styles.dropdownLarge]}>
-                            <FlatList
-                              keyboardShouldPersistTaps={'always'}
-                              data={this.state.taskNameList}
-                              extraData={this.state}
-                              keyExtractor={(item, index) => index}
-                              renderItem={({item, index}) =>
-                                this.renderRow(item, index)
-                              }
-                              contentContainerStyle={{padding: 15}}
+                              styles.dropdownButton,
+                              styles.dropdownButtonLarge,
+                              this.state.showDropdown
+                                ? styles.bottomRadiusNull
+                                : null,
+                            ]}
+                            onPress={() => this.toggleDropdown()}>
+                            <Text
+                              style={[
+                                styles.dropdownButtonText,
+                                styles.dropdownLargeButtonText,
+                              ]}>
+                              {this.state.selectedTask == ''
+                                ? this.state.taskNameList[0]
+                                : this.state.selectedTask}
+                            </Text>
+                            <Image
+                              source={Images.downarrow}
+                              style={styles.downarrow}
                             />
-                          </View>
-                        ) : null}
-                      </View>
+                          </TouchableOpacity>
+                          {this.state.showDropdown ? (
+                            <View
+                              style={[styles.dropdown, styles.dropdownLarge]}>
+                              <FlatList
+                                keyboardShouldPersistTaps={'always'}
+                                data={this.state.taskNameList}
+                                extraData={this.state}
+                                keyExtractor={(item, index) => index}
+                                renderItem={({item, index}) =>
+                                  this.renderRow(item, index)
+                                }
+                                contentContainerStyle={{padding: 15}}
+                              />
+                            </View>
+                          ) : null}
+                        </View>
+                      )}
                     </View>
                     {this.state.selectedTask === '+CUSTOM' ? (
                       <View style={[styles.formControl]}>
@@ -710,7 +778,7 @@ export default class SetupTimeBlockScreen extends BaseComponent {
                       </View>
                     ) : null}
 
-                    <View style={styles.frm}>
+                    <View style={[styles.frm, {marginTop: 0}]}>
                       <Text style={styles.label}>{'TIME'.toUpperCase()}</Text>
                       <View style={styles.frmRow}>
                         <View style={styles.frmInline}>
@@ -762,7 +830,7 @@ export default class SetupTimeBlockScreen extends BaseComponent {
                         </View>
                       </View>
                     </View>
-                    <View style={styles.frm}>
+                    <View style={[styles.frm, {marginBottom: 10}]}>
                       <View style={[styles.frmRow, styles.frmRowMinus]}>
                         {this.state.timePicker && (
                           <DatePicker
@@ -841,103 +909,26 @@ export default class SetupTimeBlockScreen extends BaseComponent {
                         )}
                       </View>
                     </View>
-                    <View style={[styles.frm, {zIndex: 899}]}>
-                      <View style={[styles.inline, {position: 'relative'}]}>
-                        <Text
-                          style={[
-                            styles.label,
-                            {marginBottom: 0, paddingBottom: 0},
-                          ]}>
-                          {'Colour'.toUpperCase()}
-                        </Text>
-                        <TouchableOpacity
-                          style={[
-                            styles.colorPreview,
-                            {backgroundColor: this.state.taskSelectedColor},
-                          ]}
-                          onPress={() =>
-                            this.setToggleColorPicker()
-                          }></TouchableOpacity>
-                        {this.state.toggleColorPicker ? (
-                          <View style={styles.ColorPalette}>
-                            <ColorPalette
-                              onChange={color =>
-                                this.setState({
-                                  taskSelectedColor: color,
-                                  toggleColorPicker: false,
-                                })
-                              }
-                              defaultColor={this.state.taskSelectedColor}
-                              scaleToWindow
-                              paletteStyles={{
-                                backgroundColor: Colors.snow,
-                                padding: 4,
-                                borderRadius: 5,
-                                maxWidth: Metrics.screenWidth - 20,
-                              }}
-                              colors={[
-                                '#f2c745',
-                                '#E74C3C',
-                                '#9B59B6',
-                                '#2980B9',
-                                '#3498DB',
-                                '#1ABC9C',
-                                '#16A085',
-                                '#27AE60',
-                                '#2ECC71',
-                                '#C0392B',
-                                '#F39C12',
-                                '#E67E22',
-                                '#D35400',
-                                '#de3038',
-                                '#BDC3C7',
-                                '#95A5A6',
-                                '#7F8C8D',
-                                '#34495E',
-                                '#2C3E50',
-                                '#000000',
-                                '#47363c',
-                                '#9ee841',
-                                '#68869b',
-                                '#2fdf1d',
-                                '#79bc79',
-                                '#a24a75',
-                                '#627f8b',
-                                '#42675c',
-                                '#c777fd',
-                                '#d601d5',
-                                '#c048fc',
-                                '#5a9662',
-                                '#a5a080',
-                                '#F1C40F',
-                                '#c33794',
-                              ]}
-                              title={''}
-                            />
-                          </View>
-                        ) : null}
-                      </View>
-                    </View>
+
                     <View
                       style={{
-                        marginTop: 60,
-                        justifyContent: 'center',
-                        alignItems: 'center',
+                        marginTop: 0,
+                        paddingTop: 25,
+                        borderTopColor: Colors.snow,
+                        borderTopWidth: 0.5,
+                        width: '100%',
+                        // justifyContent: 'center',
+                        // alignItems: 'center',
                       }}>
-                      <Text style={[styles.label, {textAlign: 'center'}]}>
-                        {
-                          'Select day/s below if you would like this time block to repeat for a month.'
-                        }
+                      <Text style={[styles.label, {textAlign: 'left'}]}>
+                        {'Select day/s below if you would like this time block to repeat.'.toUpperCase()}
                       </Text>
                       <View
                         style={{
                           alignSelf: 'flex-start',
-                          marginHorizontal: 15,
-                          borderTopWidth: 0.3,
-                          width: '92%',
+                          // marginHorizontal: 15,
+                          width: '100%',
                           flex: 1,
-                          paddingVertical: 15,
-                          borderTopColor: Colors.snow,
                           justifyContent: 'space-between',
                           alignItems: 'center',
                           flexDirection: 'row',
@@ -960,7 +951,9 @@ export default class SetupTimeBlockScreen extends BaseComponent {
                                 {marginBottom: 0},
                               ]}>{`On ${moment(
                               this.state.calenderSelectedDay,
-                            ).format('DD MMM YYYY')}`}</Text>
+                            ).format('DD MMM YYYY')} - ${moment(
+                              this.state.calenderSelectedDay,
+                            ).format('dddd')}`}</Text>
                           )}
                         </>
                         <TouchableOpacity
@@ -1026,6 +1019,40 @@ export default class SetupTimeBlockScreen extends BaseComponent {
                             this.renderDays(item, index)
                           }
                           horizontal={true}
+                          contentContainerStyle={{
+                            flex: 1,
+                            justifyContent: 'space-between',
+                            marginTop: 10,
+                          }}
+                        />
+                      </View>
+
+                      <View
+                        style={{
+                          alignSelf: 'flex-start',
+                          // marginHorizontal: 15,
+                          width: '100%',
+                          flex: 1,
+                          justifyContent: 'space-between',
+                          borderTopColor: Colors.snow,
+                          borderTopWidth: 0.5,
+                          paddingVertical: 15,
+                          marginVertical: 15,
+                          paddingTop: 25,
+                        }}>
+                        <Text style={[styles.label, {textAlign: 'left'}]}>
+                          {'Colours'.toUpperCase()}
+                        </Text>
+
+                        <FlatList
+                          data={colours}
+                          extraData={this.state}
+                          keyExtractor={(item, index) => index}
+                          renderItem={({item, index}) =>
+                            this.renderColours(item, index)
+                          }
+                          horizontal={true}
+                          showsHorizontalScrollIndicator={false}
                         />
                       </View>
                     </View>

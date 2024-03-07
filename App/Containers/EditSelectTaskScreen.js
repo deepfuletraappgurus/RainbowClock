@@ -172,14 +172,14 @@ export default class EditSelectTaskScreen extends BaseComponent {
 
   isValidator = () => {
     if (
-      (this.state.taskType === Constants.TASK_TYPE_DEFAULT
-        ? this.state.taskName
-        : this.state.customTaskName
+      (this.state?.taskType === Constants.TASK_TYPE_DEFAULT
+        ? this.state?.taskName
+        : this.state?.customTaskName
       ).trim() == ''
     ) {
       Helper.showErrorMessage(Constants.MESSAGE_NO_TASK_NAME);
       return false;
-    } else if (this.state.taskTime.trim() == '') {
+    } else if (this.state?.taskTime?.trim() == '') {
       Helper.showErrorMessage(Constants.MESSAGE_SELECT_TASK_TIME);
       return false;
     }
@@ -187,16 +187,16 @@ export default class EditSelectTaskScreen extends BaseComponent {
     //     Helper.showErrorMessage(Constants.MESSAGE_SELECT_TASK_TOKEN_TYPE);
     //     return false;
     // }
-    else if (this.state.taskNumberOfToken.trim() == '') {
+    else if (this.state?.taskNumberOfToken?.trim() == '') {
       Helper.showErrorMessage(Constants.MESSAGE_NO_TASK_TOKEN);
       return false;
     } else if (
-      this.state.taskType === Constants.TASK_TYPE_CUSTOM &&
-      this.state.taskCustomImagePath === ''
+      this.state?.taskType === Constants.TASK_TYPE_CUSTOM &&
+      this.state?.taskCustomImagePath === ''
     ) {
       Helper.showErrorMessage(Constants.MESSAGE_NO_TASK_ICON);
       return false;
-    } else if (this.state.totalTaskSlotMinutes < this.state.taskTime) {
+    } else if (this.state?.totalTaskSlotMinutes < this.state?.taskTime) {
       Helper.showErrorMessage(Constants.MESSAGE_NO_GREATER_TASK);
       return false;
     }
@@ -301,7 +301,7 @@ export default class EditSelectTaskScreen extends BaseComponent {
     var taskDescription = this.state.customTaskDescription;
     var taskFromTime = this.state.dictCreateTask['fromTime'];
     var taskToTime = this.state.dictCreateTask['toTime'];
-    var taskTime = this.state.taskTime;
+    var taskTime = this.state?.taskTime;
     var taskColor = this.state.dictCreateTask['taskColor'];
     var taskTokenType =
       this.state.taskTokenType || Constants.TASK_TOKEN_STANDARD;
@@ -341,7 +341,7 @@ export default class EditSelectTaskScreen extends BaseComponent {
           this.setState({isLoading: false});
           if (resJSON.data.success) {
             this.state.totalTaskSlotMinutes =
-              this.state.totalTaskSlotMinutes - this.state.taskTime;
+              this.state.totalTaskSlotMinutes - this.state?.taskTime;
             console.log('✅✅✅', JSON.stringify(resJSON.data.data[0]));
             try {
               AsyncStorage.setItem(
@@ -936,7 +936,7 @@ export default class EditSelectTaskScreen extends BaseComponent {
                     </View>
                     <View style={styles.modalBody}>
                       <Text style={[styles.h1, styles.textCenter]}>
-                        {'CREATE NEW TASK'}
+                        {'CREATE CUSTOM TASK'}
                       </Text>
                       <View style={styles.content}>
                         <View style={styles.form}>
@@ -959,27 +959,7 @@ export default class EditSelectTaskScreen extends BaseComponent {
                               onSubmitEditing={event => {}}
                             />
                           </View>
-                          <View
-                            style={[
-                              styles.formControl,
-                              styles.formControlSmall,
-                            ]}>
-                            <TextInput
-                              style={styles.input}
-                              value={this.state.customTaskDescription.toUpperCase()}
-                              placeholder={'Further Information'.toUpperCase()}
-                              autoCapitalize="characters"
-                              placeholderTextColor={'#fff'}
-                              underlineColorAndroid={'transparent'}
-                              returnKeyType={'next'}
-                              onChangeText={customTaskDescription =>
-                                this.setState({customTaskDescription})
-                              }
-                              onSubmitEditing={event => {
-                                Keyboard.dismiss();
-                              }}
-                            />
-                          </View>
+                          
                           <View style={styles.iconContainer}>
                             <View style={styles.imageUploader}>
                               <View style={styles.uploadView}>

@@ -82,7 +82,7 @@ const ApplicationStyles = {
       flexDirection:'row',
       alignItems:'center',
       width:'100%',
-      borderBottomWidth:1,
+      borderBottomWidth:0.5,
       borderColor:'#fff',
       marginBottom:35
     },

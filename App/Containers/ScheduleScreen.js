@@ -187,21 +187,26 @@ export default class ScheduleScreen extends BaseComponent {
     this.toggleDropdown();
   };
 
-  onPressTask(objTask,item) {
-    if (
-      objTask.status != Constants.TASK_STATUS_COMPLETED &&
-      !this.state.isMenuAsParentPortal
-    ) {
-      this.setState({
-        objFooterSelectedTask: objTask,
-        taskComplete: true,
+  onPressTask(objTask, item) {
+    if (this.state.isMenuAsParentPortal) {
+      this.props.navigation.navigate('EditScheduleScreen', {
+        scheduleDetails: item.tasks[0],
       });
-    }
-    else{
-      this.setState({
-        showTaskList: true,
-        item: item,
-      });
+    } else {
+      if (
+        objTask.status != Constants.TASK_STATUS_COMPLETED &&
+        !this.state.isMenuAsParentPortal
+      ) {
+        this.setState({
+          objFooterSelectedTask: objTask,
+          taskComplete: true,
+        });
+      } else {
+        this.setState({
+          showTaskList: true,
+          item: item,
+        });
+      }
     }
   }
 
@@ -259,7 +264,11 @@ export default class ScheduleScreen extends BaseComponent {
   }
 
   renderTaskRow = (item, index) => {
-    console.log('-------ITEM', item?.is_school_clock,typeof item?.is_school_clock);
+    console.log(
+      '-------ITEM',
+      item?.is_school_clock,
+      typeof item?.is_school_clock,
+    );
     return (
       <TouchableOpacity
         style={[styles.ScheduleItem, {backgroundColor: item.tasks[0].color}]}
@@ -296,7 +305,7 @@ export default class ScheduleScreen extends BaseComponent {
                 return (
                   <TouchableOpacity
                     style={{marginRight: 12}}
-                    onPress={() => this.onPressTask(data,item)}>
+                    onPress={() => this.onPressTask(data, item)}>
                     {/* <Text style={styles.timer}>{data.time_from} {data.start_time_meridiem}-{data.time_to} {data.end_time_meridiem}</Text> */}
                     <Image
                       source={{uri: data.cate_image}}
@@ -364,7 +373,7 @@ export default class ScheduleScreen extends BaseComponent {
               )}
               {this.state.isMenuAsParentPortal ? (
                 <View style={[styles.inlineButtonGroup]}>
-                  <View style={styles.inlineButton}>
+                  {/* <View style={styles.inlineButton}>
                     <TouchableOpacity
                       style={[
                         styles.button,
@@ -374,8 +383,8 @@ export default class ScheduleScreen extends BaseComponent {
                       onPress={() => this.moveToAddNewTask()}>
                       <Text style={styles.buttonText}>{'ADD NEW'}</Text>
                     </TouchableOpacity>
-                  </View>
-                  <View style={styles.inlineButton}>
+                  </View> */}
+                  <View style={[styles.inlineButton, {flex: 1}]}>
                     <TouchableOpacity
                       style={[
                         styles.button,

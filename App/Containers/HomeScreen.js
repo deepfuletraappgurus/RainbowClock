@@ -314,25 +314,25 @@ export default class HomeScreen extends BaseComponent {
           function filterTasks(tasks) {
             let endIndex = -1;
             for (let i = 0; i < tasks.length; i++) {
-                const task = tasks[i];
-                if (!task.taskId) continue;
-                const startTime = moment(task.taskId.split(' - ')[0], 'hh:mm A');
-                const endTime = moment(task.taskId.split(' - ')[1], 'hh:mm A');
-                const sixPM = moment('06:00 PM', 'hh:mm A');
-                if (startTime.isAfter(sixPM)) {
-                    endIndex = i;
-                    break;
-                }
-                if (endTime.isAfter(sixPM)) {
-                    task.value = sixPM.diff(startTime, 'minutes');
-                }
+              const task = tasks[i];
+              if (!task.taskId) continue;
+              const startTime = moment(task.taskId.split(' - ')[0], 'hh:mm A');
+              const endTime = moment(task.taskId.split(' - ')[1], 'hh:mm A');
+              const sixPM = moment('06:00 PM', 'hh:mm A');
+              if (startTime.isAfter(sixPM)) {
+                endIndex = i;
+                break;
+              }
+              if (endTime.isAfter(sixPM)) {
+                task.value = sixPM.diff(startTime, 'minutes');
+              }
             }
             if (endIndex !== -1) {
-                return tasks.slice(0, endIndex);
+              return tasks.slice(0, endIndex);
             } else {
-                return tasks;
+              return tasks;
             }
-        }
+          }
 
           // Filter tasks
           const filteredTasks = filterTasks(stateData.pieDataAMPM);
@@ -415,25 +415,25 @@ export default class HomeScreen extends BaseComponent {
           function filterTasks(tasks) {
             let endIndex = -1;
             for (let i = 0; i < tasks.length; i++) {
-                const task = tasks[i];
-                if (!task.taskId) continue;
-                const startTime = moment(task.taskId.split(' - ')[0], 'hh:mm A');
-                const endTime = moment(task.taskId.split(' - ')[1], 'hh:mm A');
-                const sixPM = moment('06:00 PM', 'hh:mm A');
-                if (startTime.isAfter(sixPM)) {
-                    endIndex = i;
-                    break;
-                }
-                if (endTime.isAfter(sixPM)) {
-                    task.value = sixPM.diff(startTime, 'minutes');
-                }
+              const task = tasks[i];
+              if (!task.taskId) continue;
+              const startTime = moment(task.taskId.split(' - ')[0], 'hh:mm A');
+              const endTime = moment(task.taskId.split(' - ')[1], 'hh:mm A');
+              const sixPM = moment('06:00 PM', 'hh:mm A');
+              if (startTime.isAfter(sixPM)) {
+                endIndex = i;
+                break;
+              }
+              if (endTime.isAfter(sixPM)) {
+                task.value = sixPM.diff(startTime, 'minutes');
+              }
             }
             if (endIndex !== -1) {
-                return tasks.slice(0, endIndex);
+              return tasks.slice(0, endIndex);
             } else {
-                return tasks;
+              return tasks;
             }
-        }
+          }
 
           // Filter tasks
           const filteredTasks = filterTasks(stateData.pieDataAMPM);
@@ -907,7 +907,7 @@ export default class HomeScreen extends BaseComponent {
 
     const clearColor = Colors.clear;
     const pieData = data?.map(
-      ({value, isEmpty, color, is_school_clock}, index) => ({
+      ({taskId, value, isEmpty, color, is_school_clock}, index) => ({
         value,
         svg: {
           fill:
@@ -919,7 +919,8 @@ export default class HomeScreen extends BaseComponent {
           // fill: this.state.school ?!color ? Colors.black:Colors.blue:Colors.bloodOrange,
           // fill:color,
 
-          onPress: () => console.log('press', index),
+          onPress: () =>
+            isEmpty ? console.log('EMPTY') : this.setModalVisible(true, taskId),
         },
         key: `pie-${index}`,
         // key: `pie-5`,
@@ -935,9 +936,7 @@ export default class HomeScreen extends BaseComponent {
         svg: {
           fill: clearColor,
           onPress: () =>
-            isEmpty
-              ? console.log('PRESS ✅', data)
-              : this.setModalVisible(true, taskId),
+            isEmpty ? console.log('EMPTY') : this.setModalVisible(true, taskId),
         },
         key: `pie-${index}`,
         index: index,
@@ -972,11 +971,7 @@ export default class HomeScreen extends BaseComponent {
     );
 
     return (
-      <TouchableOpacity
-        style={styles.clock}
-        onPress={() => {
-          this.setModalVisible(true);
-        }}>
+      <TouchableOpacity style={styles.clock} disabled>
         <Image
           source={this.state.school ? Images.clockPurpleLight : Images.clock}
           style={styles.clockImage}
@@ -1021,19 +1016,7 @@ export default class HomeScreen extends BaseComponent {
 
           <PieChart
             style={styles.clockChartView}
-            data={
-              this.state.is_24HrsClock
-                ? pieDataTrans
-                : this.state.school
-                ? pieDataTrans.map(obj => {
-                    if (obj.is_school_clock !== true) {
-                      return {...obj, value: 0}; // If is_school_clock is already 1, leave value unchanged
-                    } else {
-                      return {...obj, value: 0}; // Otherwise, update value to 0
-                    }
-                  })
-                : pieDataTrans.filter(item => item.is_school_clock !== true)
-            }
+            data={pieDataTrans}
             outerRadius="100%"
             innerRadius="1%"
             padAngle={0}
