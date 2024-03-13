@@ -2,9 +2,11 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import React from 'react';
 import {
   Alert,
+  Dimensions,
   FlatList,
   Image,
   ImageBackground,
+  ScrollView,
   Text,
   TouchableOpacity,
   View,
@@ -171,15 +173,36 @@ export default class ScheduleScreen extends BaseComponent {
   moveToEditTask = item => {
     console.log('send task ' + JSON.stringify(item));
     if (this.state.isMenuAsParentPortal) {
-      this.props.navigation.navigate('EditScheduleScreen', {
-        scheduleDetails: item.tasks[0],
-      });
+      // this.props.navigation.navigate('EditScheduleScreen', {
+      //   scheduleDetails: item.tasks[0],
+      // });
     } else {
       this.setState({
         showTaskList: true,
         item: item,
       });
     }
+  };
+
+  parentViewEditTask = item => {
+    console.log('IIIIIIIIIIIII--', item);
+    var dictCreateTask = {
+      taskName: item.task_name,
+      fromTime: item.time_from,
+      toTime: item.time_to,
+      taskColor: item.color,
+      task_date: item?.task_date.includes(',')
+        ? item?.task_date.split(',')
+        : [item?.task_date],
+      is_date: item.is_date,
+      is_school_clock: item.is_school_clock,
+      scheduleDetails: item,
+      sub_task_id: item?.sub_task_id,
+      show_delete: true,
+    };
+    this.props.navigation.navigate('EditSelectTaskScreen', {
+      dictCreateTask: dictCreateTask,
+    });
   };
 
   selectDay = day => {
@@ -189,9 +212,7 @@ export default class ScheduleScreen extends BaseComponent {
 
   onPressTask(objTask, item) {
     if (this.state.isMenuAsParentPortal) {
-      this.props.navigation.navigate('EditScheduleScreen', {
-        scheduleDetails: item.tasks[0],
-      });
+      this.parentViewEditTask(objTask);
     } else {
       if (
         objTask.status != Constants.TASK_STATUS_COMPLETED &&
@@ -246,8 +267,76 @@ export default class ScheduleScreen extends BaseComponent {
   }
 
   setModal() {
+    console.log('!!!!!!!!!');
     this.setState({showTaskList: false});
     this.getChildId();
+  }
+
+  onTimeBlockDeletePress(dictCreateTask) {
+    console.log('..........', dictCreateTask);
+    dictCreateTask = dictCreateTask.tasks[0];
+    Helper.showConfirmationMessageActions(
+      "Are You Sure, You Want to Delete This Time Block.It's also remove All Task In This Time Block.",
+      'No',
+      'Yes',
+      () => {},
+      () => this.onActionYes(dictCreateTask),
+    );
+  }
+
+  onActionYes = dictCreateTask => {
+    const res = mApi
+      .deleteSchedule(
+        dictCreateTask?.id,
+        this.state.objSelectedChild.id,
+        dictCreateTask?.is_new,
+      )
+      .then(resJSON => {
+        console.log('✅✅✅---CHECKAVAIL', resJSON);
+        if (resJSON.ok && resJSON.status == 200) {
+          this.setState({isLoading: false});
+          if (resJSON.data.success) {
+            console.log('✅✅✅', JSON.stringify(resJSON.data.data[0]));
+            Helper.showErrorMessage(resJSON.data.message);
+            this.getTaskList();
+          } else {
+            Helper.showErrorMessage(resJSON.data.message);
+          }
+        } else if (resJSON.status == 500) {
+          this.setState({isLoading: false});
+          Helper.showErrorMessage(resJSON.data.message);
+        } else {
+          this.setState({isLoading: false});
+          Helper.showErrorMessage(Constants.SERVER_ERROR);
+        }
+      });
+  };
+
+  onTimeBlockEditPress(item) {
+    this.props.navigation.navigate('EditScheduleScreen', {
+      scheduleDetails: item.tasks[0],
+    });
+  }
+
+  onTimeBlockAddPress(item) {
+    item = item?.tasks[0];
+    console.log('IIIIIIIIIIIII--', item);
+    var dictCreateTask = {
+      fromTime: item.time_from,
+      toTime: item.time_to,
+      taskColor: item.color,
+      task_date: item?.task_date.includes(',')
+        ? item?.task_date.split(',')
+        : [item?.task_date],
+      is_date: item.is_date,
+      is_school_clock: item.is_school_clock,
+      task_id: item?.id,
+      from_listing: 1,
+      is_new: item?.is_new,
+    };
+    this.props.navigation.navigate('SelectTaskScreen', {
+      dictCreateTask: dictCreateTask,
+    });
   }
 
   //#endregion
@@ -264,79 +353,137 @@ export default class ScheduleScreen extends BaseComponent {
   }
 
   renderTaskRow = (item, index) => {
-    console.log(
-      '-------ITEM',
-      item?.is_school_clock,
-      typeof item?.is_school_clock,
-    );
+    console.log('-------ITEM', item, typeof item?.is_school_clock);
     return (
       <TouchableOpacity
-        style={[styles.ScheduleItem, {backgroundColor: item.tasks[0].color}]}
+        style={[
+          styles.ScheduleItem,
+          {
+            backgroundColor: item.tasks[0].color,
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+          },
+        ]}
+        activeOpacity={1}
         onPress={() => this.moveToEditTask(item)}>
-        <View style={{flex: 1, flexDirection: 'row'}}>
-          {/*MP*/}
-          <Text style={styles.timer}>{item.time}</Text>
-          {item?.tasks[0]?.is_school_clock == true ? (
-            <Image
-              source={Images.bell}
-              style={{
-                width: Metrics.screenWidth / 16,
-                height: Metrics.screenWidth / 16,
-                resizeMode: 'contain',
-              }}
-            />
-          ) : null}
+        <View>
+          <View style={{flex: 1, flexDirection: 'row'}}>
+            {/*MP*/}
+            <Text style={styles.timer}>{item.time}</Text>
+            {item?.tasks[0]?.is_school_clock == true ? (
+              <Image
+                source={Images.bell}
+                style={{
+                  width: Metrics.screenWidth / 16,
+                  height: Metrics.screenWidth / 16,
+                  resizeMode: 'contain',
+                }}
+              />
+            ) : null}
 
-          <Text style={styles.timer}>{item.task_name}</Text>
-          {item.status == Constants.TASK_STATUS_COMPLETED ? (
+            {/* <Text style={styles.timer}>{item.task_name}</Text> */}
+            {item.status == Constants.TASK_STATUS_COMPLETED ? (
+              <TouchableOpacity
+                style={[styles.taskRecover, {width: '30%'}]}
+                onPress={() => this.callRecoverTask(item)}>
+                <Text style={styles.taskRecoverText}>
+                  {'Recover'.toUpperCase()}
+                </Text>
+              </TouchableOpacity>
+            ) : null}
+          </View>
+          {/*MP*/}
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            style={[
+              styles.ScheduleTask,
+              {
+                width:this.state.isMenuAsParentPortal ?  Dimensions.get('window').width / 1.35 : Dimensions.get('window').width / 1.25,
+              },
+            ]}>
+            {item.tasks && item.tasks.length > 0
+              ? item.tasks.map((data, i) => {
+                  return (
+                    <TouchableOpacity
+                      style={{marginRight: 12}}
+                      onPress={() => this.onPressTask(data, item)}>
+                      {/* <Text style={styles.timer}>{data.time_from} {data.start_time_meridiem}-{data.time_to} {data.end_time_meridiem}</Text> */}
+                      <Image
+                        source={{uri: data.cate_image}}
+                        style={[
+                          data.status == Constants.TASK_STATUS_COMPLETED
+                            ? styles.fadedIcon
+                            : styles.icon,
+                          {alignSelf: 'center', resizeMode: 'contain'},
+                        ]}
+                      />
+                      <Text
+                        style={[
+                          styles.timer,
+                          {
+                            color: Colors.snow,
+                            marginBottom: 0,
+                            marginTop: 8,
+                            textAlign: 'center',
+                          },
+                        ]}>
+                        {data?.task_name}
+                      </Text>
+                      {item.status == Constants.TASK_STATUS_COMPLETED ? (
+                        <TouchableOpacity
+                          style={[styles.taskRecover, {width: '30%'}]}
+                          onPress={() => this.callRecoverTask(item)}>
+                          <Text style={styles.taskRecoverText}>
+                            {'Recover'.toUpperCase()}
+                          </Text>
+                        </TouchableOpacity>
+                      ) : null}
+                    </TouchableOpacity>
+                  );
+                })
+              : null}
+          </ScrollView>
+        </View>
+        {this.state.isMenuAsParentPortal && (
+          <View
+            style={
+              {
+                // flexDirection: 'column',
+                // justifyContent:'center',
+              }
+            }>
             <TouchableOpacity
-              style={[styles.taskRecover, {width: '30%'}]}
-              onPress={() => this.callRecoverTask(item)}>
-              <Text style={styles.taskRecoverText}>
-                {'Recover'.toUpperCase()}
-              </Text>
+              style={{marginBottom: 5, padding: 5}}
+              hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}
+              onPress={() => this.onTimeBlockAddPress(item)}>
+              <Image
+                source={Images.add}
+                style={[styles.scheduleEditImage, {resizeMode: 'contain'}]}
+              />
             </TouchableOpacity>
-          ) : null}
-        </View>
-        {/*MP*/}
-        <View style={styles.ScheduleTask}>
-          {item.tasks && item.tasks.length > 0
-            ? item.tasks.map((data, i) => {
-                return (
-                  <TouchableOpacity
-                    style={{marginRight: 12}}
-                    onPress={() => this.onPressTask(data, item)}>
-                    {/* <Text style={styles.timer}>{data.time_from} {data.start_time_meridiem}-{data.time_to} {data.end_time_meridiem}</Text> */}
-                    <Image
-                      source={{uri: data.cate_image}}
-                      style={[
-                        data.status == Constants.TASK_STATUS_COMPLETED
-                          ? styles.fadedIcon
-                          : styles.icon,
-                        {alignSelf: 'center'},
-                      ]}
-                    />
-                    <Text
-                      style={[
-                        styles.timer,
-                        {color: Colors.snow, marginBottom: 0, marginTop: 8},
-                      ]}>
-                      {data?.task_name}
-                    </Text>
-                    {item.status == Constants.TASK_STATUS_COMPLETED ? (
-                      <TouchableOpacity
-                        style={[styles.taskRecover, {width: '30%'}]}
-                        onPress={() => this.callRecoverTask(item)}>
-                        <Text style={styles.taskRecoverText}>
-                          {'Recover'.toUpperCase()}
-                        </Text>
-                      </TouchableOpacity>
-                    ) : null}
-                  </TouchableOpacity>
-                );
-              })
-            : null}
-        </View>
+
+            <TouchableOpacity
+              style={{marginBottom: 5, padding: 5, zIndex: 10000}}
+              hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}
+              onPress={() => this.onTimeBlockEditPress(item)}>
+              <Image
+                source={Images.edit}
+                style={[styles.scheduleEditImage, {resizeMode: 'contain'}]}
+              />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={{marginBottom: 5, padding: 5, zIndex: 10000}}
+              hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}
+              onPress={() => this.onTimeBlockDeletePress(item)}>
+              <Image
+                source={Images.delete}
+                style={[styles.scheduleEditImage, {resizeMode: 'contain'}]}
+              />
+            </TouchableOpacity>
+          </View>
+        )}
       </TouchableOpacity>
     );
   };

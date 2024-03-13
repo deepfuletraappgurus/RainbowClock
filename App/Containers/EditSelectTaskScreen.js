@@ -15,6 +15,7 @@ import {
   TouchableOpacity,
   View,
   Alert,
+  Dimensions,
 } from 'react-native';
 import ImagePicker from 'react-native-image-crop-picker';
 import Icon from 'react-native-vector-icons/FontAwesome';
@@ -24,6 +25,7 @@ import * as Helper from '../Lib/Helper';
 import Api from '../Services/Api';
 import {Colors, Images, Metrics} from '../Themes';
 import Moment from 'moment';
+import RBSheet from 'react-native-raw-bottom-sheet';
 
 // Styles
 import styles from './Styles/SelectTaskScreenStyles';
@@ -62,6 +64,7 @@ export default class EditSelectTaskScreen extends BaseComponent {
       dictCreateTask: this.props.navigation.state.params.dictCreateTask,
       arrTypeOfTokens: [],
       arrTaskTime: [],
+      arrDefaultTaskTime: [],
       arrCustomCategoryIcons: [],
       selectedCategory: '',
       customCategory: '',
@@ -78,6 +81,7 @@ export default class EditSelectTaskScreen extends BaseComponent {
       taskCustomImagePath: '',
       totalTaskSlotMinutes: 0,
       isUpLoading: false,
+      isDeletesubTaskLoading:false
     };
   }
 
@@ -86,6 +90,9 @@ export default class EditSelectTaskScreen extends BaseComponent {
     super.componentDidMount();
     this.getMinutesForTheTimeSlot();
     this.state.arrTaskTime = [...Array(60)].map((_, i) => i + 1 + '');
+    this.state.arrDefaultTaskTime = [...Array(4)].map(
+      (_, i) => (i + 1) * 5 + '',
+    );
     this.state.arrTypeOfTokens = [
       Constants.TASK_TOKEN_STANDARD,
       Constants.TASK_TOKEN_SPECIAL,
@@ -113,6 +120,7 @@ export default class EditSelectTaskScreen extends BaseComponent {
         taskName: scheduleDetails?.task_name,
         taskNumberOfToken: scheduleDetails?.no_of_token,
         taskType: scheduleDetails?.type,
+        is_saved_for_future: scheduleDetails?.is_saved_for_future,
       });
       this.tokenTypeSelected(scheduleDetails?.token_type);
       this.taskTimeSelected(scheduleDetails?.task_time);
@@ -168,6 +176,61 @@ export default class EditSelectTaskScreen extends BaseComponent {
     if (this.isValidator()) {
       this.callUpdateTask();
     }
+  };
+
+  deleteTask = () => {
+    Helper.showConfirmationMessageActions(
+      'Are You Sure, You Want to Delete This Task.',
+      'No',
+      'Yes',
+      () => {},
+      () => this.onActionYes(),
+    );
+  };
+
+  onActionYes = () => {
+    this.setState({
+      isDeletesubTaskLoading:true
+    })
+    var taskId =
+      this.props.navigation.state.params.dictCreateTask.scheduleDetails
+        .sub_task_id;
+    var childId = this.state.objSelectedChild.id;
+    const res = objSecureAPI.deleteSubTask(taskId, childId).then(resJSON => {
+      console.log('✅✅✅--', resJSON);
+      if (resJSON.ok && resJSON.status == 200) {
+        this.setState({isDeletesubTaskLoading: false});
+        if (resJSON.data.success) {
+          try {
+            Helper.showConfirmationMessagesignleAction(
+              resJSON.data.message,
+              'Ok',
+            ).then(action => {
+              if (action) {
+                if (this.state.taskType === Constants.TASK_TYPE_DEFAULT) {
+                  this.setState({isLoading: false});
+                  this.setTaskModelVisible();
+                  this.props.navigation.goBack();
+                } else {
+                  this.setCreateTask();
+                  this.getTaskCategories();
+                }
+              }
+            });
+          } catch (error) {
+            console.log('AsyncStorage Error: ', error);
+          }
+        } else {
+          Helper.showErrorMessage(resJSON.data.message);
+        }
+      } else if (resJSON.status == 500) {
+        this.setState({isDeletesubTaskLoading: false});
+        Helper.showErrorMessage(resJSON.data.message);
+      } else {
+        this.setState({isDeletesubTaskLoading: false});
+        Helper.showErrorMessage(Constants.SERVER_ERROR);
+      }
+    });
   };
 
   isValidator = () => {
@@ -288,7 +351,8 @@ export default class EditSelectTaskScreen extends BaseComponent {
   callUpdateTask = () => {
     this.setState({isLoading: true});
     var taskId =
-      this.props.navigation.state.params.dictCreateTask.scheduleDetails.id;
+      this.props.navigation.state.params.dictCreateTask.scheduleDetails
+        .sub_task_id;
     var childId = this.state.objSelectedChild.id;
     var mainCatId = this.state.selectedCategory.id;
     var subCatId = this.state.selectedSubCategory;
@@ -309,8 +373,8 @@ export default class EditSelectTaskScreen extends BaseComponent {
     var taskDates = this.state.dictCreateTask['task_date'].join();
     var frequency = this.state.dictCreateTask['frequency'];
     var taskCustomIcon = this.state.taskCustomImage;
-    var is_date = this.state.dictCreateTask['is_date']
-    var is_new = this.state.dictCreateTask['is_new']
+    var is_date = this.state.dictCreateTask['is_date'];
+    var is_new = this.state.dictCreateTask['is_new'];
     // var taskId =
 
     const res = objSecureAPI
@@ -320,20 +384,10 @@ export default class EditSelectTaskScreen extends BaseComponent {
         mainCatId,
         subCatId,
         taskType,
-        timeSloteName,
         taskName,
-        taskDescription,
-        taskFromTime,
-        taskToTime,
         taskTime,
-        taskColor,
         taskTokenType,
         taskNumberOfTokens,
-        taskDates,
-        taskCustomIcon,
-        frequency,
-        is_date,
-        is_new
       )
       .then(resJSON => {
         console.log('✅✅✅--', resJSON);
@@ -355,14 +409,15 @@ export default class EditSelectTaskScreen extends BaseComponent {
               ).then(action => {
                 if (action) {
                   if (this.state.taskType === Constants.TASK_TYPE_DEFAULT) {
+                    this.setState({isLoading: false});
                     this.setTaskModelVisible();
+                    this.props.navigation.goBack();
                   } else {
                     this.setCreateTask();
                     this.getTaskCategories();
                   }
                 }
               });
-              this.props.navigation.pop(2)
             } catch (error) {
               console.log('AsyncStorage Error: ', error);
             }
@@ -423,7 +478,7 @@ export default class EditSelectTaskScreen extends BaseComponent {
       <TouchableOpacity
         style={styles.dropdownItem}
         onPress={() => this.taskTimeSelected(item)}>
-        <Text style={styles.dropdownItemText}>{item}</Text>
+        <Text style={styles.dropdownItemText}>{`${item} - Minute`}</Text>
       </TouchableOpacity>
     );
   }
@@ -432,6 +487,12 @@ export default class EditSelectTaskScreen extends BaseComponent {
     this.setState({
       taskTime: time,
       timeForTaskDropdown: false,
+    });
+  };
+
+  defaultTaskTimeSelected = time => {
+    this.setState({
+      taskTime: time,
     });
   };
 
@@ -446,6 +507,37 @@ export default class EditSelectTaskScreen extends BaseComponent {
         ]}
         onPress={() => this.setTaskModelVisible(item)}>
         <Image source={{uri: item.image}} style={styles.taskIcon} />
+      </TouchableOpacity>
+    );
+  }
+
+  renderTimerBottomSheet = () => {
+    return (
+      <View style={{flex: 1, padding: 15}}>
+        <FlatList
+          keyboardShouldPersistTaps={'always'}
+          data={this.state.arrTaskTime}
+          extraData={this.state}
+          keyExtractor={(item, index) => index}
+          renderItem={({item, index}) => this.renderTaskTime(item, index)}
+          contentContainerStyle={{paddingVertical: 15}}
+          showsVerticalScrollIndicator={false}
+        />
+      </View>
+    );
+  };
+  renderDefaultTaskTime(item, index) {
+    return (
+      <TouchableOpacity
+        style={{
+          backgroundColor: Colors.cloud + 10,
+          borderRadius: 20,
+          paddingHorizontal: 20,
+          marginRight: 15,
+          paddingVertical: 10,
+        }}
+        onPress={() => this.defaultTaskTimeSelected(item)}>
+        <Text style={styles.dropdownItemText}>{`${item} - Min`}</Text>
       </TouchableOpacity>
     );
   }
@@ -658,237 +750,339 @@ export default class EditSelectTaskScreen extends BaseComponent {
         <Modal
           animationType="slide"
           transparent={true}
-          visible={this.state.selectTaskModel}
-          onRequestClose={() => {
-            Alert.alert('Modal has been closed.');
-          }}>
+          visible={this.state.selectTaskModel}>
           <View style={[styles.modal, styles.modalBlueTrans]}>
-            <SafeAreaView style={styles.SafeAreaView}>
-              <KeyboardAvoidingView
-                style={styles.mainContainer}
-                behavior={'padding'}>
-                <View style={styles.modalView}>
-                  <ScrollView
-                    style={styles.modalDialog}
-                    contentContainerStyle={styles.ScrollView}>
-                    <View style={[styles.container]}>
+            <KeyboardAvoidingView
+              style={styles.mainContainer}
+              behavior={'padding'}>
+              <View style={styles.modalView}>
+                <ScrollView
+                  style={[styles.modalDialog, {paddingVertical: 15}]}
+                  contentContainerStyle={styles.ScrollView}>
+                  <View style={[styles.container]}>
+                    <View
+                      style={[
+                        styles.containerBody,
+                        {flexDirection: 'column-reverse'},
+                      ]}>
                       <View
                         style={[
-                          styles.containerBody,
-                          {flexDirection: 'column-reverse'},
+                          styles.modalFooter,
+                          styles.paddingNull,
+                          {marginTop: 30},
                         ]}>
-                        <View
+                        <TouchableOpacity
                           style={[
-                            styles.modalFooter,
-                            styles.paddingNull,
-                            {marginTop: 30},
-                          ]}>
+                            styles.button,
+                            styles.buttonPrimary,
+                            {marginTop: 0},
+                          ]}
+                          onPress={() => this.updateTask()}>
+                          {this.state.isLoading ? (
+                            <Spinner color={'#FFFFFF'} size={'small'} />
+                          ) : (
+                            <Text style={styles.buttonText}>
+                              {'UPDATE TASK'}
+                            </Text>
+                          )}
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                          style={[
+                            styles.button,
+                            styles.buttonPrimary,
+                            {marginTop: 0},
+                          ]}
+                          onPress={() => {
+                            this.deleteTask();
+                          }}>
+                            {this.state.isDeletesubTaskLoading ? (
+                            <Spinner color={'#FFFFFF'} size={'small'} />
+                          ) : (
+                            <Text style={styles.buttonText}>{'DELETE TASK'}</Text>
+                          )}
+                          
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                          style={[
+                            styles.button,
+                            styles.buttonPrimary,
+                            {marginTop: 0},
+                          ]}
+                          onPress={() => {
+                            this.setTaskModelVisible();
+                            this.props.navigation.goBack();
+                          }}>
+                          <Text style={styles.buttonText}>{'CANCEL'}</Text>
+                        </TouchableOpacity>
+                      </View>
+                      <View style={{flexGrow: 1}}>
+                        <View style={styles.modalTopheader}>
                           <TouchableOpacity
-                            style={[
-                              styles.button,
-                              styles.buttonPrimary,
-                              {marginTop: 0},
-                            ]}
-                            onPress={() => this.updateTask()}>
-                            {this.state.isLoading ? (
-                              <Spinner color={'#FFFFFF'} size={'small'} />
-                            ) : (
-                              <Text style={styles.buttonText}>
-                                {'UPDATE TASK'}
-                              </Text>
-                            )}
+                            style={styles.modalCloseTouch}
+                            onPress={() => {
+                              this.setState({isLoading: false});
+                              this.setTaskModelVisible();
+                              this.props.navigation.goBack();
+                            }}>
+                            <Image
+                              source={Images.close}
+                              style={[styles.close, {tintColor: Colors.black}]}
+                            />
                           </TouchableOpacity>
-                          <TouchableOpacity
-                            style={[
-                              styles.button,
-                              styles.buttonPrimary,
-                              {marginTop: 0},
-                            ]}
-                            onPress={() => this.setTaskModelVisible()}>
-                            <Text style={styles.buttonText}>{'CANCEL'}</Text>
-                          </TouchableOpacity>
-                        </View>
-                        <View style={{flexGrow: 1}}>
-                          <View style={styles.modalTopheader}>
+                          <View
+                            style={{
+                              padding: 15,
+                              borderRadius: 15,
+                              justifyContent: 'center',
+                              alignItems: 'center',
+                              backgroundColor:
+                                this.state.dictCreateTask['taskColor'],
+                              alignSelf: 'center',
+                              marginTop: 20,
+                            }}>
                             <Image
                               source={{uri: this.state.taskImage}}
                               style={styles.taskIconLarge}
                             />
-                            <TouchableOpacity
-                              style={[
-                                styles.button,
-                                {
-                                  marginTop: 15,
-                                  alignSelf: 'center',
-                                  width: null,
-                                },
-                              ]}
-                              onPress={() => this.editTaskName()}>
-                              {/* {this.state.editTaskName ? */}
-                              <TextInput
-                                value={this.state.taskName.toUpperCase()}
-                                style={styles.buttonText}
-                                autoCapitalize="characters"
-                                underlineColorAndroid={'transparent'}
-                                returnKeyType={'done'}
-                                placeholder={'Task Name'.toUpperCase()}
-                                onChangeText={name => {
-                                  (this.state.taskName = name.toUpperCase()),
-                                    this.setState({});
-                                }}
-                                onSubmitEditing={event => {}}
-                              />
-                              {/* : 
-                                                                <View style={{flexDirection:'row', alignItems:'center'}}>
-                                                                    <Text style={[styles.buttonText, {paddingRight:10, paddingLeft:20}]}>{(this.state.dictCreateTask['taskName']).toUpperCase()}</Text>
-                                                                    <Image source={Images.editTask} style={styles.editTask} />
-                                                                </View>
-                                                                } */}
-                            </TouchableOpacity>
                           </View>
-                          <View style={{flexDirection: 'column-reverse'}}>
-                            <View style={styles.frm}>
-                              <View style={styles.inline}>
-                                <Text
-                                  style={[
-                                    styles.label,
-                                    {
-                                      marginBottom: 0,
-                                      paddingBottom: 0,
-                                      color: Colors.titleColor,
-                                      flex: 0.5,
-                                    },
-                                  ]}>
-                                  {'Number of Tokens'.toUpperCase()}
-                                </Text>
-                                <View style={{flex: 1, paddingLeft: 15}}>
-                                  <TextInput
-                                    value={this.state.taskNumberOfToken}
-                                    style={[
-                                      styles.inputItem,
-                                      styles.buttonBorder,
-                                    ]}
-                                    underlineColorAndroid={'transparent'}
-                                    returnKeyType={'next'}
-                                    keyboardType={'number-pad'}
-                                    onChangeText={token =>
-                                      this.setState({taskNumberOfToken: token})
-                                    }
-                                    onSubmitEditing={event => {}}
-                                  />
-                                </View>
-                              </View>
-                            </View>
-                            <View style={styles.frm}>
+                        </View>
+
+                        <View style={{marginTop: 30}}>
+                          <View style={{marginVertical: 10}}>
+                            <Text style={[styles.dropdownButtonText]}>
+                              Enter Task Name
+                            </Text>
+                            <TextInput
+                              value={this.state.taskName.toUpperCase()}
+                              style={{
+                                borderWidth: 1,
+                                borderColor: Colors.gray,
+                                padding: Platform.OS === 'ios' ? 15 : null,
+                                borderRadius: 5,
+                                marginTop: 10,
+                              }}
+                              autoCapitalize="characters"
+                              underlineColorAndroid={'transparent'}
+                              returnKeyType={'done'}
+                              placeholder={'Task Name'.toUpperCase()}
+                              onChangeText={name => {
+                                (this.state.taskName = name.toUpperCase()),
+                                  this.setState({});
+                              }}
+                              onSubmitEditing={event => {}}
+                              maxLength={20}
+                            />
+                          </View>
+
+                          <View style={{marginVertical: 10}}>
+                            <RBSheet
+                              ref={ref => {
+                                this.RBSheetTimer = ref;
+                              }}
+                              height={Dimensions.get('window').height / 2.4}
+                              width={Dimensions.get('window').width}
+                              openDuration={250}>
+                              {this.renderTimerBottomSheet()}
+                            </RBSheet>
+                            <Text style={[styles.dropdownButtonText]}>
+                              Set a Timer
+                            </Text>
+                            <TouchableOpacity
+                              onPress={() => this.RBSheetTimer.open()}
+                              style={{
+                                flex: 1,
+                                padding: 14,
+                                borderWidth: 1,
+                                borderColor: Colors.gray,
+                                borderRadius: 5,
+                                // justifyContent: 'center',
+                                alignItems: 'center',
+                                flexDirection: 'row',
+                                backgroundColor: Colors.white,
+                                marginTop: 10,
+                              }}>
                               <Text
                                 style={[
-                                  styles.label,
-                                  {color: Colors.titleColor, fontSize: 16},
+                                  styles.mediumButtonText,
+                                  {
+                                    color: this.state.taskTime
+                                      ? Colors.charcoal
+                                      : Colors.gray,
+                                  },
                                 ]}>
-                                {'TOKENS'}
+                                {this.state.taskTime
+                                  ? this.state.taskTime + ' Minutes'
+                                  : 'Select Time'}
                               </Text>
+                            </TouchableOpacity>
+                            <FlatList
+                              data={this.state.arrDefaultTaskTime}
+                              extraData={this.state}
+                              keyExtractor={(item, index) => index}
+                              renderItem={({item, index}) =>
+                                this.renderDefaultTaskTime(item, index)
+                              }
+                              contentContainerStyle={{paddingVertical: 15}}
+                              showsVerticalScrollIndicator={false}
+                              keyboardShouldPersistTaps={'always'}
+                              horizontal
+                              showsHorizontalScrollIndicator={false}
+                            />
+                          </View>
+
+                          <View style={{marginVertical: 10}}>
+                            <Text style={[styles.dropdownButtonText]}>
+                              Type Of Tokens
+                            </Text>
+                            <View
+                              style={{
+                                flexDirection: 'row',
+                                alignItems: 'center',
+                                justifyContent: 'space-between',
+                                marginTop: 10,
+                              }}>
                               <TouchableOpacity
-                                style={[
-                                  styles.dropdownButton,
-                                  styles.buttonBorder,
-                                ]}
                                 onPress={() =>
-                                  this.toggleTypeOfTokenDropdown()
-                                }>
-                                <Text style={styles.dropdownButtonText}>
-                                  {this.state.taskTokenType
-                                    ? this.state.taskTokenType
-                                    : 'TYPE OF TOKENS'}
-                                </Text>
+                                  this.tokenTypeSelected(
+                                    Constants.TASK_TOKEN_STANDARD,
+                                  )
+                                }
+                                style={{
+                                  flex: 0.45,
+                                  paddingVertical: 11,
+                                  borderWidth:
+                                    this.state.taskTokenType ===
+                                    Constants.TASK_TOKEN_STANDARD
+                                      ? 2
+                                      : 1,
+                                  borderColor:
+                                    this.state.taskTokenType ===
+                                    Constants.TASK_TOKEN_STANDARD
+                                      ? Colors.darkPink
+                                      : Colors.gray,
+                                  borderRadius: 5,
+                                  justifyContent: 'center',
+                                  alignItems: 'center',
+                                  flexDirection: 'row',
+                                  backgroundColor:
+                                    this.state.taskTokenType ===
+                                    Constants.TASK_TOKEN_STANDARD
+                                      ? Colors.pink + 15
+                                      : Colors.white,
+                                }}>
                                 <Image
-                                  source={Images.downarrow}
-                                  style={styles.downarrow}
+                                  source={Constants.standardRewardIcon}
+                                  style={{width: 24, height: 24}}
                                 />
-                              </TouchableOpacity>
-                              {this.state.typeOfTokensDropdown ? (
-                                <View
-                                  style={[
-                                    styles.dropdown,
-                                    styles.dropdownSmall,
-                                    styles.dropdownBoxshadow,
-                                  ]}>
-                                  <FlatList
-                                    keyboardShouldPersistTaps={'always'}
-                                    data={this.state.arrTypeOfTokens}
-                                    extraData={this.state}
-                                    keyExtractor={(item, index) => index}
-                                    renderItem={({item, index}) =>
-                                      this.renderTokenType(item, index)
-                                    }
-                                    contentContainerStyle={{padding: 0}}
-                                  />
-                                </View>
-                              ) : null}
-                            </View>
-                            <View style={styles.divider}></View>
-                            <View style={styles.frm}>
-                              <View style={styles.inline}>
                                 <Text
                                   style={[
-                                    styles.label,
-                                    {
-                                      marginBottom: 0,
-                                      paddingBottom: 0,
-                                      color: Colors.titleColor,
-                                      flex: 0.5,
-                                    },
+                                    styles.mediumButtonText,
+                                    {color: Colors.charcoal},
                                   ]}>
-                                  {'SET A TIMER'}
+                                  {Constants.TASK_TOKEN_STANDARD}
                                 </Text>
-                                <View style={{flex: 1, paddingLeft: 15}}>
-                                  <TouchableOpacity
-                                    style={[
-                                      styles.dropdownButton,
-                                      styles.buttonBorder,
-                                    ]}
-                                    onPress={() =>
-                                      this.toggleTimeForTokenDropdown()
-                                    }>
-                                    <Text style={styles.dropdownButtonText}>
-                                      {this.state.taskTime
-                                        ? this.state.taskTime + ' Minutes'
-                                        : ''}
-                                    </Text>
-                                    <Image
-                                      source={Images.downarrow}
-                                      style={styles.downarrow}
-                                    />
-                                  </TouchableOpacity>
-                                </View>
-                                {this.state.timeForTaskDropdown ? (
-                                  <View
-                                    style={[
-                                      styles.dropdown,
-                                      styles.dropdownSmall,
-                                      styles.dropdownBoxshadow,
-                                    ]}>
-                                    <FlatList
-                                      keyboardShouldPersistTaps={'always'}
-                                      data={this.state.arrTaskTime}
-                                      extraData={this.state}
-                                      keyExtractor={(item, index) => index}
-                                      renderItem={({item, index}) =>
-                                        this.renderTaskTime(item, index)
-                                      }
-                                      contentContainerStyle={{padding: 0}}
-                                    />
-                                  </View>
-                                ) : null}
-                              </View>
+                              </TouchableOpacity>
+
+                              <TouchableOpacity
+                                onPress={() =>
+                                  this.tokenTypeSelected(
+                                    Constants.TASK_TOKEN_SPECIAL,
+                                  )
+                                }
+                                style={{
+                                  flex: 0.45,
+                                  paddingVertical: 11,
+                                  borderWidth:
+                                    this.state.taskTokenType ===
+                                    Constants.TASK_TOKEN_SPECIAL
+                                      ? 2
+                                      : 1,
+                                  borderColor:
+                                    this.state.taskTokenType ===
+                                    Constants.TASK_TOKEN_SPECIAL
+                                      ? Colors.darkPink
+                                      : Colors.gray,
+                                  borderRadius: 5,
+                                  justifyContent: 'center',
+                                  alignItems: 'center',
+                                  flexDirection: 'row',
+                                  backgroundColor:
+                                    this.state.taskTokenType ===
+                                    Constants.TASK_TOKEN_SPECIAL
+                                      ? Colors.pink + 15
+                                      : Colors.white,
+                                }}>
+                                <Image
+                                  source={Images.reward}
+                                  style={{width: 24, height: 24}}
+                                />
+                                <Text
+                                  style={[
+                                    styles.mediumButtonText,
+                                    {color: Colors.charcoal},
+                                  ]}>
+                                  {Constants.TASK_TOKEN_SPECIAL}
+                                </Text>
+                              </TouchableOpacity>
                             </View>
                           </View>
+
+                          <View style={{marginVertical: 10}}>
+                            <Text style={[styles.dropdownButtonText]}>
+                              Number Of Tokens
+                            </Text>
+                            <TextInput
+                              style={{
+                                borderWidth: 1,
+                                borderColor: Colors.gray,
+                                padding: Platform.OS === 'ios' ? 15 : null,
+                                borderRadius: 5,
+                                marginTop: 10,
+                              }}
+                              autoCapitalize="characters"
+                              underlineColorAndroid={'transparent'}
+                              returnKeyType={'done'}
+                              placeholder={'Task Name'.toUpperCase()}
+                              maxLength={20}
+                              value={this.state.taskNumberOfToken}
+                              keyboardType={'number-pad'}
+                              onChangeText={token =>
+                                this.setState({taskNumberOfToken: token})
+                              }
+                              onSubmitEditing={event => {}}
+                            />
+                          </View>
+
+                          <TouchableOpacity
+                            style={{
+                              marginVertical: 10,
+                              flexDirection: 'row',
+                              alignItems: 'center',
+                            }}
+                            onPress={() => {
+                              this.setState({
+                                isSaveForFuture: !this.state.isSaveForFuture,
+                              });
+                            }}>
+                            <Image
+                              source={
+                                this.state.isSaveForFuture
+                                  ? Images.checked
+                                  : Images.unchecked
+                              }
+                              style={{width: 18, height: 18, marginRight: 5}}
+                            />
+                            <Text style={[styles.dropdownButtonText]}>
+                              Save This Task For Future Reference.
+                            </Text>
+                          </TouchableOpacity>
                         </View>
                       </View>
                     </View>
-                  </ScrollView>
-                </View>
-              </KeyboardAvoidingView>
-            </SafeAreaView>
+                  </View>
+                </ScrollView>
+              </View>
+            </KeyboardAvoidingView>
           </View>
         </Modal>
 
@@ -959,7 +1153,7 @@ export default class EditSelectTaskScreen extends BaseComponent {
                               onSubmitEditing={event => {}}
                             />
                           </View>
-                          
+
                           <View style={styles.iconContainer}>
                             <View style={styles.imageUploader}>
                               <View style={styles.uploadView}>

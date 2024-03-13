@@ -145,6 +145,7 @@ const Constants = {
     MESSAGE_NO_DAY_SELECT_SCHEDULE: "Please select at least one day to schedule a task.",
     MESSAGE_SCHOOL_DAY_VALIDATION:'School Task Must be 6 AM to 6PM',
     MESSAGE_CREATE_TASK_TIME_VALIDATION:'Start and End times cannot be more than 24 hours or less than 15min.  Please select a time frame between this.',
+    MESSAGE_CREATE_TASK_NO_IMAGE:'Please Add task Icon First.',
     //Other Messages 
     TEXT_FATCHING_CHILD: 'FETCHING YOUR USERS',
     TEXT_FATCHING_TASKS: 'FETCHING YOUR TASKS...',

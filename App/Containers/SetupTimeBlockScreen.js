@@ -219,6 +219,8 @@ export default class SetupTimeBlockScreen extends BaseComponent {
           task_date: task_dates?.length === 0 ? resultArray : task_dates,
           is_date: this.state.is_date,
           is_school_clock: this.state.is_school_clock,
+          from_listing: 0,
+          is_new: 1
         };
 
         const res = objSecureAPI
@@ -235,6 +237,8 @@ export default class SetupTimeBlockScreen extends BaseComponent {
               if (resJSON.data.success) {
                 console.log('✅✅✅', JSON.stringify(resJSON.data.data[0]));
                 try {
+                  dictCreateTask.task_id = resJSON.data?.data?.task_id
+                  
                   if (resJSON?.data?.show_popup) {
                     Helper.showConfirmationMessageActions(
                       resJSON.data.message,
@@ -657,7 +661,7 @@ export default class SetupTimeBlockScreen extends BaseComponent {
                       styles.justifyFooter,
                       {
                         flexDirection: 'row',
-                        justifyContent: 'space-around',
+                        justifyContent: 'flex-end',
                         alignItems: 'center',
                       },
                     ]}>
@@ -670,7 +674,7 @@ export default class SetupTimeBlockScreen extends BaseComponent {
                       />
                     </TouchableOpacity>
                     <TouchableOpacity
-                      style={styles.nextButton}
+                      style={[styles.nextButton,{marginLeft:15}]}
                       onPress={() => this.moveToScheduleTask()}>
                       {this.state.isLoading ? (
                         <View

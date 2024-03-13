@@ -159,15 +159,15 @@ const createSecure = (baseURL = base_url) => {
   const doSetPin = pin => {
     const data = new FormData();
     data.append('pin', pin);
-    console.log('pinnnnnnnn',pin)
+    console.log('pinnnnnnnn', pin);
     return api.post('/setpin', data);
   };
 
-  const addchild = (name,photo,startDate,endDate) => {
+  const addchild = (name, photo, startDate, endDate) => {
     const data = new FormData();
     data.append('name', name);
-    data.append('startTime',startDate);
-    data.append('endTime',endDate)
+    data.append('startTime', startDate);
+    data.append('endTime', endDate);
     if (
       photo != undefined &&
       photo != null &&
@@ -190,7 +190,7 @@ const createSecure = (baseURL = base_url) => {
         name: timestamp + '.' + strExtension,
       });
     }
-      
+
     return api.post('/addchild', data);
   };
 
@@ -200,6 +200,13 @@ const createSecure = (baseURL = base_url) => {
 
   const getCategories = () => {
     return api.get('/categories');
+  };
+
+  const getSavedtask = child_id => {
+    const data = new FormData();
+    data.append('child_id', child_id);
+    console.log('CHILD_ID----', data);
+    return api.post('/futuretasks', data);
   };
 
   const updateChild = (childId, name, photo, rewardIcon) => {
@@ -297,7 +304,11 @@ const createSecure = (baseURL = base_url) => {
     taskCustomIcon,
     frequency,
     is_date,
-    is_school_clock
+    is_school_clock,
+    is_saved_for_future,
+    task_id,
+    from_listing,
+    is_new
   ) => {
     const data = new FormData();
     //Parms
@@ -315,8 +326,12 @@ const createSecure = (baseURL = base_url) => {
     data.append('token_type', taskTokenType);
     data.append('no_of_token', taskNumberOfTokens);
     data.append('task_date', taskDates);
-    data.append('is_date',is_date)
-    data.append('is_school_clock',is_school_clock?.toString())
+    data.append('is_date', is_date);
+    data.append('is_school_clock', is_school_clock?.toString());
+    data.append('is_saved_for_future', is_saved_for_future?.toString());
+    data.append('task_id', task_id);
+    data.append('from_listing',from_listing)
+    data.append('is_new',is_new)
     if (frequency) {
       data.append('frequency', frequency);
     }
@@ -344,17 +359,12 @@ const createSecure = (baseURL = base_url) => {
       });
     }
 
-    console.log('!!!!!DATA!!!!!',data)
+    console.log('!!!!!DATA!!!!!', data);
 
     return api.post('/addtask', data);
   };
 
-  const checkTaskAvaibalilty = (
-    fromTime,
-    toTime,
-    task_date,
-    child_id
-  ) => {
+  const checkTaskAvaibalilty = (fromTime, toTime, task_date, child_id) => {
     const data = new FormData();
     //Parms
     data.append('child_id', child_id);
@@ -362,10 +372,10 @@ const createSecure = (baseURL = base_url) => {
     data.append('time_to', toTime);
     data.append('task_date', task_date);
 
-    console.log('!!!!!DATA!!!!!DATA',data)
+    console.log('!!!!!DATA!!!!!DATA', data);
 
     return api.post('/check_time_exist', data);
-  }
+  };
 
   const updateTask = (
     taskId,
@@ -373,20 +383,10 @@ const createSecure = (baseURL = base_url) => {
     mainCatId,
     subCatId,
     taskType,
-    timeSloteName,
     taskName,
-    taskDescription,
-    taskFromTime,
-    taskToTime,
     taskTime,
-    taskColor,
     taskTokenType,
     taskNumberOfTokens,
-    taskDates,
-    taskCustomIcon,
-    frequency,
-    is_date,
-    is_new
   ) => {
     const data = new FormData();
     //Parms
@@ -395,48 +395,95 @@ const createSecure = (baseURL = base_url) => {
     data.append('mcid', mainCatId);
     data.append('ccid', subCatId);
     data.append('type', taskType);
-    data.append('name', timeSloteName);
     data.append('task_name', taskName);
-    data.append('description', taskDescription);
-    data.append('time_from', taskFromTime);
-    data.append('time_to', taskToTime);
     data.append('task_time', taskTime);
-    data.append('color', taskColor);
     data.append('token_type', taskTokenType);
     data.append('no_of_token', taskNumberOfTokens);
-    data.append('task_date', taskDates);
-    data.append('is_date',is_date);
-    data.append('is_new',is_new)
-    if (frequency) {
-      data.append('frequency', frequency);
-    }
+    
 
-    console.log('UPDATE_DATA-----',data)
+    console.log('UPDATE_DATA-----', data);
 
-    if (
-      taskCustomIcon != undefined &&
-      taskCustomIcon != null &&
-      taskCustomIcon.trim != '' &&
-      taskCustomIcon.mime &&
-      taskCustomIcon.path
-    ) {
-      const mime = taskCustomIcon.mime;
-      const arrMime = mime.split('/').reverse();
-      const strExtension = arrMime[0];
-      console.log(
-        'Adding photo mime arrMime strExtension',
-        mime,
-        arrMime,
-        strExtension,
-      );
-      data.append('cicon', {
-        uri: taskCustomIcon.path,
-        type: mime,
-        name: timestamp + '.' + strExtension,
-      });
-    }
+    // if (
+    //   taskCustomIcon != undefined &&
+    //   taskCustomIcon != null &&
+    //   taskCustomIcon.trim != '' &&
+    //   taskCustomIcon.mime &&
+    //   taskCustomIcon.path
+    // ) {
+    //   const mime = taskCustomIcon.mime;
+    //   const arrMime = mime.split('/').reverse();
+    //   const strExtension = arrMime[0];
+    //   console.log(
+    //     'Adding photo mime arrMime strExtension',
+    //     mime,
+    //     arrMime,
+    //     strExtension,
+    //   );
+    //   data.append('cicon', {
+    //     uri: taskCustomIcon.path,
+    //     type: mime,
+    //     name: timestamp + '.' + strExtension,
+    //   });
+    // }
+    return api.post('/subTaskUpdate', data);
+  };
+
+  const updateSchedule = (
+    tid,
+    child_id,
+    name,
+    time_from,
+    time_to,
+    color,
+    task_date,
+    is_date,
+    is_new,
+  ) => {
+    const data = new FormData();
+    //Parms
+    data.append('tid', tid);
+    data.append('child_id', child_id);
+    data.append('name', name);
+    data.append('time_from', time_from);
+    data.append('time_to', time_to);
+    data.append('color', color);
+    data.append('task_date', task_date.join(','));
+    data.append('is_date', is_date);
+    data.append('is_new', is_new);
+    data.append('description','')
+
+    console.log('UPDATE_SCHEDULE-----', data);
+
     return api.post('/updatetask', data);
   };
+
+  const deleteSchedule = (
+    tid,
+    child_id,
+    is_new
+  ) => {
+    const data = new FormData();
+    //Parms
+    data.append('tid', tid);
+    data.append('child_id', child_id);
+    data.append('is_new',is_new)
+
+    console.log('DELETE_SUBTASK-----', data);
+
+    return api.post('/deletetask', data);
+  };
+
+  const deleteSubTask = (tid,child_id) => {
+    const data = new FormData();
+    //Parms
+    data.append('tid', tid);
+    data.append('child_id', child_id);
+
+    console.log('DELETE_SCHEDULE-----', data);
+
+    return api.post('/deleteSubTask', data);
+  }
+
   const childTasksList = (childId, childStatus, date, is_week = '0') => {
     const data = new FormData();
     data.append('child_id', childId);
@@ -448,7 +495,7 @@ const createSecure = (baseURL = base_url) => {
 
   const childRewardPoints = childId => api.post('points', {child_id: childId});
 
-  const createReward = (name, type, numberOfToken, imageData,child_id) => {
+  const createReward = (name, type, numberOfToken, imageData, child_id) => {
     const data = new FormData();
     data.append('name', name);
     data.append('type', type ? 'Special' : 'Standard');
@@ -480,8 +527,8 @@ const createSecure = (baseURL = base_url) => {
     return api.post('rewards/update', data);
   };
 
-  const printTask =(childId,taskDate)=>
-  api.post('/print',{child_id:childId,task_date:taskDate}); //MP
+  const printTask = (childId, taskDate) =>
+    api.post('/print', {child_id: childId, task_date: taskDate}); //MP
 
   const parentRewardList = (status = '') =>
     api.post('rewards/all', {status: status});
@@ -496,13 +543,13 @@ const createSecure = (baseURL = base_url) => {
   const childReward = childId =>
     api.post('rewards/crewards', {child_id: childId});
 
-  const updateTaskStatus = (taskId, childId, status,is_new) => {
+  const updateTaskStatus = (taskId, childId, status, is_new) => {
     const data = new FormData();
     data.append('tid', taskId);
     data.append('child_id', childId);
     data.append('status', status);
-    data.append('is_new',is_new)
-    console.log('STATUS____',data)
+    data.append('is_new', is_new);
+    console.log('STATUS____', data);
     return api.post('status', data);
   };
 
@@ -510,7 +557,7 @@ const createSecure = (baseURL = base_url) => {
     const data = new FormData();
     data.append('tid', taskId);
     data.append('child_id', childId);
-    console.log('RESTOR_DATA',data)
+    console.log('RESTOR_DATA', data);
     return api.post('restore', data);
   };
 
@@ -521,13 +568,13 @@ const createSecure = (baseURL = base_url) => {
     return api.post('deletetask', data);
   };
 
-  const deleteChild = (cid) => {
+  const deleteChild = cid => {
     return api.delete(`removeChild?cid=${cid}`);
   };
 
-  const deleteProfile = ()=>{
+  const deleteProfile = () => {
     return api.delete('delete-profile');
-  }
+  };
   return {
     doSetPin,
     deleteProfile,
@@ -557,6 +604,10 @@ const createSecure = (baseURL = base_url) => {
     getJokeOfTheDay,
     deleteChild,
     printTask,
+    getSavedtask,
+    updateSchedule,
+    deleteSchedule,
+    deleteSubTask
   };
 };
 

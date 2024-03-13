@@ -82,11 +82,11 @@ const images = {
   schoolBag: require('../Images/school-bag.png'),
   blueBackground: require('../Images/blue-bg.png'),
   downarrow: require('../Images/downarrow.png'),
-  edit: require('../Images/edit.png'),
   editTask: require('../Images/editTask.png'),
   tick: require('../Images/tick.png'),
   reward: require('../Images/reward.png'),
   cyanBackground:require('../Images/bgCyan.png'),
+  arrowDown: require('../Images/arrow_down.png'),
 
   reward_star: require('../Images/reward-star.png'),
   reward_bomb: require('../Images/reward-bomb.png'),
@@ -108,6 +108,11 @@ const images = {
   facebook:require('../Images/facebook.png'),
   twitter:require('../Images/twitter.png'),
   email:require('../Images/email.png'),
+  unchecked: require('../Images/unchecked.png'),
+  checked: require('../Images/checked.png'),
+  add: require('../Images/Add.png'),
+  delete: require('../Images/bin.png'),
+  edit: require('../Images/Edit.png')
 }
 
 export default images

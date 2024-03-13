@@ -12,6 +12,7 @@ import {
   View,
   Platform,
   Alert,
+  ActivityIndicator,
 } from 'react-native';
 import ColorPalette from 'react-native-color-palette';
 import DatePicker from '@react-native-community/datetimepicker';
@@ -23,6 +24,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import moment from 'moment';
 // Styles
 import styles from './Styles/SetupTimeBlockScreenStyles';
+import Api from '../Services/Api';
+import colors from '../Themes/Colors';
+
 
 let days = [];
 
@@ -63,6 +67,9 @@ let colours = [
   '#F1C40F',
   '#c33794',
 ];
+
+const objSecureAPI = Api.createSecure();
+
 
 export default class EditScheduleScreen extends BaseComponent {
   static navigationOptions = ({navigation}) => ({
@@ -123,6 +130,7 @@ export default class EditScheduleScreen extends BaseComponent {
       is_date: 1,
       is_new: 1,
       is_school_clock: false,
+      tid:''
     };
   }
 
@@ -182,6 +190,7 @@ export default class EditScheduleScreen extends BaseComponent {
             is_school_clock: scheduleDetails?.is_school_clock,
             time: moment(scheduleDetails?.time_from, 'h:mm A').toDate(),
             toTimeDate: moment(scheduleDetails?.time_to, 'h:mm A').toDate(),
+            tid: scheduleDetails?.id
           });
           if (scheduleDetails?.is_date) {
             // this.setState({arrSelectedDates:[]})
@@ -248,6 +257,7 @@ export default class EditScheduleScreen extends BaseComponent {
           task_date: task_dates?.length === 0 ? resultArray : task_dates,
           is_date: this.state.is_date,
           is_new: this.state.is_new,
+          tid: this.state.tid,
           scheduleDetails,
         };
         Helper.showConfirmationMessageActions(
@@ -294,10 +304,47 @@ export default class EditScheduleScreen extends BaseComponent {
   };
 
   onActionYes = dictCreateTask => {
-    console.log('yes');
-    this.props.navigation.navigate('EditSelectTaskScreen', {
-      dictCreateTask: dictCreateTask,
-    });
+    this.setState({isLoading:true})
+    console.log('yes-----------',dictCreateTask);
+    var tid =  dictCreateTask['tid']
+    var child_id= this.state.childData.id
+    var name= dictCreateTask['taskName']
+    var time_from= dictCreateTask['fromTime']
+    var time_to= dictCreateTask['toTime']
+    var color= dictCreateTask['taskColor']
+    var task_date= dictCreateTask['task_date']
+    var is_date= dictCreateTask['is_date']
+    var is_new= dictCreateTask['is_new']
+
+    const res = objSecureAPI
+      .updateSchedule(
+        tid,
+        child_id,
+        name,
+        time_from,
+        time_to,
+        color,
+        task_date,
+        is_date,
+        is_new
+      )
+      .then(resJSON => {
+        console.log('✅✅✅---', resJSON);
+        if (resJSON.ok && resJSON.status == 200) {
+          this.setState({isLoading: false});
+          if (resJSON.data.success) {
+            this.props.navigation.navigate('ParentHomeScreen')
+          } else {
+            Helper.showErrorMessage(resJSON.data.message);
+          }
+        } else if (resJSON.status == 500) {
+          this.setState({isLoading: false});
+          Helper.showErrorMessage(resJSON.data.message);
+        } else {
+          this.setState({isLoading: false});
+          Helper.showErrorMessage(Constants.SERVER_ERROR);
+        }
+      });
   };
   onActionNo = () => {
     console.log('No');
@@ -653,7 +700,7 @@ export default class EditScheduleScreen extends BaseComponent {
                       styles.justifyFooter,
                       {
                         flexDirection: 'row',
-                        justifyContent: 'space-around',
+                        justifyContent: 'flex-end',
                         alignItems: 'center',
                       },
                     ]}>
@@ -674,12 +721,30 @@ export default class EditScheduleScreen extends BaseComponent {
                       />
                     </TouchableOpacity>
                     <TouchableOpacity
-                      style={styles.nextButton}
+                      style={[styles.nextButton,{marginLeft:15}]}
                       onPress={() => this.moveToScheduleTask()}>
-                      <Image
-                        source={Images.circleArrowRight}
-                        style={styles.circleArrow}
-                      />
+                        {this.state.isLoading ? (
+                        <View
+                          style={{
+                            backgroundColor: colors.yellow,
+                            borderRadius: 55,
+                            width: 55,
+                            height: 55,
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                          }}>
+                          <ActivityIndicator
+                            color={colors.white}
+                            size={30}
+                            style={{zIndex: 1000}}
+                          />
+                        </View>
+                      ) : (
+                        <Image
+                          source={Images.circleArrowRight}
+                          style={styles.circleArrow}
+                        />
+                      )}
                     </TouchableOpacity>
                   </View>
                   <View style={[styles.form, {flexGrow: 1}]}>

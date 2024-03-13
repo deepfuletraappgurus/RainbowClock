@@ -697,8 +697,8 @@ const ApplicationStyles = {
       resizeMode:"contain"
     },
     taskIconLarge:{
-      width:Metrics.screenWidth / 3.5,
-      height:Metrics.screenWidth / 3.5
+      width:Metrics.screenWidth / 5.5,
+      height:Metrics.screenWidth / 5.5
     },
     modalFooter:{
       paddingRight:40,
@@ -868,7 +868,7 @@ const ApplicationStyles = {
       borderBottomRightRadius:0,
     },
     dropdownItem:{
-      borderTopWidth:1,
+      borderBottomWidth:1,
       borderColor:'#ddd',
       padding:10
     },
@@ -880,6 +880,10 @@ const ApplicationStyles = {
     dropdownImage:{
       height: 20,
       width: 20,
+    },
+    scheduleEditImage:{
+      height: 24,
+      width: 24,
     },
     bodyClose:{
       position:'absolute',
@@ -925,7 +929,6 @@ const ApplicationStyles = {
     },
     modalView:{
       flex:1,
-      padding:20
     },
     modalDialog:{
       backgroundColor:'#fff',
@@ -995,7 +998,7 @@ const ApplicationStyles = {
     ScheduleTask:{
       flexDirection:'row',
       flexWrap:'wrap',
-      alignItems:'center',
+      // alignItems:'center',
     },
     inlineButtonGroup:{
       flexDirection:'row',

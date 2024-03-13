@@ -73,7 +73,7 @@ export default class ParentsSelectChildScreen extends BaseComponent {
                     <Text style={styles.userNameText}>{(item.name).toUpperCase()}</Text>
                 </View>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.deleteWrapper} onPress={() => this.confirmDelete(item?.id)}><Image style={styles.deleteIcon} source={Images.bin} /></TouchableOpacity>
+            <TouchableOpacity style={styles.deleteWrapper} onPress={() => this.confirmDelete(item?.id)}><Image style={[styles.deleteIcon,{tintColor:'black'}]} source={Images.bin} /></TouchableOpacity>
             </>
         )
     }
