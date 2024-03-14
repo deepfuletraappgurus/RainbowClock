@@ -167,13 +167,11 @@ export default class EditScheduleScreen extends BaseComponent {
         arrSelectedDates: days,
       },
       () => {
-        console.log('arrSelectedDates===>', this.state.arrSelectedDates);
         const scheduleDetails = this.props.navigation.getParam(
           'scheduleDetails',
           {},
         );
         if (scheduleDetails) {
-          console.log('scheduleDetails', scheduleDetails);
           const taskName = this.state.taskNameList.includes(
             scheduleDetails?.name,
           );
@@ -333,7 +331,7 @@ export default class EditScheduleScreen extends BaseComponent {
         if (resJSON.ok && resJSON.status == 200) {
           this.setState({isLoading: false});
           if (resJSON.data.success) {
-            this.props.navigation.navigate('ParentHomeScreen')
+            this.props.navigation.goBack()
           } else {
             Helper.showErrorMessage(resJSON.data.message);
           }

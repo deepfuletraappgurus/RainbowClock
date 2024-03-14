@@ -1195,7 +1195,7 @@ export default class SelectTaskScreen extends BaseComponent {
                               autoCapitalize="characters"
                               underlineColorAndroid={'transparent'}
                               returnKeyType={'done'}
-                              placeholder={'Task Name'.toUpperCase()}
+                              placeholder={'Number of token'.toUpperCase()}
                               maxLength={20}
                               value={this.state.taskNumberOfToken}
                               keyboardType={'number-pad'}

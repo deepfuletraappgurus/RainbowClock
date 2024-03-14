@@ -142,7 +142,6 @@ export default class AddUserScreen extends BaseComponent {
     ImagePicker.openPicker({
       cropping: true,
     }).then(image => {
-      console.log('image.path', image.path);
       this.setState({
         profilePic: image.path,
         image: image,
@@ -176,7 +175,6 @@ export default class AddUserScreen extends BaseComponent {
         '',
       )
       .then(resJSON => {
-        console.log(resJSON);
         if (resJSON.ok && resJSON.status == 200) {
           this.setState({isLoading: false});
           if (resJSON.data.success) {

@@ -11,6 +11,7 @@ import {
   TouchableOpacity,
   View,
   FlatList,
+  ScrollView,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import EventEmitter from '../Lib/EventEmitter';
@@ -54,7 +55,6 @@ export default class TaskListModel extends Component {
       objSelectedDay: props.objSelectedDay,
       objSelectedTaskList: props.objSelectedTaskList,
     });
-    console.log('PROPSSSSS TASK LIST MODEL ', props?.objFooterSelectedTask);
     this.backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
       this.setState({visible: false});
       return true;
@@ -75,14 +75,11 @@ export default class TaskListModel extends Component {
     });
   }
   callRecoverTask(objTask) {
-    console.log('===========')
     objSecureAPI
-      .restoreTask(objTask.id, this.state.objSelectedChild.id)
+      .restoreTask(objTask.sub_task_id, this.state.objSelectedChild.id)
       .then(response => {
-        console.log("Task Restored ✅✅✅", JSON.stringify(response));
         if (response.ok) {
           if (response.data.success) {
-            console.log('********',response.data.data,'----',this.state.objFooterSelectedTask)
             this.setState({
               objFooterSelectedTask:response.data.data
             })
@@ -101,7 +98,6 @@ export default class TaskListModel extends Component {
         this.setState({
           isLoading: false
         });
-        //console.log(error);
       });
   }
 
@@ -132,9 +128,7 @@ export default class TaskListModel extends Component {
   };
 
   render() {
-    console.log(
-      'ITEMS=-> ' + JSON.stringify(this.state.objFooterSelectedTask.tasks),
-    );
+    
     return (
       <Modal
         animationType="slide"
@@ -154,7 +148,7 @@ export default class TaskListModel extends Component {
               <Image source={Images.close} style={styles.close} />
             </TouchableOpacity>
             <View style={styles.modalBody}>
-              <View style={styles.modalBodyTop}>
+              <ScrollView horizontal contentContainerStyle={{flex:1}} style={styles.modalBodyTop}>
                 {/* {this.state.objFooterSelectedTask !=null ?
             <Image source={{ uri: this.state.objFooterSelectedTask}} style={styles.bigTaskIcon} />
             <Text  style={[styles.waitText, styles.textCenter]}>{Constants.TEXT_NO_TASKS}</Text>
@@ -172,10 +166,9 @@ export default class TaskListModel extends Component {
                 {this.state.objFooterSelectedTask.tasks &&
                 this.state.objFooterSelectedTask.tasks.length > 0
                   ? this.state.objFooterSelectedTask.tasks.map((data, i) => {
-                      console.log('_____DATA-----', data);
                       return (
                         <TouchableOpacity
-                          style={styles.ScheduleTaskItem}
+                          style={{marginRight:20}}
                           onPress={() => this.onPressTask(data)}>
                           <Image
                             source={{uri: data.cate_image}}
@@ -188,15 +181,15 @@ export default class TaskListModel extends Component {
                           <Text
                             style={[
                               styles.minComplete,
-                              {color: Colors.snow, alignSelf: 'flex-start'},
+                              {color: Colors.snow, alignSelf: 'center',marginTop:10},
                             ]}>
                             {data?.task_name}
                           </Text>
                           {data.status == Constants.TASK_STATUS_COMPLETED ? (
                             <TouchableOpacity
-                              style={[styles.taskRecover,{width:'30%',alignSelf:'flex-start'}]}
+                              style={[styles.taskRecover,{alignSelf:'flex-start',width:'110%',justifyContent:'center'}]}
                               onPress={() => this.callRecoverTask(data)}>
-                              <Text style={styles.taskRecoverText}>
+                              <Text style={[styles.taskRecoverText,{}]}>
                                 {'Recover'.toUpperCase()}
                               </Text>
                             </TouchableOpacity>
@@ -205,7 +198,7 @@ export default class TaskListModel extends Component {
                       );
                     })
                   : null}
-              </View>
+              </ScrollView>
             </View>
             <View
               style={[
@@ -228,10 +221,10 @@ export default class TaskListModel extends Component {
                   {'SELECT TASK'}
                 </Text>
               </TouchableOpacity>
-              {/* <Image
+              <Image
                 source={Images.taskReward}
-                style={[styles.taskRewardImage, {marginRight: -100}]}
-              /> */}
+                style={[styles.taskRewardImage, {marginRight: -50}]}
+              />
             </View>
           </SafeAreaView>
         </View>

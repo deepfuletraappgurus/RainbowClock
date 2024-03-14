@@ -387,6 +387,7 @@ const createSecure = (baseURL = base_url) => {
     taskTime,
     taskTokenType,
     taskNumberOfTokens,
+    is_saved_for_future
   ) => {
     const data = new FormData();
     //Parms
@@ -399,6 +400,7 @@ const createSecure = (baseURL = base_url) => {
     data.append('task_time', taskTime);
     data.append('token_type', taskTokenType);
     data.append('no_of_token', taskNumberOfTokens);
+    data.append('is_saved_for_future',is_saved_for_future)
     
 
     console.log('UPDATE_DATA-----', data);

@@ -23,6 +23,7 @@ import TaskListModel from '../Components/TaskListModel';
 // import styles from './Styles/HomeScreenStyles';
 import styles from './Styles/ScheduleScreenStyles';
 import Spinner from '../Components/Spinner';
+import moment from 'moment';
 
 // Global Variables
 const mApi = Api.createSecure();
@@ -69,6 +70,12 @@ export default class ScheduleScreen extends BaseComponent {
     });
     this.getMenuAccessRole();
     this.getChildId();
+    this.navFocusListener = this.props.navigation.addListener(
+      'didFocus',
+      () => {
+        this.getChildId();
+      },
+    );
   }
 
   //#endregion
@@ -199,6 +206,7 @@ export default class ScheduleScreen extends BaseComponent {
       scheduleDetails: item,
       sub_task_id: item?.sub_task_id,
       show_delete: true,
+      is_saved_for_future: item?.is_saved_for_future,
     };
     this.props.navigation.navigate('EditSelectTaskScreen', {
       dictCreateTask: dictCreateTask,
@@ -214,20 +222,27 @@ export default class ScheduleScreen extends BaseComponent {
     if (this.state.isMenuAsParentPortal) {
       this.parentViewEditTask(objTask);
     } else {
-      if (
-        objTask.status != Constants.TASK_STATUS_COMPLETED &&
-        !this.state.isMenuAsParentPortal
-      ) {
-        this.setState({
-          objFooterSelectedTask: objTask,
-          taskComplete: true,
-        });
-      } else {
-        this.setState({
-          showTaskList: true,
-          item: item,
-        });
-      }
+      // if (
+      //   objTask.status != Constants.TASK_STATUS_COMPLETED &&
+      //   !this.state.isMenuAsParentPortal
+      // ) {
+      //   console.log('TASK MODAL');
+      //   this.setState({
+      //     showTaskList: true,
+      //     item: item,
+      //   });
+      // } else {
+      //   console.log('TASK LIST MODAL');
+
+      //   this.setState({
+      //     objFooterSelectedTask: objTask,
+      //     taskComplete: true,
+      //   });
+      // }
+      this.setState({
+        showTaskList: true,
+        item: item,
+      });
     }
   }
 
@@ -274,14 +289,24 @@ export default class ScheduleScreen extends BaseComponent {
 
   onTimeBlockDeletePress(dictCreateTask) {
     console.log('..........', dictCreateTask);
-    dictCreateTask = dictCreateTask.tasks[0];
-    Helper.showConfirmationMessageActions(
-      "Are You Sure, You Want to Delete This Time Block.It's also remove All Task In This Time Block.",
-      'No',
-      'Yes',
-      () => {},
-      () => this.onActionYes(dictCreateTask),
-    );
+    const currentTime = moment();
+    const startTime = moment(dictCreateTask?.time.split('-')[0], 'hh:mm A');
+    const endTime = moment(dictCreateTask?.time.split('-')[1], 'hh:mm A');
+
+    if (currentTime.isBetween(startTime, endTime)) {
+      Helper.showErrorMessage(
+        'You can not Delete the task because you are already in this time block.',
+      );
+    } else {
+      dictCreateTask = dictCreateTask.tasks[0];
+      Helper.showConfirmationMessageActions(
+        "Are You Sure, You Want to Delete This Time Block.It's also remove All Task In This Time Block.",
+        'No',
+        'Yes',
+        () => {},
+        () => this.onActionYes(dictCreateTask),
+      );
+    }
   }
 
   onActionYes = dictCreateTask => {
@@ -313,9 +338,20 @@ export default class ScheduleScreen extends BaseComponent {
   };
 
   onTimeBlockEditPress(item) {
-    this.props.navigation.navigate('EditScheduleScreen', {
-      scheduleDetails: item.tasks[0],
-    });
+    console.log('IIIITTTTTEEEEEMMMMM', item?.time.split('-')[0]);
+    const currentTime = moment();
+    const startTime = moment(item?.time.split('-')[0], 'hh:mm A');
+    const endTime = moment(item?.time.split('-')[1], 'hh:mm A');
+
+    if (currentTime.isBetween(startTime, endTime)) {
+      Helper.showErrorMessage(
+        'You can not update the task because you are already in this time block.',
+      );
+    } else {
+      this.props.navigation.navigate('EditScheduleScreen', {
+        scheduleDetails: item.tasks[0],
+      });
+    }
   }
 
   onTimeBlockAddPress(item) {
@@ -370,16 +406,6 @@ export default class ScheduleScreen extends BaseComponent {
           <View style={{flex: 1, flexDirection: 'row'}}>
             {/*MP*/}
             <Text style={styles.timer}>{item.time}</Text>
-            {item?.tasks[0]?.is_school_clock == true ? (
-              <Image
-                source={Images.bell}
-                style={{
-                  width: Metrics.screenWidth / 16,
-                  height: Metrics.screenWidth / 16,
-                  resizeMode: 'contain',
-                }}
-              />
-            ) : null}
 
             {/* <Text style={styles.timer}>{item.task_name}</Text> */}
             {item.status == Constants.TASK_STATUS_COMPLETED ? (
@@ -399,26 +425,51 @@ export default class ScheduleScreen extends BaseComponent {
             style={[
               styles.ScheduleTask,
               {
-                width:this.state.isMenuAsParentPortal ?  Dimensions.get('window').width / 1.35 : Dimensions.get('window').width / 1.25,
+                width: this.state.isMenuAsParentPortal
+                  ? Dimensions.get('window').width / 1.35
+                  : Dimensions.get('window').width / 1.25,
               },
             ]}>
             {item.tasks && item.tasks.length > 0
               ? item.tasks.map((data, i) => {
                   return (
                     <TouchableOpacity
-                      style={{marginRight: 12}}
+                      style={{marginRight: 12,justifyContent: 'center',alignItems:'center'}}
                       onPress={() => this.onPressTask(data, item)}>
                       {/* <Text style={styles.timer}>{data.time_from} {data.start_time_meridiem}-{data.time_to} {data.end_time_meridiem}</Text> */}
-                      <Image
-                        source={{uri: data.cate_image}}
-                        style={[
-                          data.status == Constants.TASK_STATUS_COMPLETED
-                            ? styles.fadedIcon
-                            : styles.icon,
-                          {alignSelf: 'center', resizeMode: 'contain'},
-                        ]}
-                      />
+                      <View style={{flexDirection: 'row'}}>
+                        <Image
+                          source={{uri: data.cate_image}}
+                          style={[
+                            data.status == Constants.TASK_STATUS_COMPLETED
+                              ? styles.fadedIcon
+                              : styles.icon,
+                            {alignSelf: 'center', resizeMode: 'contain'},
+                          ]}
+                        />
+                        {data?.is_school_clock == true ? (
+                          <View
+                            style={{
+                              // backgroundColor: Colors.gray,
+                              borderRadius: Metrics.screenWidth / 20,
+                              height: Metrics.screenWidth / 16,
+                              width: Metrics.screenWidth / 16,
+                              justifyContent:'center',
+                              alignItems:'center'
+                            }}>
+                            <Image
+                              source={Images.bell}
+                              style={{
+                                width: Metrics.screenWidth / 22,
+                                height: Metrics.screenWidth / 22,
+                                resizeMode: 'contain',
+                              }}
+                            />
+                          </View>
+                        ) : null}
+                      </View>
                       <Text
+                      numberOfLines={1}
                         style={[
                           styles.timer,
                           {
@@ -426,6 +477,7 @@ export default class ScheduleScreen extends BaseComponent {
                             marginBottom: 0,
                             marginTop: 8,
                             textAlign: 'center',
+                            width:70,
                           },
                         ]}>
                         {data?.task_name}
@@ -510,6 +562,7 @@ export default class ScheduleScreen extends BaseComponent {
                   renderItem={({item, index}) =>
                     this.renderTaskRow(item, index)
                   }
+                  showsVerticalScrollIndicator={false}
                 />
               ) : (
                 <View style={styles.notFoundMessage}>

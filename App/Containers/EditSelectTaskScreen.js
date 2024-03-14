@@ -81,7 +81,8 @@ export default class EditSelectTaskScreen extends BaseComponent {
       taskCustomImagePath: '',
       totalTaskSlotMinutes: 0,
       isUpLoading: false,
-      isDeletesubTaskLoading:false
+      isDeletesubTaskLoading:false,
+      isSavedForFuture:0
     };
   }
 
@@ -106,6 +107,8 @@ export default class EditSelectTaskScreen extends BaseComponent {
     const scheduleDetails =
       this.props.navigation.state.params.dictCreateTask.scheduleDetails;
 
+      console.log('scheduleDetails?.no_of_token',scheduleDetails?.no_of_token,scheduleDetails?.no_of_token == 'null')
+
     const getCurrentCat = this.state.arrAllCategories?.filter(
       cat => cat.id === scheduleDetails?.mcid,
     );
@@ -118,9 +121,9 @@ export default class EditSelectTaskScreen extends BaseComponent {
       this.setState({
         selectTaskModel: true,
         taskName: scheduleDetails?.task_name,
-        taskNumberOfToken: scheduleDetails?.no_of_token,
-        taskType: scheduleDetails?.type,
-        is_saved_for_future: scheduleDetails?.is_saved_for_future,
+        taskNumberOfToken: scheduleDetails?.no_of_token == 'null' ? '' : scheduleDetails?.no_of_token,
+        taskType: scheduleDetails?.type == 'null' ? '' : scheduleDetails?.type,
+        isSavedForFuture: scheduleDetails?.is_saved_for_future,
       });
       this.tokenTypeSelected(scheduleDetails?.token_type);
       this.taskTimeSelected(scheduleDetails?.task_time);
@@ -242,27 +245,28 @@ export default class EditSelectTaskScreen extends BaseComponent {
     ) {
       Helper.showErrorMessage(Constants.MESSAGE_NO_TASK_NAME);
       return false;
-    } else if (this.state?.taskTime?.trim() == '') {
-      Helper.showErrorMessage(Constants.MESSAGE_SELECT_TASK_TIME);
-      return false;
     }
-    // else if (this.state.taskTokenType.trim() == '') {
-    //     Helper.showErrorMessage(Constants.MESSAGE_SELECT_TASK_TOKEN_TYPE);
-    //     return false;
+    //  else if (this.state?.taskTime?.trim() == '') {
+    //   Helper.showErrorMessage(Constants.MESSAGE_SELECT_TASK_TIME);
+    //   return false;
     // }
-    else if (this.state?.taskNumberOfToken?.trim() == '') {
-      Helper.showErrorMessage(Constants.MESSAGE_NO_TASK_TOKEN);
-      return false;
-    } else if (
-      this.state?.taskType === Constants.TASK_TYPE_CUSTOM &&
-      this.state?.taskCustomImagePath === ''
-    ) {
-      Helper.showErrorMessage(Constants.MESSAGE_NO_TASK_ICON);
-      return false;
-    } else if (this.state?.totalTaskSlotMinutes < this.state?.taskTime) {
-      Helper.showErrorMessage(Constants.MESSAGE_NO_GREATER_TASK);
-      return false;
-    }
+    // // else if (this.state.taskTokenType.trim() == '') {
+    // //     Helper.showErrorMessage(Constants.MESSAGE_SELECT_TASK_TOKEN_TYPE);
+    // //     return false;
+    // // }
+    // else if (this.state?.taskNumberOfToken?.trim() == '') {
+    //   Helper.showErrorMessage(Constants.MESSAGE_NO_TASK_TOKEN);
+    //   return false;
+    // } else if (
+    //   this.state?.taskType === Constants.TASK_TYPE_CUSTOM &&
+    //   this.state?.taskCustomImagePath === ''
+    // ) {
+    //   Helper.showErrorMessage(Constants.MESSAGE_NO_TASK_ICON);
+    //   return false;
+    // } else if (this.state?.totalTaskSlotMinutes < this.state?.taskTime) {
+    //   Helper.showErrorMessage(Constants.MESSAGE_NO_GREATER_TASK);
+    //   return false;
+    // }
     return true;
   };
 
@@ -375,6 +379,7 @@ export default class EditSelectTaskScreen extends BaseComponent {
     var taskCustomIcon = this.state.taskCustomImage;
     var is_date = this.state.dictCreateTask['is_date'];
     var is_new = this.state.dictCreateTask['is_new'];
+    var is_saved_for_future = this.state.isSavedForFuture
     // var taskId =
 
     const res = objSecureAPI
@@ -388,6 +393,7 @@ export default class EditSelectTaskScreen extends BaseComponent {
         taskTime,
         taskTokenType,
         taskNumberOfTokens,
+        is_saved_for_future
       )
       .then(resJSON => {
         console.log('✅✅✅--', resJSON);
@@ -485,9 +491,10 @@ export default class EditSelectTaskScreen extends BaseComponent {
 
   taskTimeSelected = time => {
     this.setState({
-      taskTime: time,
+      taskTime: time == 'null' ? '' : time,
       timeForTaskDropdown: false,
     });
+    this.RBSheetTimer.close()
   };
 
   defaultTaskTimeSelected = time => {
@@ -1042,7 +1049,7 @@ export default class EditSelectTaskScreen extends BaseComponent {
                               autoCapitalize="characters"
                               underlineColorAndroid={'transparent'}
                               returnKeyType={'done'}
-                              placeholder={'Task Name'.toUpperCase()}
+                              placeholder={'Number Of Token'.toUpperCase()}
                               maxLength={20}
                               value={this.state.taskNumberOfToken}
                               keyboardType={'number-pad'}
@@ -1061,12 +1068,12 @@ export default class EditSelectTaskScreen extends BaseComponent {
                             }}
                             onPress={() => {
                               this.setState({
-                                isSaveForFuture: !this.state.isSaveForFuture,
+                                isSavedForFuture: !this.state.isSavedForFuture,
                               });
                             }}>
                             <Image
                               source={
-                                this.state.isSaveForFuture
+                                this.state.isSavedForFuture
                                   ? Images.checked
                                   : Images.unchecked
                               }

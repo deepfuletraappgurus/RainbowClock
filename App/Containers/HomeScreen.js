@@ -85,7 +85,7 @@ export default class HomeScreen extends BaseComponent {
       meridiam: '',
       arrFooterTasks: [],
       objFooterSelectedTask: {},
-      isLoading: false,
+      isLoading: true,
       currentIndex: 0,
       swiperData: [],
       dicPieData: {},
@@ -305,7 +305,7 @@ export default class HomeScreen extends BaseComponent {
         stateData?.pieDataAMPM,
       );
       if (
-        stateData.pieDataAMPM.length == 1 &&
+        stateData?.pieDataAMPM?.length == 1 &&
         stateData.pieDataAMPM[0].isEmpty
       ) {
         pieData = stateData?.pieDataAMSchool;
@@ -313,7 +313,7 @@ export default class HomeScreen extends BaseComponent {
         if (hour >= 6) {
           function filterTasks(tasks) {
             let endIndex = -1;
-            for (let i = 0; i < tasks.length; i++) {
+            for (let i = 0; i < tasks?.length; i++) {
               const task = tasks[i];
               if (!task.taskId) continue;
               const startTime = moment(task.taskId.split(' - ')[0], 'hh:mm A');
@@ -335,18 +335,18 @@ export default class HomeScreen extends BaseComponent {
           }
 
           // Filter tasks
-          const filteredTasks = filterTasks(stateData.pieDataAMPM);
+          const filteredTasks = filterTasks(stateData?.pieDataAMPM);
+          if (
+            typeof filteredTasks !== 'undefined' ||
+            filteredTasks !== undefined
+          ) {
           stateData.pieDataAMPM = filteredTasks;
           let secondLastTaskEndTime =
             stateData.pieDataAMPM[
-              stateData.pieDataAMPM.length - 2
-            ]?.taskId.split(' - ')[1];
-          if (
-            typeof secondLastTaskEndTime !== 'undefined' ||
-            secondLastTaskEndTime !== undefined
-          ) {
+              stateData?.pieDataAMPM?.length - 2
+            ]?.taskId?.split(' - ')[1];
             let endTimeMeridiem =
-              stateData.pieDataAMPM[stateData.pieDataAMPM.length - 2]
+              stateData.pieDataAMPM[stateData?.pieDataAMPM?.length - 2]
                 .endTimeMeridiem;
 
             // Create moment objects for end time and 6:00 PM
@@ -360,7 +360,7 @@ export default class HomeScreen extends BaseComponent {
             let timeDifference = sixPMTime.diff(endTaskTime, 'minutes');
 
             // Update the value property of the last task
-            stateData.pieDataAMPM[stateData.pieDataAMPM.length - 1].value =
+            stateData.pieDataAMPM[stateData?.pieDataAMPM?.length - 1].value =
               timeDifference;
 
             console.log('stateData?.pieDataAMPM', stateData?.pieDataAMPM);
@@ -368,7 +368,7 @@ export default class HomeScreen extends BaseComponent {
           // Extract the end time from the taskId
 
           const startTime = parseInt(
-            stateData.pieDataAMSchool[1]?.taskId.split(' ')[0].split(':')[0],
+            stateData?.pieDataAMSchool[1]?.taskId.split(' ')[0].split(':')[0],
           );
 
           // Check if the start time is greater than or equal to 6:00 AM
@@ -406,7 +406,7 @@ export default class HomeScreen extends BaseComponent {
         stateData?.pieDataAMPM,
       );
       if (
-        stateData.pieDataAMPM.length == 1 &&
+        stateData?.pieDataAMPM?.length == 1 &&
         stateData.pieDataAMPM[0].isEmpty
       ) {
         pieData = stateData?.pieDataAM;
@@ -440,14 +440,14 @@ export default class HomeScreen extends BaseComponent {
           stateData.pieDataAMPM = filteredTasks;
           let secondLastTaskEndTime =
             stateData.pieDataAMPM[
-              stateData.pieDataAMPM.length - 2
+              stateData?.pieDataAMPM?.length - 2
             ]?.taskId.split(' - ')[1];
           if (
             typeof secondLastTaskEndTime !== 'undefined' ||
             secondLastTaskEndTime !== undefined
           ) {
             let endTimeMeridiem =
-              stateData.pieDataAMPM[stateData.pieDataAMPM.length - 2]
+              stateData.pieDataAMPM[stateData?.pieDataAMPM?.length - 2]
                 .endTimeMeridiem;
 
             // Create moment objects for end time and 6:00 PM
@@ -461,7 +461,7 @@ export default class HomeScreen extends BaseComponent {
             let timeDifference = sixPMTime.diff(endTaskTime, 'minutes');
 
             // Update the value property of the last task
-            stateData.pieDataAMPM[stateData.pieDataAMPM.length - 1].value =
+            stateData.pieDataAMPM[stateData?.pieDataAMPM?.length - 1].value =
               timeDifference;
 
             console.log('stateData?.pieDataAMPM', stateData?.pieDataAMPM);
@@ -513,6 +513,7 @@ export default class HomeScreen extends BaseComponent {
     this.state.pieData = pieData;
     this.state.swiperData[currentIndex] = this.renderSwiperView();
     this.setState({pieData});
+    this.setState({isLoading:false})
   }
 
   setPlanetIcon = () => {
@@ -746,6 +747,7 @@ export default class HomeScreen extends BaseComponent {
         <View style={styles.clockBottom}>
           <View style={styles.clockBottomLeft}>
             <TouchableOpacity
+            disabled={this.state.isLoading}
               style={styles.bellTouch}
               onPress={() => this.toggleSchool()}>
               {!this.state.school ? (
@@ -1229,9 +1231,11 @@ export default class HomeScreen extends BaseComponent {
               );
             }
           } else {
+            this.setState({isLoading:false})
             Helper.showErrorMessage(response.data.message);
           }
         } else {
+
           this.setState({
             isLoading: false,
           });

@@ -10,6 +10,7 @@ import {
   TouchableOpacity,
   View,
   FlatList,
+  Dimensions,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import EventEmitter from '../Lib/EventEmitter';
@@ -46,8 +47,9 @@ export default class TaskModal extends BaseComponent {
           : 'PAUSE TIME',
       counterVisible: false,
       reward: '',
-      task_id: this.props.objFooterSelectedTask?.id,
+      task_id: this.props.objFooterSelectedTask?.sub_task_id,
       is_new: this.props.objFooterSelectedTask?.is_new,
+      showSuccess: false,
     };
   }
 
@@ -56,7 +58,7 @@ export default class TaskModal extends BaseComponent {
       visible: props.visible,
       objFooterSelectedTask: props.objFooterSelectedTask,
       objSelectedChild: props.objSelectedChild,
-      task_id: props.objFooterSelectedTask.id,
+      task_id: props.objFooterSelectedTask.sub_task_id,
       is_new: props.objFooterSelectedTask.is_new,
       buttonText:
         props.objFooterSelectedTask.task_time == null
@@ -65,10 +67,7 @@ export default class TaskModal extends BaseComponent {
           ? 'START TIME'
           : 'PAUSE TIME',
     });
-    console.log(
-      'props.objFooterSelectedTask-----',
-      props.objFooterSelectedTask,
-    );
+    
   }
   componentWillUnmount() {
     clearInterval(this._timer);
@@ -113,18 +112,6 @@ export default class TaskModal extends BaseComponent {
     }
   };
 
-  checkTaskIsForToday = taskStatus => {
-    if (Helper.checkTaskTimeAndDate(this.state.objFooterSelectedTask)) {
-      Helper.showErrorMessage(Constants.MESSAGE_NO_FUTURE_TASK);
-      // this.navFocusListener =  this.props.navigation.addListener('didFocus', () => {
-      //   Helper.getChildRewardPoints(this.props.navigation)
-      // });
-    } else {
-      this.callStartTask(taskStatus);
-      this, this.setState({playing: true});
-    }
-  };
-
   completeTask = taskStatus => {
     if (Helper.checkTaskTimeAndDate(this.state.objFooterSelectedTask)) {
       Helper.showErrorMessage(Constants.MESSAGE_NO_FUTURE_TASK);
@@ -139,33 +126,10 @@ export default class TaskModal extends BaseComponent {
         this.state.reward =
           this.state.objSelectedChild.points.standard.toString();
       }
-      console.log(
-        'REWARD :: ' +
-          this.state.reward +
-          '  /// POINTS=== ' +
-          JSON.stringify(this.state.objSelectedChild.points),
-      );
-      Helper.showConfirmationMessageSingleAction(
-        'Super Job!! \n You have completed this task.\n Congratulations you have earned ' +
-          ((this.state.objFooterSelectedTask.no_of_token == null ||
-          this.state.objFooterSelectedTask.no_of_token == undefined
-            ? 0
-            : this.state.objFooterSelectedTask.no_of_token) +
-            ' ' +
-            (this.state.objFooterSelectedTask.token_type == null ||
-            this.state.objFooterSelectedTask.token_type == undefined
-              ? ''
-              : this.state.objFooterSelectedTask.token_type) +
-            ' token'),
-        'OK',
-        this.onActionOK,
-      );
-      // this.navFocusListener =  this.props.navigation.addListener('didFocus', () => {
-      //   Helper.getChildRewardPoints(this.props.navigation)
-      // });
-      this.callStartTask(taskStatus);
+      
+
+      this.callStartTask(taskStatus, true);
       this, this.setState({playing: true});
-      // this.setState({counterVisible: true})
     }
   };
   onActionOK = () => {
@@ -176,19 +140,14 @@ export default class TaskModal extends BaseComponent {
     this.props.onStateChange(false);
   };
 
-  callStartTask = taskStatus => {
-    console.log(
-      'HELPERRRRR----',
-      this.state.objFooterSelectedTask,
-      Helper.checkTaskTimeAndDate(this.state.objFooterSelectedTask),
-    );
+  callStartTask = (taskStatus, showAnimation) => {
+    
     if (Helper.checkTaskTimeAndDate(this.state.objFooterSelectedTask)) {
       Helper.showErrorMessage(Constants.MESSAGE_NO_FUTURE_TASK);
       // this.navFocusListener =  this.props.navigation.addListener('didFocus', () => {
       //   Helper.getChildRewardPoints(this.props.navigation)
       // });
     } else {
-      console.log('objFooterSelectedTask--', this.state.objFooterSelectedTask);
       objSecureAPI
         .updateTaskStatus(
           this.state.task_id,
@@ -197,10 +156,6 @@ export default class TaskModal extends BaseComponent {
           this.state.is_new,
         )
         .then(response => {
-          console.log(
-            'TASK STATUS UPDATED ✅✅✅',
-            response.data.data[0]['updated_task']['id'],
-          );
           if (response.ok) {
             if (response.data.success) {
               this.setState({
@@ -213,6 +168,31 @@ export default class TaskModal extends BaseComponent {
                   Constants.TASK_STATUS_COMPLETED;
                 EventEmitter.emit(Constants.EVENT_CHILD_UPDATE);
                 clearInterval(this._timer);
+                if (showAnimation) {
+                  this.setState({showSuccess: true});
+                  let timer = setTimeout(() => {
+                    this.setState({showSuccess: false});
+                    Helper.showConfirmationMessageSingleAction(
+                      'Super Job!! \n You have completed this task.\n Congratulations you have earned ' +
+                        ((this.state.objFooterSelectedTask.no_of_token ==
+                          null ||
+                        this.state.objFooterSelectedTask.no_of_token ==
+                          undefined
+                          ? 0
+                          : this.state.objFooterSelectedTask.no_of_token) +
+                          ' ' +
+                          (this.state.objFooterSelectedTask.token_type ==
+                            null ||
+                          this.state.objFooterSelectedTask.token_type ==
+                            undefined
+                            ? ''
+                            : this.state.objFooterSelectedTask.token_type) +
+                          ' token'),
+                      'OK',
+                      this.onActionOK,
+                    );
+                  }, 3000);
+                }
                 // this.setModal(false)
                 // this.setState({counterVisible: true})
               } else {
@@ -240,11 +220,7 @@ export default class TaskModal extends BaseComponent {
         let remainTime = Helper.getPercentageArrForTask(
           this.state.objFooterSelectedTask,
         )[0];
-        console.log(
-          'setRemainTime',
-          remainTime,
-          this.state.currentTaskRemainTime,
-        );
+       
 
         if (remainTime > this.state.currentTaskRemainTime) {
           this.state.currentTaskRemainTime = remainTime;
@@ -376,7 +352,7 @@ export default class TaskModal extends BaseComponent {
                     <TouchableOpacity
                       style={[styles.button, styles.smallButton]}
                       onPress={() =>
-                        this.callStartTask(Constants.TASK_STATUS_START)
+                        this.callStartTask(Constants.TASK_STATUS_START, false)
                       }>
                       <Text style={styles.mediumButtonText}>
                         {'START TASK'}
@@ -418,10 +394,20 @@ export default class TaskModal extends BaseComponent {
                     {'TASK COMPLETE'}
                   </Text>
                 </TouchableOpacity>
-                {/* <Image
+                <Image
                   source={Images.taskReward}
                   style={[styles.taskRewardImage, {marginRight: -40}]}
-                /> */}
+                />
+                <Image
+                  source={Images.success_animation}
+                  style={{
+                    width: Dimensions.get('window').width / 1.5,
+                    height: Dimensions.get('window').height / 1.2,
+                    position: 'absolute',
+                    bottom: 20,
+                    display: this.state.showSuccess ? 'flex' : 'none',
+                  }}
+                />
               </View>
             </SafeAreaView>
           </View>
