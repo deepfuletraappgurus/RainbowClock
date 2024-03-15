@@ -56,7 +56,6 @@ export default class ForgotpasswordScreen extends BaseComponent {
   callAPI_ForgotPassword = async () => {
     this.setState({ isLoading: true })
     const res = objAPI.doForgotPassword(this.state.username).then((resJSON) => {
-      console.log('resJSON::',resJSON);
       if (resJSON.ok && resJSON.status == 200) {
         this.setState({ isLoading: false })
         Helper.showConfirmationMessagesignleAction(resJSON.data.message, 'Ok').then((action) => {
@@ -68,13 +67,11 @@ export default class ForgotpasswordScreen extends BaseComponent {
       else if (resJSON.status == 500) {
         this.setState({ isLoading: false })
         Helper.showErrorMessage(resJSON.data.message);
-        console.log('message::',resJSON.data.message);
 
       }
       else {
         this.setState({ isLoading: false })
         Helper.showErrorMessage(Constants.SERVER_ERROR);
-        console.log('SERVER_ERROR::',Constants.SERVER_ERROR);
 
       }
     })

@@ -90,7 +90,6 @@ export default class ParentsSelectChildScreen extends BaseComponent {
              isSchedule : true
             })
         } catch (error) {
-            console.log('AsyncStorage Error: ', error)
         }
     }
     //#endregion
@@ -99,11 +98,9 @@ export default class ParentsSelectChildScreen extends BaseComponent {
     callGetChild = () => {
         this.setState({ isLoading: true })
         const res = objSecureAPI.getChildren().then((resJSON) => {
-            console.log('✅✅✅', resJSON)
             if (resJSON.ok && resJSON.status == 200) {
                 this.setState({ isLoading: false })
                 if (resJSON.data.success) {
-                    console.log('✅✅✅', JSON.stringify(resJSON.data.data))
                     arrAllChild = resJSON.data.data
                     
                     if(arrAllChild.length === 0){
@@ -118,7 +115,6 @@ export default class ParentsSelectChildScreen extends BaseComponent {
                                     AsyncStorage.setItem(Constants.KEY_SELECTED_CHILD, JSON.stringify(resJSON.data.data[0]))
                                     EventEmitter.emit(Constants.EVENT_CHILD_UPDATE)
                                 } catch (error) {
-                                    console.log('AsyncStorage Error: ', error)
                                 }
                             }
                         })
@@ -148,7 +144,7 @@ export default class ParentsSelectChildScreen extends BaseComponent {
       [
         {
           text: "Cancel",
-          onPress: () => console.log("Cancel Pressed"),
+          onPress: () => {},
           style: "cancel"
         },
         { text: "OK", onPress: () => this.deleteChild(cid) }
@@ -158,7 +154,6 @@ export default class ParentsSelectChildScreen extends BaseComponent {
       deleteChild = (cid) => {
         // this.setState({ isLoading: true })
         const res = objSecureAPI.deleteChild(cid).then((resJSON) => {
-            console.log('✅✅✅', resJSON)
             if (resJSON.ok && resJSON.status == 200) {
                 // this.setState({ isLoading: false })
                 if (resJSON.data.success) {

@@ -193,7 +193,6 @@ export default class AddUserScreen extends BaseComponent {
                 this.onActionNo,
                 this.onActionYes,
               );            } catch (error) {
-              console.log('AsyncStorage Error: ', error);
             }
             AsyncStorage.getItem(Constants.KEY_SELECTED_CHILD, (err, child) => {
               if (child == null) {
@@ -203,7 +202,6 @@ export default class AddUserScreen extends BaseComponent {
                     JSON.stringify(resJSON.data.data[0]),
                   );
                 } catch (error) {
-                  console.log('AsyncStorage Error: ', error);
                 }
               }
               setTimeout(() => {
@@ -221,11 +219,9 @@ export default class AddUserScreen extends BaseComponent {
           Helper.showErrorMessage(Constants.SERVER_ERROR);
         }
       });
-      console.log(res)
   };
 
   onActionYes = () => {
-    console.log('yes')
   }
   onActionNo = () => {
     Helper.showConfirmationMessageSingleAction(
@@ -249,7 +245,6 @@ export default class AddUserScreen extends BaseComponent {
             EventEmitter.emit(Constants.EVENT_CHILD_UPDATE)
         }, 100);
     } catch (error) {
-        console.log('AsyncStorage Error: ', error)
     }
 }
   //#endregion

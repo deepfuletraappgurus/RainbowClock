@@ -95,11 +95,11 @@ export default class ScheduleTaskScreen extends BaseComponent {
                                         // Handler which gets executed on day press. Default = undefined
                                         onDayPress={(date) => { this.selectedDay(date) }}
                                         // Handler which gets executed on day long press. Default = undefined
-                                        onDayLongPress={(day) => { console.log('✅ selected day', day) }}
+                                        onDayLongPress={(day) => {  }}
                                         // Month format in calendar title. Formatting values: http://arshaw.com/xdate/#Formatting
                                         monthFormat={'MMMM yyyy'}
                                         // Handler which gets executed when visible month changes in calendar. Default = undefined
-                                        onMonthChange={(month) => { console.log('✅ month changed', month) }}
+                                        onMonthChange={(month) => {  }}
                                         // Hide month navigation arrows. Default = false
                                         hideArrows={false}
                                         // Replace default arrows with custom ones (direction can be 'left' or 'right')
@@ -119,8 +119,7 @@ export default class ScheduleTaskScreen extends BaseComponent {
                                             return (<TouchableOpacity  style={[{flex: 1, backgroundColor:Colors.transparent, borderRadius:35/2, borderWidth:1, borderColor:'#fff', height:35, width:35, alignItems:'center', justifyContent:'center'}]}
                                             onPress={(day) => {  
                                                 this.selectedDay(date.day)
-                                                console.log('✅ date',date);
-                                                console.log('✅ this.state.date',this.state.date);
+                                                
                                                 this.setState({date})
                                             }}>
                                             <Text style={{textAlign: 'center', color: state === 'disabled' ? '#ddd' : (this.state.date && this.state.date.dateString == date.dateString) ? 'red' :  '#fff'}}>{date.day}</Text>

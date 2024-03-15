@@ -135,12 +135,7 @@ export default class SetupTimeBlockScreen extends BaseComponent {
   }
 
   componentDidMount() {
-    console.log(
-      'NNNNNN',
-      new Date(Date.now()),
-      moment('2024-01-29T21:20:29.321Z').format('DD/MM/YYYY'),
-      new Date('2024-01-29T21:20:29.321Z').getDate(),
-    );
+    
     super.componentDidMount();
     this.getChildDetail();
     // Helper.checkChoosenTimeIsValidOrNot(this.state.fromTime, (aNewDay, isPastSelectedTime, todayIsSunday) => {
@@ -172,7 +167,6 @@ export default class SetupTimeBlockScreen extends BaseComponent {
         arrSelectedDates: days,
       },
       () => {
-        console.log('arrSelectedDates===>', this.state.arrSelectedDates);
       },
     );
   }
@@ -193,7 +187,6 @@ export default class SetupTimeBlockScreen extends BaseComponent {
   //#region -> Class Methods
   moveToScheduleTask = () => {
     this.setState({isLoading: true});
-    console.log('dictCreateTask=====>!', this.state.is_school_clock);
     if (this.checkTimeValidation()) {
       Helper.showErrorMessage(Constants.MESSAGE_CREATE_TASK_TIME_VALIDATION);
       this.setState({isLoading: false});
@@ -201,7 +194,6 @@ export default class SetupTimeBlockScreen extends BaseComponent {
       const task_dates = this.state.arrSelectedDates
         ?.filter(data => data.selected)
         .map(datas => datas.date);
-      console.log('===111===', task_dates, this.state.calenderSelectedDay);
       Keyboard.dismiss();
       const formattedDate = moment(this.state.calenderSelectedDay).format(
         'YYYY-MM-DD',
@@ -231,11 +223,9 @@ export default class SetupTimeBlockScreen extends BaseComponent {
             this.state.childData?.id,
           )
           .then(resJSON => {
-            console.log('✅✅✅---CHECKAVAIL', resJSON);
             if (resJSON.ok && resJSON.status == 200) {
               this.setState({isLoading: false});
               if (resJSON.data.success) {
-                console.log('✅✅✅', JSON.stringify(resJSON.data.data[0]));
                 try {
                   dictCreateTask.task_id = resJSON.data?.data?.task_id
                   
@@ -253,7 +243,6 @@ export default class SetupTimeBlockScreen extends BaseComponent {
                     });
                   }
                 } catch (error) {
-                  console.log('AsyncStorage Error: ', error);
                 }
               } else {
                 Helper.showErrorMessage(resJSON.data.message);
@@ -267,11 +256,7 @@ export default class SetupTimeBlockScreen extends BaseComponent {
             }
           });
 
-        console.log(
-          'dictCreateTask=====>!',
-          dictCreateTask,
-          this.state.fromTimeFormate,
-        );
+        
         // this.props.navigation.navigate('ScheduleTaskScreen', { dictCreateTask: dictCreateTask })
       } else {
         this.setState({isLoading: false});
@@ -280,14 +265,12 @@ export default class SetupTimeBlockScreen extends BaseComponent {
   };
 
   onActionYes = dictCreateTask => {
-    console.log('yes');
     this.setState({isLoading: false});
     this.props.navigation.navigate('SelectTaskScreen', {
       dictCreateTask: dictCreateTask,
     });
   };
   onActionNo = () => {
-    console.log('No');
     this.setState({isLoading: false});
   };
 
@@ -550,7 +533,6 @@ export default class SetupTimeBlockScreen extends BaseComponent {
       }
     }
 
-    console.log('aaaa', event.type);
     if (Platform.OS === 'android') {
       if (event.type === 'set') {
         this.setState({toTimePicker: false});
@@ -563,12 +545,10 @@ export default class SetupTimeBlockScreen extends BaseComponent {
   }
 
   onDaySelectationCalenderPress() {
-    console.log('``````');
     this.setState({daySelectionCalender: !this.state.daySelectionCalender});
   }
 
   daySelectionCalenderPicker(event, value) {
-    console.log('------', event.type, value);
     this.handleResetSelection();
 
     if (Platform.OS === 'android') {
@@ -851,11 +831,9 @@ export default class SetupTimeBlockScreen extends BaseComponent {
                             showIcon={false}
                             // onChange={(event,data) => { this.setState({timePicker: true},()=> {
                             //     this.onTimeSelected(event,data)
-                            //     console.log('onChangeForTime', this.state.time)
                             // })}}
                             onChange={(event, value) => {
                               this.onTimeSelected(event, value);
-                              console.log('onChangeForTime', this.state.time);
                             }}
                             customStyles={{
                               dateInput: {
@@ -889,10 +867,7 @@ export default class SetupTimeBlockScreen extends BaseComponent {
                             showIcon={false}
                             onChange={(event, data) => {
                               this.onToTimeSelected(event, data);
-                              console.log(
-                                'onChangeForTime',
-                                this.state.toTimeDate,
-                              );
+                              
                             }}
                             customStyles={{
                               dateInput: {
@@ -986,10 +961,7 @@ export default class SetupTimeBlockScreen extends BaseComponent {
                           showIcon={false}
                           onChange={(event, data) => {
                             this.daySelectionCalenderPicker(event, data);
-                            console.log(
-                              'onChangeForTime--',
-                              this.state.calenderSelectedDay,
-                            );
+                            
                           }}
                           customStyles={{
                             dateInput: {

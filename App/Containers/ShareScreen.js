@@ -61,8 +61,8 @@ export default class ShareScreen extends BaseComponent {
             url: 'some share url',
         };
         Share.open(shareOptions)
-            .then((res) => { console.log(res) })
-            .catch((err) => { err && console.log(err); });
+            .then((res) => {  })
+            .catch((err) => {  });
     }
     //#endregion
 

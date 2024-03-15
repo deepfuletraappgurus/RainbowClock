@@ -28,8 +28,6 @@ const create = (baseURL = base_url) => {
   });
 
   // const apiMonitor = (response) => {
-  //   console.log("monitoring initiated")
-  //   console.log("JSON Response ", JSON.stringify(response))
   // }
   // api.addMonitor(apiMonitor)
 
@@ -126,18 +124,12 @@ const createSecure = (baseURL = base_url) => {
   // }
 
   api.addAsyncRequestTransform(request => async () => {
-    console.log(
-      '✅✅✅, token ' +
-        'Bearer ' +
-        (await AsyncStorage.getItem(Constants.KEY_USER_TOKEN)),
-    );
+    
     request.headers.Authorization =
       'Bearer ' + (await AsyncStorage.getItem(Constants.KEY_USER_TOKEN));
   });
 
   const apiMonitor = response => {
-    console.log('monitoring initiated');
-    console.log('JSON Response ', JSON.stringify(response));
   };
   api.addMonitor(apiMonitor);
 
@@ -159,7 +151,6 @@ const createSecure = (baseURL = base_url) => {
   const doSetPin = pin => {
     const data = new FormData();
     data.append('pin', pin);
-    console.log('pinnnnnnnn', pin);
     return api.post('/setpin', data);
   };
 
@@ -178,12 +169,7 @@ const createSecure = (baseURL = base_url) => {
       const mime = photo.mime;
       const arrMime = mime.split('/').reverse();
       const strExtension = arrMime[0];
-      console.log(
-        'Adding photo mime arrMime strExtension',
-        mime,
-        arrMime,
-        strExtension,
-      );
+      
       data.append('profile_pic', {
         uri: photo.path,
         type: mime,
@@ -205,7 +191,6 @@ const createSecure = (baseURL = base_url) => {
   const getSavedtask = child_id => {
     const data = new FormData();
     data.append('child_id', child_id);
-    console.log('CHILD_ID----', data);
     return api.post('/futuretasks', data);
   };
 
@@ -226,12 +211,7 @@ const createSecure = (baseURL = base_url) => {
       const mime = photo.mime;
       const arrMime = mime.split('/').reverse();
       const strExtension = arrMime[0];
-      console.log(
-        'Adding photo mime arrMime strExtension',
-        mime,
-        arrMime,
-        strExtension,
-      );
+     
       data.append('profile_pic', {
         uri: photo.path,
         type: mime,
@@ -346,12 +326,7 @@ const createSecure = (baseURL = base_url) => {
       const mime = taskCustomIcon.mime;
       const arrMime = mime.split('/').reverse();
       const strExtension = arrMime[0];
-      console.log(
-        'Adding photo mime arrMime strExtension',
-        mime,
-        arrMime,
-        strExtension,
-      );
+      
       data.append('cicon', {
         uri: taskCustomIcon.path,
         type: mime,
@@ -359,7 +334,6 @@ const createSecure = (baseURL = base_url) => {
       });
     }
 
-    console.log('!!!!!DATA!!!!!', data);
 
     return api.post('/addtask', data);
   };
@@ -372,7 +346,6 @@ const createSecure = (baseURL = base_url) => {
     data.append('time_to', toTime);
     data.append('task_date', task_date);
 
-    console.log('!!!!!DATA!!!!!DATA', data);
 
     return api.post('/check_time_exist', data);
   };
@@ -403,7 +376,6 @@ const createSecure = (baseURL = base_url) => {
     data.append('is_saved_for_future',is_saved_for_future)
     
 
-    console.log('UPDATE_DATA-----', data);
 
     // if (
     //   taskCustomIcon != undefined &&
@@ -415,12 +387,7 @@ const createSecure = (baseURL = base_url) => {
     //   const mime = taskCustomIcon.mime;
     //   const arrMime = mime.split('/').reverse();
     //   const strExtension = arrMime[0];
-    //   console.log(
-    //     'Adding photo mime arrMime strExtension',
-    //     mime,
-    //     arrMime,
-    //     strExtension,
-    //   );
+    
     //   data.append('cicon', {
     //     uri: taskCustomIcon.path,
     //     type: mime,
@@ -454,7 +421,6 @@ const createSecure = (baseURL = base_url) => {
     data.append('is_new', is_new);
     data.append('description','')
 
-    console.log('UPDATE_SCHEDULE-----', data);
 
     return api.post('/updatetask', data);
   };
@@ -470,7 +436,6 @@ const createSecure = (baseURL = base_url) => {
     data.append('child_id', child_id);
     data.append('is_new',is_new)
 
-    console.log('DELETE_SUBTASK-----', data);
 
     return api.post('/deletetask', data);
   };
@@ -481,7 +446,6 @@ const createSecure = (baseURL = base_url) => {
     data.append('tid', tid);
     data.append('child_id', child_id);
 
-    console.log('DELETE_SCHEDULE-----', data);
 
     return api.post('/deleteSubTask', data);
   }
@@ -551,7 +515,6 @@ const createSecure = (baseURL = base_url) => {
     data.append('child_id', childId);
     data.append('status', status);
     data.append('is_new', is_new);
-    console.log('STATUS____', data);
     return api.post('status', data);
   };
 
@@ -559,7 +522,6 @@ const createSecure = (baseURL = base_url) => {
     const data = new FormData();
     data.append('tid', taskId);
     data.append('child_id', childId);
-    console.log('RESTOR_DATA', data);
     return api.post('restore', data);
   };
 

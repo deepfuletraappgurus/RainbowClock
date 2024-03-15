@@ -13,11 +13,8 @@ export async function storeItem(key, item) {
   try {
     //we want to wait for the Promise returned by AsyncStorage.setItem()
     //to be resolved to the actual value before returning the value
-    //console.log('Saved User : ', JSON.stringify(item))
     var jsonOfItem = await AsyncStorage.setItem(key, JSON.stringify(item));
-    //console.log('Saved User : ', jsonOfItem);
   } catch (error) {
-    //console.log('storeItem', error.message);
   }
 }
 
@@ -59,7 +56,6 @@ export async function retrieveItem(key) {
     const item = JSON.parse(retrievedItem);
     return item;
   } catch (error) {
-    //console.log('retrieveItem', error.message);
   }
   return;
 }
@@ -67,7 +63,6 @@ export async function retrieveItem(key) {
 export function getCurrentLocation() {
   navigator.geolocation.getCurrentPosition(
     position => {
-      //console.log(position);
       latitude = position.coords.latitude;
       longitude = position.coords.longitude;
       error = null;
@@ -87,7 +82,6 @@ export function getMyCurrentLocation() {
         resolve(true);
       },
       error => {
-        //console.log('error.message ', error.message);
         errorObj(error);
       },
       {enableHighAccuracy: false, timeout: 30000, maximumAge: 1000},
@@ -305,7 +299,6 @@ export function getMinimumTime(fromTime) {
   var minimumTime = Moment(fromTime, 'hh:mm A')
     .add(5, 'minutes')
     .format('hh:mm A');
-  //console.log('minimumTime', minimumTime);
   return minimumTime;
 }
 
@@ -437,7 +430,6 @@ export async function getChildRewardPoints(navigation) {
     mApi
       .childRewardPoints(childId)
       .then(response => {
-        //console.log('Child Reward  ✅✅✅', JSON.stringify(response));
         if (response.ok) {
           if (response.data.success) {
             Constants.standardReward = response.data.data.standard;
@@ -448,7 +440,6 @@ export async function getChildRewardPoints(navigation) {
         }
       })
       .catch(error => {
-        //console.log('child reward error', error);
       });
   }
 }
@@ -523,7 +514,6 @@ export function setupTasksBasedOnMeridiem(
   var is_school_clock = [];
 
   arrStartWithPM = objArrTasks.filter(item => {
-    // console.log("Filter 1", item);
 
     return item.tasks[0].start_time_meridiem == 'PM';
   });
@@ -534,24 +524,19 @@ export function setupTasksBasedOnMeridiem(
     return item.tasks[0].is_school_clock;
   });
 
-  console.log('ARRRR', is_school_clock);
 
   arrStartWithAM = objArrTasks.filter(item => {
-    // console.log("Filter 2", item);
     if (
       item.tasks[0].start_time_meridiem == 'AM' &&
       item.tasks[0].end_time_meridiem == 'PM'
     ) {
       arrStartWithPM.push(item);
-      // console.log("Filter 3", item);
-      //console.log('Not PM but adding as PM', arrStartWithPM);
     }
     return item.tasks[0].start_time_meridiem == 'AM';
   });
 
   arrStartWithPM.reverse();
   currentRunningTaskSlot = objArrTasks.filter(item => {
-    // console.log("Filter 4", item);
     var startTime = Moment(item.time.split('-')[0], 'hh:mm A');
     var endTime = Moment(item.time.split('-')[1], 'hh:mm A');
     var now = new Date();
@@ -560,21 +545,17 @@ export function setupTasksBasedOnMeridiem(
 
   const startTime = parseInt(schoolStartTime.format('hhmm'));
   const endTime = parseInt(schoolEndTime.format('hhmm'));
-  // console.log("Filter", startTime, endTime);
 
   arrFilteredData_PM = arrStartWithPM.filter(item => {
-    // console.log("Filter 5", item);
     const taskStartPosition = parseInt(
       Moment(item.tasks[0].time_from, 'hh:mm A').format('hhmm'),
     );
     const taskEndPosition = parseInt(
       Moment(item.tasks[0].time_to, 'hh:mm A').format('hhmm'),
     );
-    // console.log("Filter", taskStartPosition, taskEndPosition);
 
     //|| taskStartPosition <= 1259 add
     if (taskStartPosition <= endTime) {
-      // console.log("Filter 8", taskStartPosition + '<= ' + endTime);
       return true;
     }
     return false;
@@ -582,7 +563,6 @@ export function setupTasksBasedOnMeridiem(
 
   currentRunningTaskSlot =
     currentRunningTaskSlot.length > 0 ? currentRunningTaskSlot : '';
-  console.log(arrStartWithPM, arrFilteredData_PM);
 
   callbackFunction(
     arrStartWithAM,
@@ -596,7 +576,6 @@ export function setupTasksBasedOnMeridiem(
 
 export function getTimeSlot(hour, timeMeridiem) {
   var timeSlot = 0;
-  console.log('getTimeSlot == ', hour + '//' + timeMeridiem); //11 PM
   if (hour >= 0 && hour < 6) {
     timeSlot = 1;
   }
@@ -618,7 +597,6 @@ export function generateClockTaskArray(
   currentTimeSlot,
   is24Hour,
 ) {
-  console.log('cheking data', arrTask, valueToCompare, currentTimeSlot);
   const school = {FROM: '00:00 AM', TO: '00:00 AM'};
   todaysSchoolHours = school;
   var remender = 720;
@@ -660,26 +638,12 @@ export function generateClockTaskArray(
       baseTask.tasks[0].end_time_meridiem,
     ).toString();
 
-    console.log(
-      'TimeSlot=== ' +
-        currentTimeSlot +
-        ' startTimeSlot== ' +
-        startTimeSlot +
-        ' endTime== ' +
-        endTimeSlot,
-    );
-    console.log(
-      'StartTime=== ' +
-        baseTask.tasks[0].time_from +
-        ' EndT== ' +
-        baseTask.tasks[0].time_to,
-    );
+    
     //school and task start
     var check = 0;
     if (currentTimeSlot == startTimeSlot || startTimeSlot != endTimeSlot) {
       task = baseTask;
       check = 1;
-      // console.log('TimeSlot == ', startTimeSlot+' // '+ endTimeSlot+' Current== '+currentTimeSlot);
     } else {
       task = baseTask;
     }
@@ -702,7 +666,6 @@ export function generateClockTaskArray(
     if (taskTimeEnd.isAfter(TimeEnd)) {
       isEndStartAfterSchoolEnd = true;
     }
-    console.log(isTaskStartBeforeSchoolStart, isEndStartAfterSchoolEnd);
     if (
       task.tasks[0].start_time_meridiem == 'AM' &&
       task.tasks[0].end_time_meridiem == 'PM' &&
@@ -718,16 +681,11 @@ export function generateClockTaskArray(
     //do some stuff here for clock time duration
     var endTime = Moment(task.tasks[0].time_to, 'hh:mm A');
     // var startTime = Moment(task.tasks[0].time_from, 'hh:mm A')
-    console.log(
-      'times---------',
-      startTime.format('hh:mm A'),
-      endTime.format('hh:mm A'),
-    );
+    
 
     var color = task.tasks[0].color;
     var duration = null;
 
-    console.log('isTaskValueToCompare', isTaskValueToCompare, valueToCompare);
 
     if (isTaskValueToCompare) {
       duration = TimeEnd.diff(
@@ -735,7 +693,6 @@ export function generateClockTaskArray(
         'minutes',
       );
       // duration = (duration + (duration > 0 ? 1 : 0))
-      // console.log("duration1", duration);
     } else {
       if (valueToCompare == 'am' && task.tasks[0].end_time_meridiem == 'AM') {
         if (currentTimeSlot == 2) {
@@ -761,12 +718,7 @@ export function generateClockTaskArray(
           );
         }
         // duration = endTime.diff(Moment('12:00 AM', 'hh:mm A'), 'minutes');
-        console.log(
-          'duration-AMAM',
-          duration,
-          startTime.format('hh:mm A'),
-          endTime.format('hh:mm A'),
-        );
+        
       } else if (
         valueToCompare == 'am' &&
         task.tasks[0].start_time_meridiem == 'AM' &&
@@ -777,12 +729,7 @@ export function generateClockTaskArray(
           'minutes',
         );
         // duration = endTime.diff(Moment(task.tasks[0].time_from, 'hh:mm A'), 'minutes');
-        console.log(
-          'duration-AMPM',
-          duration,
-          Moment(task.tasks[0].time_from, 'hh:mm A').format('hh:mm A'),
-          endTime.format('hh:mm A'),
-        );
+        
       } else if (
         valueToCompare == 'pm' &&
         task.tasks[0].start_time_meridiem == 'AM' &&
@@ -801,12 +748,7 @@ export function generateClockTaskArray(
         }
         duration = endTime.diff(Moment('12:00 PM', 'hh:mm A'), 'minutes');
         // duration = endTime.diff(Moment(task.tasks[0].time_from, 'hh:mm A'), 'minutes');
-        console.log(
-          'duration-PMAM',
-          duration,
-          Moment(task.tasks[0].time_from, 'hh:mm A').format('hh:mm A'),
-          endTime.format('hh:mm A'),
-        );
+        
       } else if (
         valueToCompare == 'pm' &&
         task.tasks[0].start_time_meridiem == 'PM' &&
@@ -832,51 +774,33 @@ export function generateClockTaskArray(
         }
         // duration = endTime.diff(Moment('06:00 PM', 'hh:mm A'), 'minutes');
 
-        console.log(
-          'duration-PMPM',
-          duration,
-          Moment(task.tasks[0].time_from, 'hh:mm A').format('hh:mm A'),
-          endTime.format('hh:mm A'),
-        );
+        
       } else {
         duration = endTime.diff(startTime, 'minutes');
         // duration = endTime.diff(Moment(task.tasks[0].time_from, 'hh:mm A'), 'minutes');
-        console.log(
-          'duration4',
-          valueToCompare,
-          duration,
-          Moment(task.tasks[0].time_from, 'hh:mm A').format('hh:mm A'),
-          endTime.format('hh:mm A'),
-        );
+        
       }
       // if (valueToCompare=="am" && task.tasks[0].start_time_meridiem == "AM" && task.tasks[0].end_time_meridiem == "AM") {
       //     duration = endTime.diff(Moment(task.tasks[0].time_from, 'hh:mm A'), 'minutes');
-      //     console.log("duration2", duration, startTime.format('hh:mm A'), endTime.format('hh:mm A'));
       // } else if (valueToCompare=="pm" && task.tasks[0].start_time_meridiem == "AM" && task.tasks[0].end_time_meridiem == "PM") {
       //     duration = endTime.diff(Moment('12:00 PM', 'hh:mm A'), 'minutes');
       //     // duration = endTime.diff(Moment(task.tasks[0].time_from, 'hh:mm A'), 'minutes');
-      //     console.log("duration3", duration, Moment(task.tasks[0].time_from, 'hh:mm A').format('hh:mm A'), endTime.format('hh:mm A'));
       // }
       // else if (task.tasks[0].start_time_meridiem == "PM" && task.tasks[0].end_time_meridiem == "PM") {
       //     duration = endTime.diff(Moment('12:00 PM', 'hh:mm A'), 'minutes');
       //     // duration = endTime.diff(Moment(task.tasks[0].time_from, 'hh:mm A'), 'minutes');
-      //     console.log("duration4", duration, Moment(task.tasks[0].time_from, 'hh:mm A').format('hh:mm A'), endTime.format('hh:mm A'));
       // }
       // else{
       //     duration = endTime.diff(startTime, 'minutes');
       //     // duration = endTime.diff(Moment(task.tasks[0].time_from, 'hh:mm A'), 'minutes');
-      //     console.log("durationnn",valueToCompare, duration, Moment(task.tasks[0].time_from, 'hh:mm A').format('hh:mm A'), endTime.format('hh:mm A'));
 
       // }
 
-      // console.log("duration2", duration);
     }
-    // console.log("duration", duration);
 
     // var duration = endTime.diff(startTime, 'minutes');
     if (is24Hour) {
       if (duration > 0) {
-        console.log('task---0000', task);
         const dicValue = {
           taskId: task.time,
           color: color,
@@ -953,23 +877,14 @@ export function generateClockTaskArray(
         //     dicValue.value = duration   //here some staff add wrong value
         // }
         remender -= duration;
-        console.log(
-          'TimeSlot == LAST ',
-          startTimeSlot +
-            ' // ' +
-            endTimeSlot +
-            ' Current== ' +
-            currentTimeSlot,
-        );
+        
         // if(check==1){
 
         data.push(dicValue);
-        console.log('DicValue', JSON.stringify(dicValue),data);
       }
     } else {
       if (currentTimeSlot <= startTimeSlot || currentTimeSlot <= endTimeSlot) {
         if (duration > 0) {
-          console.log('task---0000', task);
           const dicValue = {
             taskId: task.time,
             color: color,
@@ -1046,18 +961,10 @@ export function generateClockTaskArray(
           //     dicValue.value = duration   //here some staff add wrong value
           // }
           remender -= duration;
-          console.log(
-            'TimeSlot == LAST ',
-            startTimeSlot +
-              ' // ' +
-              endTimeSlot +
-              ' Current== ' +
-              currentTimeSlot,
-          );
+          
           // if(check==1){
 
           data.push(dicValue);
-          console.log('DicValue', JSON.stringify(dicValue));
         }
       }
     }
@@ -1065,14 +972,7 @@ export function generateClockTaskArray(
   const sortedData = data.sort(
     Helper.compareValues('startPosition', valueToCompare),
   );
-  console.log('________',data.sort((a, b) => {
-    // Extracting the time part of taskId and converting it to milliseconds
-    const timeA = new Date("1970-01-01T" + a.taskId.split(" - ")[0]).getTime();
-    const timeB = new Date("1970-01-01T" + b.taskId.split(" - ")[0]).getTime();
-    
-    // Comparing the times
-    return timeA - timeB;
-  }),sortedData)
+ 
   const fullSortedData = Helper.compareMissingValues(data.sort((a, b) => {
     // Extracting the start time from taskId using moment
     const timeA = moment(a.taskId.split(" - ")[0], "hh:mm A");
@@ -1086,13 +986,10 @@ export function generateClockTaskArray(
 }
 
 export function compareMissingValues(sortedData, valueToCompare) {
-  console.log('YES YES YES YES✅✅✅sortedData', sortedData, valueToCompare);
   var arrFullData = [];
   var remainingTimeVal = 720;
 
   for (let [i, element] of sortedData.entries()) {
-    console.log('YES YES YES YES✅✅✅Index element', i);
-    console.log('YES YES YES YES✅✅✅Index element ', element);
     if (element.startTimeMeridiem.toLowerCase() != valueToCompare) {
       const value = Helper.convertDiffrenceInTimeToMinutes(
         element.endPosition,
@@ -1122,8 +1019,6 @@ export function compareMissingValues(sortedData, valueToCompare) {
         if (nextElement) {
           var endTime = element.endPosition;
           var startTime = nextElement.startPosition;
-          // console.log('startTime ', startTime);
-          // console.log('endTime ', endTime);
           const diff = Helper.convertDiffrenceInTimeToMinutes(
             startTime,
             endTime,
@@ -1131,7 +1026,6 @@ export function compareMissingValues(sortedData, valueToCompare) {
             element.endTimeMeridiem,
           );
           if (endTime != startTime) {
-            // console.log('traying to add blank space at', diff);
             remainingTimeVal -= diff;
             arrFullData.push({
               taskId: 'Blannk1 ' + i,
@@ -1163,7 +1057,6 @@ export function compareMissingValues(sortedData, valueToCompare) {
         }
 
         remainingTimeVal -= diff;
-        // console.log('YES YES YES YES✅✅✅',endTime, diff, remainingTimeVal);
         arrFullData.push({
           taskId: 'Blannk2',
           value: diff,
@@ -1183,24 +1076,18 @@ export function compareMissingValues(sortedData, valueToCompare) {
         } else {
           remainingTimeVal -= element.value;
         }
-        // console.log('HELPER== ', remainingTimeVal,element.value,diff);
         arrFullData.push(element);
         const nextElement = sortedData[i + 1];
-        // console.log("nextElement1", diff,nextElement);
         if (nextElement) {
           var endTime = element.endPosition;
           var startTime = nextElement.startPosition;
-          // console.log('startTime ', startTime);
-          // console.log('endTime ', endTime);
           const diff = Helper.convertDiffrenceInTimeToMinutes(
             startTime,
             endTime,
             nextElement.endTimeMeridiem,
             element.startTimeMeridiem,
           );
-          console.log('nextElement', diff);
           if (endTime != startTime && diff > 0 && diff <= 720) {
-            // console.log('traying to add blank space at lattttt', diff);
             remainingTimeVal -= diff;
             arrFullData.push({
               taskId: 'Blannk3 ' + i,
@@ -1220,16 +1107,13 @@ export function compareMissingValues(sortedData, valueToCompare) {
       isEmpty: true,
     });
   }
-  console.log('Final Arr Data', arrFullData);
   return arrFullData;
 }
 
 export function compareMissingValuesForSchool(sortedData, valueToCompare) {
-  console.log('compareMissingValuesForSchool', sortedData, valueToCompare);
 
   var arrFullData = [];
   var remainingTimeVal = 720;
-  console.log('sortedData.entries()', sortedData);
 
   for (let [i, element] of sortedData.entries()) {
     if (element.startTimeMeridiem.toLowerCase() != valueToCompare) {
@@ -1240,7 +1124,6 @@ export function compareMissingValuesForSchool(sortedData, valueToCompare) {
         'empty',
       );
       if (valueToCompare == 'pm') {
-        console.log('value', value);
         if (value <= 720) {
           const dicValue = {
             taskId: element.taskId,
@@ -1254,7 +1137,6 @@ export function compareMissingValuesForSchool(sortedData, valueToCompare) {
           };
           remainingTimeVal -= value;
           arrFullData.push(dicValue);
-          console.log('dicValue 2', dicValue);
         }
 
         const nextElement = sortedData[i + 1];
@@ -1298,7 +1180,6 @@ export function compareMissingValuesForSchool(sortedData, valueToCompare) {
         }
         if (diff > 0) {
           remainingTimeVal -= diff;
-          // //console.log('YES YES YES YES✅✅✅',endTime, diff, remainingTimeVal);
           arrFullData.push({
             taskId: 'Blannk2',
             value: diff,
@@ -1307,7 +1188,6 @@ export function compareMissingValuesForSchool(sortedData, valueToCompare) {
           });
         }
       }
-      console.log('sortedData.entries()', sortedData);
       if (element.startTimeMeridiem.toLowerCase() == valueToCompare) {
         if (element.endTimeMeridiem.toLowerCase() != valueToCompare) {
           diff = Helper.convertDiffrenceInTimeToMinutes(
@@ -1326,8 +1206,6 @@ export function compareMissingValuesForSchool(sortedData, valueToCompare) {
         if (nextElement) {
           var endTime = element.endPosition;
           var startTime = nextElement.startPosition;
-          // //console.log('startTime ', startTime);
-          // //console.log('endTime ', endTime);
           const diff = Helper.convertDiffrenceInTimeToMinutes(
             startTime,
             endTime,
@@ -1335,7 +1213,6 @@ export function compareMissingValuesForSchool(sortedData, valueToCompare) {
             element.startTimeMeridiem,
           );
           if (endTime != startTime && diff > 0 && diff <= 720) {
-            // //console.log('traying to add blank space at lattttt', diff);
             remainingTimeVal -= diff;
             arrFullData.push({
               taskId: 'Blannk3 ' + i,
@@ -1397,7 +1274,6 @@ export function compareValues(key, valueToCompare, order = 'asc') {
     const varB = typeof b[key] === 'string' ? b[key].toUpperCase() : b[key];
 
     let comparison = 0;
-    // //console.log('varA , varB',varA,varB);
     if (a.startTimeMeridiem.toLowerCase() != valueToCompare) {
       comparison = 0;
     } else {
@@ -1467,16 +1343,11 @@ export function getPercentageArrForTask(objTask) {
     ((objTask.task_time - aRemainTime) * 100) / objTask.task_time;
   arrOfPercentage.push(aRemainTimeObj);
   arrOfPercentage.push(100 - aRemainTimeObj);
-  //console.log('Final Time is', arrOfPercentage);
   return arrOfPercentage;
 }
 
 export function checkTaskTimeAndDate(objTask) {
-  console.log(
-    '----===-----',
-    objTask.task_date,
-    this.getMinimumDateForCalender(),
-  );
+  
   var isFutureTask = false;
   var taskStartTime = Moment(objTask.time_from, 'HH:mm a')
     .format('HH:mm a')
@@ -1530,19 +1401,11 @@ export function generateClockTaskArraySchool(
   schoolMeridian,
   isDualSchool = false,
 ) {
-  console.log(
-    'generateClockTaskArraySchoolGunj cheking data',
-    arrTask,
-    meridianValueToCompare,
-    schoolHoursFrom,
-    schoolHoursTo,
-    isDualSchool,
-  );
+  
   var data = [];
   var remender = 720;
   var schoolStartTime = Moment(schoolHoursFrom, 'hh:mm a').format('hhmm');
   var schoolEndTime = Moment(schoolHoursTo, 'hh:mm a').format('hhmm');
-  console.log('SCHOOLTIME', schoolStartTime + ' ' + schoolEndTime);
   var clockBlankColor = 'white'; // not in school time
   var clockStartTime = '';
   var clockEndTime = '';
@@ -1554,14 +1417,7 @@ export function generateClockTaskArraySchool(
     clockStartTime = meridianValueToCompare == 'pm' ? '1200' : '0';
     clockEndTime = meridianValueToCompare == 'pm' ? '0' : '1159';
 
-    console.log(
-      'duration School>>',
-      clockStartTime + ' <-(5)-> ' + clockEndTime,
-    );
-    console.log(
-      'duration School<<',
-      schoolStartTime + ' <-(5)-> ' + schoolEndTime,
-    );
+    
 
     durationFromSchoolStart = Helper.convertDiffrenceInTimeToMinutes(
       schoolStartTime,
@@ -1575,10 +1431,7 @@ export function generateClockTaskArraySchool(
       meridianValueToCompare,
       meridianValueToCompare,
     );
-    console.log(
-      'duration School',
-      durationFromSchoolStart + ' <-(1)-> ' + durationFromSchoolEnd,
-    );
+    
   } else {
     //DO NOT CHANGE PM
     clockStartTime = meridianValueToCompare == 'pm' ? '0' : '1200';
@@ -1596,10 +1449,7 @@ export function generateClockTaskArraySchool(
         meridianValueToCompare,
         meridianValueToCompare,
       );
-      console.log(
-        'duration School',
-        durationFromSchoolStart + ' <-(2)-> ' + durationFromSchoolEnd,
-      );
+      
     } else {
       durationFromSchoolStart = 0;
       durationFromSchoolEnd = 0;
@@ -1620,18 +1470,10 @@ export function generateClockTaskArraySchool(
   }
   // also check here  duration is not grater then total duration
 
-  console.log(
-    'durationFromSchoolStart',
-    durationFromSchoolStart,
-    schoolStartTime,
-  );
+  
   //&& schoolStartTime <= 720 remove native value
   if (durationFromSchoolStart > 0) {
-    console.log(
-      'durationFromSchoolStart >>>',
-      durationFromSchoolStart,
-      schoolStartTime,
-    );
+    
     const startValue = {
       taskId: '0A0',
       color: clockBlankColor,
@@ -1642,17 +1484,10 @@ export function generateClockTaskArraySchool(
       endPosition: parseInt(schoolStartTime),
       endTimeMeridiem: meridianValueToCompare,
     };
-    console.log('startValue', startValue);
 
     data.push(startValue);
-    console.log('remender', remender);
     remender -= durationFromSchoolStart;
-    console.log(
-      'durationFromSchoolStart <<<',
-      (remender -= durationFromSchoolStart),
-      remender,
-      durationFromSchoolStart,
-    );
+    
   }
 
   // if (durationFromSchoolStart == 0){
@@ -1688,7 +1523,6 @@ export function generateClockTaskArraySchool(
     if (taskTimeEnd.isAfter(schollTimeEnd)) {
       isEndStartAfterSchoolEnd = true;
     }
-    console.log(isTaskStartBeforeSchoolStart, isEndStartAfterSchoolEnd);
 
     var endTime = isEndStartAfterSchoolEnd
       ? Moment(schoolHoursTo, 'hh:mm A')
@@ -1698,7 +1532,6 @@ export function generateClockTaskArraySchool(
       : Moment(task.tasks[0].time_from, 'hh:mm A');
     var color = task.tasks[0].color;
     var duration = endTime.diff(startTime, 'minutes');
-    console.log('task<><>', task);
 
     //here some logic add to remove task time and add in school time
 
@@ -1716,7 +1549,6 @@ export function generateClockTaskArraySchool(
       ),
       endTimeMeridiem: task.tasks[0].end_time_meridiem,
     };
-    console.log('dicValue11', dicValue);
 
     if (
       meridianValueToCompare == 'pm' &&
@@ -1731,7 +1563,6 @@ export function generateClockTaskArraySchool(
       dicValue.startPosition = 1200;
       dicValue.startTimeMeridiem = meridianValueToCompare;
       dicValue.value = duration;
-      console.log('dicValue12', dicValue);
     }
 
     //check task is under school time
@@ -1742,7 +1573,6 @@ export function generateClockTaskArraySchool(
       Moment(task.tasks[0].time_from, 'hh:mm A').format('hh:mm A'),
     );
     if (isValidValue) {
-      console.log('true');
       remender -= duration;
       data.push(dicValue);
     }
@@ -1760,12 +1590,7 @@ export function generateClockTaskArraySchool(
     };
     data.push(endValue);
     remender -= durationFromSchoolEnd;
-    console.log(
-      'durationFromSchoolEnd',
-      (remender -= durationFromSchoolEnd),
-      remender,
-      durationFromSchoolEnd,
-    );
+    
   }
   if (
     durationFromSchoolEnd == 0 &&
@@ -1784,13 +1609,11 @@ export function generateClockTaskArraySchool(
     };
     data.push(endValue);
   }
-  console.log('data data data data data', data);
   // const sortedData = data.sort(Helper.compareValues('startPosition', valueToCompare))
   const fullSortedData = Helper.compareMissingValuesForSchool(
     data,
     meridianValueToCompare,
   );
-  console.log('Final fullSortedData', fullSortedData);
   return fullSortedData;
 }
 
@@ -1806,15 +1629,7 @@ export function isCheckTaskValid(
   taskEnd,
   taskStart,
 ) {
-  console.log(
-    SchoolstartTime +
-      '<->' +
-      SchoolEndTime +
-      '<->' +
-      taskEnd +
-      '<->' +
-      taskStart,
-  );
+  
 
   var isValidValue = false;
   var format = 'hh:mm A';

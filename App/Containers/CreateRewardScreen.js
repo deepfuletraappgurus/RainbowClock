@@ -118,13 +118,11 @@ export default class CreateRewardScreen extends BaseComponent {
         //     }
         // })
         // check(PERMISSIONS.IOS.PHOTO_LIBRARY).then(result => {
-        //     console.log('result',result)
         //     if (result === RESULTS.GRANTED) {
         //        this.onPressSelectImage()
         //     }
         //     else {
         //         request(PERMISSIONS.IOS.PHOTO_LIBRARY).then(responseCamera => {
-        //             console.log('responseCamera',responseCamera)
         //             if (responseCamera === RESULTS.GRANTED) {
         //                 this.onPressSelectImage()
         //             }
@@ -138,7 +136,6 @@ export default class CreateRewardScreen extends BaseComponent {
         ImagePicker.openPicker({
             cropping: true
         }).then(image => {
-            console.log('image.path', image);
             this.setState({
                 rewardImage: image
             })
@@ -186,7 +183,6 @@ export default class CreateRewardScreen extends BaseComponent {
             mAPi.createReward(this.state.rewardName, this.state.isSpecialReward, this.state.numberOfToken,
                 this.state.rewardImage,this.state.objSelectedChild?.id).then(response => {
                     this.setState({ loading: false })
-                    console.log('CHILD TASK LIST ✅✅✅', JSON.stringify(response))
                     if (response.ok) {
                         if (response.data.success) {
                             this.props.navigation.goBack();
@@ -197,7 +193,6 @@ export default class CreateRewardScreen extends BaseComponent {
                         Helper.showErrorMessage(response.problem)
                     }
                 }).catch(error => {
-                    console.log(error);
                     this.setState({ loading: false })
                 })
         }
@@ -241,7 +236,6 @@ export default class CreateRewardScreen extends BaseComponent {
                                         underlineColorAndroid={'transparent'}
                                         placeholderTextColor={'#fff'}
                                         onChangeText={(rewardName) => this.setState({ rewardName })}
-                                        autoCapitalize='characters'
                                     />
                                 </View>
                                 <View style={[styles.iconContainer, { flexGrow: 1 }]}>

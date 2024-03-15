@@ -73,7 +73,6 @@ export default class ScheduleTaskScreen extends BaseComponent {
         this.state.isRepeatEveryday = false
         this.setState({})
         setTimeout(function () { this.setState({ current: '' }) }.bind(this), 100);
-        console.log('this.state.arrSelectedTaskDates',this.state.arrSelectedTaskDates, this.state.arrSelectedDates)
 
     }
 
@@ -99,7 +98,6 @@ export default class ScheduleTaskScreen extends BaseComponent {
                 this.state.arrSelectedTaskDates.push(Helper.dateFormater(this.state.strMinimumDate, 'YYYY-MM-DD', 'Y-M-D'))
                 this.state.dictCreateTask['task_date'] = this.state.arrSelectedTaskDates
             }
-            console.log('this.state.dictCreateTask', this.state.dictCreateTask)
             this.props.navigation.navigate('SelectTaskScreen', { dictCreateTask: this.state.dictCreateTask })
         }
     }
@@ -169,11 +167,11 @@ export default class ScheduleTaskScreen extends BaseComponent {
                                         // Handler which gets executed on day press. Default = undefined
                                         onDayPress={(date) => { this.selectedDay(date) }}
                                         // Handler which gets executed on day long press. Default = undefined
-                                        onDayLongPress={(day) => { console.log('✅ selected day', day) }}
+                                        onDayLongPress={(day) => {  }}
                                         // Month format in calendar title. Formatting values: http://arshaw.com/xdate/#Formatting
                                         monthFormat={'MMMM yyyy'}
                                         // Handler which gets executed when visible month changes in calendar. Default = undefined
-                                        onMonthChange={(month) => { console.log('✅ month changed', month) }}
+                                        onMonthChange={(month) => {  }}
                                         // Hide month navigation arrows. Default = false
                                         hideArrows={false}
                                         // Replace default arrows with custom ones (direction can be 'left' or 'right')

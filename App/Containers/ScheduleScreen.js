@@ -61,7 +61,6 @@ export default class ScheduleScreen extends BaseComponent {
 
   //#region -> Component Methods
   componentDidMount() {
-    console.log('~~~~~~~');
     super.componentDidMount();
     const upComingDays = Helper.getUpcominSevenDays();
     this.setState({
@@ -107,7 +106,6 @@ export default class ScheduleScreen extends BaseComponent {
     mApi
       .childTasksList(this.state.objSelectedChild.id, '', aDate)
       .then(response => {
-        console.log('CHILD TASK LIST ✅✅✅', JSON.stringify(response));
         if (response.ok) {
           if (response.data.success) {
             let arr = [];
@@ -118,7 +116,6 @@ export default class ScheduleScreen extends BaseComponent {
                 arr.push({time: item, tasks: tasks[item], key: item.id});
               });
               this.setState({arrTasks: arr});
-              console.log('arr ✅✅✅', JSON.stringify(this.state.arrTasks));
             }
           } else {
             Helper.showErrorMessage(response.data.message);
@@ -130,7 +127,6 @@ export default class ScheduleScreen extends BaseComponent {
         }
       })
       .catch(error => {
-        console.log(error);
       });
   };
   callRecoverTask(objTask) {
@@ -138,7 +134,6 @@ export default class ScheduleScreen extends BaseComponent {
     mApi
       .restoreTask(objTask.id, this.state.objSelectedChild.id)
       .then(response => {
-        //console.log("Task Restored ✅✅✅", JSON.stringify(response));
         if (response.ok) {
           if (response.data.success) {
             const objIndex = this.state.selectedTaskSlot.findIndex(
@@ -165,7 +160,6 @@ export default class ScheduleScreen extends BaseComponent {
         this.setState({
           isLoading: false,
         });
-        //console.log(error);
       });
   }
 
@@ -178,7 +172,6 @@ export default class ScheduleScreen extends BaseComponent {
   };
 
   moveToEditTask = item => {
-    console.log('send task ' + JSON.stringify(item));
     if (this.state.isMenuAsParentPortal) {
       // this.props.navigation.navigate('EditScheduleScreen', {
       //   scheduleDetails: item.tasks[0],
@@ -192,7 +185,6 @@ export default class ScheduleScreen extends BaseComponent {
   };
 
   parentViewEditTask = item => {
-    console.log('IIIIIIIIIIIII--', item);
     var dictCreateTask = {
       taskName: item.task_name,
       fromTime: item.time_from,
@@ -226,13 +218,11 @@ export default class ScheduleScreen extends BaseComponent {
       //   objTask.status != Constants.TASK_STATUS_COMPLETED &&
       //   !this.state.isMenuAsParentPortal
       // ) {
-      //   console.log('TASK MODAL');
       //   this.setState({
       //     showTaskList: true,
       //     item: item,
       //   });
       // } else {
-      //   console.log('TASK LIST MODAL');
 
       //   this.setState({
       //     objFooterSelectedTask: objTask,
@@ -256,14 +246,12 @@ export default class ScheduleScreen extends BaseComponent {
     mApi
       .printTask(this.state.objSelectedChild.id, aDate)
       .then(response => {
-        console.log('PDF LIST ✅✅✅', JSON.stringify(response));
         if (response.ok) {
           if (response.data.success) {
             // let arr = []
             // if (response.data.data.length > 0) {
             const tasks = response.data.data.pdf;
 
-            console.log('PDF ✅✅✅', tasks);
             this.props.navigation.navigate('PrintPdfScreen', {pdfUrl: tasks});
             // this.setState({ arrTasks: arr })
             // }
@@ -277,18 +265,15 @@ export default class ScheduleScreen extends BaseComponent {
         }
       })
       .catch(error => {
-        console.log(error);
       });
   }
 
   setModal() {
-    console.log('!!!!!!!!!');
     this.setState({showTaskList: false});
     this.getChildId();
   }
 
   onTimeBlockDeletePress(dictCreateTask) {
-    console.log('..........', dictCreateTask);
     const currentTime = moment();
     const startTime = moment(dictCreateTask?.time.split('-')[0], 'hh:mm A');
     const endTime = moment(dictCreateTask?.time.split('-')[1], 'hh:mm A');
@@ -317,11 +302,9 @@ export default class ScheduleScreen extends BaseComponent {
         dictCreateTask?.is_new,
       )
       .then(resJSON => {
-        console.log('✅✅✅---CHECKAVAIL', resJSON);
         if (resJSON.ok && resJSON.status == 200) {
           this.setState({isLoading: false});
           if (resJSON.data.success) {
-            console.log('✅✅✅', JSON.stringify(resJSON.data.data[0]));
             Helper.showErrorMessage(resJSON.data.message);
             this.getTaskList();
           } else {
@@ -338,7 +321,6 @@ export default class ScheduleScreen extends BaseComponent {
   };
 
   onTimeBlockEditPress(item) {
-    console.log('IIIITTTTTEEEEEMMMMM', item?.time.split('-')[0]);
     const currentTime = moment();
     const startTime = moment(item?.time.split('-')[0], 'hh:mm A');
     const endTime = moment(item?.time.split('-')[1], 'hh:mm A');
@@ -356,7 +338,6 @@ export default class ScheduleScreen extends BaseComponent {
 
   onTimeBlockAddPress(item) {
     item = item?.tasks[0];
-    console.log('IIIIIIIIIIIII--', item);
     var dictCreateTask = {
       fromTime: item.time_from,
       toTime: item.time_to,
@@ -389,7 +370,6 @@ export default class ScheduleScreen extends BaseComponent {
   }
 
   renderTaskRow = (item, index) => {
-    console.log('-------ITEM', item, typeof item?.is_school_clock);
     return (
       <TouchableOpacity
         style={[
@@ -635,7 +615,6 @@ export default class ScheduleScreen extends BaseComponent {
                   </Text>
                   <Image source={Images.downarrow} style={styles.downarrow} />
                 </TouchableOpacity>
-                {console.log('arrWeekDays', this.state.arrWeekDays)}
                 {this.state.showDropdown ? (
                   <View style={[styles.dropdown, styles.dropdownLarge]}>
                     <FlatList

@@ -117,15 +117,10 @@ export default class SelectTaskScreen extends BaseComponent {
     var endTime = Moment(this.state.dictCreateTask['toTime'], 'hh:mm A');
     var startTime = Moment(this.state.dictCreateTask['fromTime'], 'hh:mm A');
     this.state.totalTaskSlotMinutes = endTime.diff(startTime, 'minutes');
-    console.log(
-      '✅--, totalTaskSlotMinutes',
-      this.state.dictCreateTask['task_id'],
-    );
   };
   getChildDetail = () => {
     AsyncStorage.getItem(Constants.KEY_SELECTED_CHILD, (err, child) => {
       if (child != '') {
-        console.log('JSON.parse(child)', JSON.parse(child));
         this.setState({objSelectedChild: JSON.parse(child)}, () => {
           const tasks = this.state.objSelectedChild.tasks;
           let arr = [];
@@ -221,7 +216,6 @@ export default class SelectTaskScreen extends BaseComponent {
     ImagePicker.openPicker({
       cropping: true,
     }).then(image => {
-      console.log('image.path', image.path);
       this.state.taskCustomImagePath = image.path;
       this.setState({
         taskCustomImage: image,
@@ -234,7 +228,6 @@ export default class SelectTaskScreen extends BaseComponent {
   getTaskCategories = () => {
     this.setState({isLoading: true});
     const res = objSecureAPI.getCategories().then(resJSON => {
-      console.log('✅✅✅', resJSON.data.data);
       if (resJSON.ok && resJSON.status == 200) {
         this.setState({isLoading: false});
         if (resJSON.data.success) {
@@ -284,11 +277,6 @@ export default class SelectTaskScreen extends BaseComponent {
     const res = objSecureAPI
       .getSavedtask(this.state.objSelectedChild.id)
       .then(resJSON => {
-        console.log(
-          '✅✅✅SAVED TASK LIST',
-          resJSON.data,
-          this.state.objSelectedChild.id,
-        );
         if (resJSON.ok && resJSON.status == 200) {
           this.setState({isLoading: false});
           if (resJSON.data.success) {
@@ -362,13 +350,11 @@ export default class SelectTaskScreen extends BaseComponent {
         is_new,
       )
       .then(resJSON => {
-        console.log('✅✅✅---', resJSON);
         if (resJSON.ok && resJSON.status == 200) {
           this.setState({isLoading: false});
           if (resJSON.data.success) {
             this.state.totalTaskSlotMinutes =
               this.state.totalTaskSlotMinutes - this.state.taskTime;
-            console.log('✅✅✅', JSON.stringify(resJSON.data.data[0]));
             try {
               AsyncStorage.setItem(
                 Constants.KEY_SELECTED_CHILD,
@@ -389,9 +375,7 @@ export default class SelectTaskScreen extends BaseComponent {
                   }
                 }
               });
-            } catch (error) {
-              console.log('AsyncStorage Error: ', error);
-            }
+            } catch (error) {}
           } else {
             Helper.showErrorMessage(resJSON.data.message);
           }
@@ -565,7 +549,6 @@ export default class SelectTaskScreen extends BaseComponent {
   }
 
   setSavedTaskModelVisible(item) {
-    console.log('@@@@@@@@@',item)
     // this.state.taskType = item ? Constants.TASK_TYPE_DEFAULT : ''
     // this.state.taskName = item?.task_name;
     // this.state.taskTime = item?.task_time;
@@ -589,6 +572,13 @@ export default class SelectTaskScreen extends BaseComponent {
       this.state.taskTokenType = '';
       (this.state.timeForTaskDropdown = false),
         (this.state.typeOfTokensDropdown = false);
+    } else {
+      this.state.taskName = item?.task_name;
+      this.state.taskTime = item?.task_time;
+      this.state.taskNumberOfToken = item?.no_of_token;
+      this.state.taskTokenType = item?.token_type;
+      this.state.isSaveForFuture = true;
+      this.setState({});
     }
 
     const aModelVisible = item ? !this.state.selectTaskModel : false;

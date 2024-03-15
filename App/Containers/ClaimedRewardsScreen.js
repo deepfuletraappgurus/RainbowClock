@@ -64,7 +64,6 @@ export default class ClaimedRewardsScreen extends BaseComponent {
                 Helper.showErrorMessage(response.problem)
             }
         }).catch(error => {
-            console.log(error);
         })
     }
 

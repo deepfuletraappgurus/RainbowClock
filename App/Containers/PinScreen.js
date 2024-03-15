@@ -127,7 +127,6 @@ export default class PinScreen extends BaseComponent {
         this.setState({ isLoading: true })
         var strPin = this.state.pin1 + this.state.pin2 + this.state.pin3 + this.state.pin4
         const res = objSecureAPI.doSetPin(strPin).then((resJSON) => {
-            console.log('resJSON ✅✅✅', resJSON)
             if (resJSON.ok && resJSON.status == 200) {
                 this.setState({ isLoading: false })
                 if (resJSON.data.success) {
@@ -143,7 +142,6 @@ export default class PinScreen extends BaseComponent {
                         })
                         this.props.navigation.dispatch(resetAction)
                     } catch (error) {
-                        console.log('AsyncStorage Error: ', error)
                     }
                 }
                 else {

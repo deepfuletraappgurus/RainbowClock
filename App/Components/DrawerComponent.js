@@ -65,7 +65,6 @@ export default class DrawerContainer extends React.Component {
 
   //#region -> Class Methods
   onPressMenuItem(strMenuItem) {
-    console.log('strMenuItem<><><',strMenuItem);
     if (strMenuItem.title == 'Logout') {
       this.onPressLogout()
     }
@@ -92,8 +91,8 @@ export default class DrawerContainer extends React.Component {
       url: 'some share url',
     };
     Share.open(shareOptions)
-      .then((res) => { console.log(res) })
-      .catch((err) => { err && console.log(err); });
+      .then((res) => {  })
+      .catch((err) => {  });
   }
 
   renderRow(item, index) {
@@ -131,7 +130,6 @@ export default class DrawerContainer extends React.Component {
       });
       this.props.navigation.dispatch(navigateAction);
     } catch (error) {
-      console.log('AsyncStorage Error: ', error)
     }
   }
 
@@ -139,7 +137,6 @@ export default class DrawerContainer extends React.Component {
     try {      
       this.props.navigation.navigate('GetStartedScreen');    
     } catch (error) {
-      console.log('AsyncStorage Error: ', error)
     }
   }
   //#endregion 

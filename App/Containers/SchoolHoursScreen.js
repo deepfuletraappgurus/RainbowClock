@@ -172,7 +172,6 @@ export default class SchoolHoursScreen extends BaseComponent {
         }
       }
 
-      console.log('aaaa', event.type);
       if (Platform.OS === 'android') {
         if (event.type === 'set') {
           this.setState({toTimePicker: false});
@@ -209,7 +208,6 @@ export default class SchoolHoursScreen extends BaseComponent {
         this.setState({objSelectedChild: JSON.parse(child)});
         // this.setState({ fromTime: JSON.parse(child).school_hours.MON.FROM });
         // this.setState({ toTime: JSON.parse(child).school_hours.MON.TO });
-        // console.log(JSON.parse(child).school_hours.MON.FROM)
         this.getSchoolHours();
       }
     });
@@ -228,12 +226,7 @@ export default class SchoolHoursScreen extends BaseComponent {
   changeFromDate = date => {
     this.state.time = Helper.dateFormater(date, 'hh:mm A', 'hh:mm A');
     this.state.fromTimeFormate = Helper.dateFormater(date, 'hh:mm a', 'A');
-    console.log(
-      'changeFromDate',
-      this.state.fromTime,
-      ' formate ',
-      this.state.fromTimeFormate,
-    );
+    
   };
 
   changeToDate = date => {
@@ -243,101 +236,37 @@ export default class SchoolHoursScreen extends BaseComponent {
   };
 
   onPressDayChange = day => {
-    console.log(
-      'onPressDayChange',
-      this.state.fromTime,
-      ' ',
-      this.state.toTime,
-      ' ',
-      day,
-    );
+    
 
     if (this.state.fromTime && this.state.toTime) {
-      console.log(
-        'onPressDayChange1',
-        this.state.fromTime,
-        ' ',
-        this.state.toTime,
-        ' ',
-        day,
-      );
+      
       // this.state.objSelectedChild.school_hours[day].FROM = this.state.fromTime + ' ' + this.state.fromTimeFormate
       // this.state.objSelectedChild.school_hours[day].TO = this.state.toTime + ' ' + this.state.toTimeFormate
 
       if (this.state.objSelectedChild.school_hours[day]) {
-        console.log(
-          'onPressDayChange2',
-          this.state.fromTime,
-          ' ',
-          this.state.toTime,
-          ' ',
-          day,
-        );
+        
         // this.state.fromTime = this.state.objSelectedChild.school_hours[day].FROM.split(' ')[0]
         //   this.state.  fromTimeFormate = this.state.objSelectedChild.school_hours[day].FROM.split(' ')[1]
-        console.log(
-          'onPressDayChange3',
-          this.state.fromTime,
-          ' ',
-          this.state.toTime,
-          ' ',
-          day,
-        );
+        
         if (this.state.schoolHours[day].isSelected) {
-          console.log(
-            'onPressDayChange4',
-            this.state.fromTime,
-            ' ',
-            this.state.toTime,
-            ' ',
-            day,
-          );
+          
           this.state.schoolHours[day].isSelected = false;
         } else {
-          console.log(
-            'onPressDayChange5',
-            this.state.fromTime,
-            ' ',
-            this.state.toTime,
-            ' ',
-            day,
-          );
+          
           this.state.schoolHours[day].FROM = this.state.fromTime;
           this.state.schoolHours[day].TO = this.state.toTime;
           this.state.schoolHours[day].isSelected = true;
 
-          console.log(
-            'onPressDayChange6',
-            this.state.fromTime,
-            ' ',
-            this.state.toTime,
-            ' ',
-            day,
-          );
+          
         }
       } else {
         //this.state.fromTime
-        console.log(
-          'onPressDayChange7',
-          this.state.fromTime,
-          ' ',
-          this.state.toTime,
-          ' ',
-          day,
-        );
+        
         this.state.schoolHours[day].FROM = this.state.fromTime;
         this.state.schoolHours[day].TO = this.state.toTime;
         this.state.schoolHours[day].isSelected = true;
-        console.log(
-          'onPressDayChange8',
-          this.state.fromTime,
-          ' ',
-          this.state.toTime,
-          ' ',
-          day,
-        );
+        
       }
-      console.log('onPressDayChange9', this.state.schoolHours[day].isSelected);
     } else {
       Helper.showErrorMessage(Constants.MESSAGE_SELECT_BOTH_TIME);
     }
@@ -370,7 +299,6 @@ export default class SchoolHoursScreen extends BaseComponent {
     const res = objSecureAPI
       .doUpdateShoolHours(child.id, JSON.stringify(tempSchoolDays))
       .then(resJSON => {
-        console.log('✅✅✅', resJSON);
         if (resJSON.ok && resJSON.status == 200) {
           this.setState({isLoading: false});
           if (resJSON.data.success) {
@@ -469,7 +397,6 @@ export default class SchoolHoursScreen extends BaseComponent {
                                                     showIcon={false}
                                                     onChange={(event,data) => { this.setState({timePicker: false},()=> {
                                                         this.onTimeSelected(event,data)
-                                                        console.log('onChangeForTime', this.state.time)
                                                     })}}
                                                     customStyles={{
                                                         dateInput: {
@@ -527,7 +454,6 @@ export default class SchoolHoursScreen extends BaseComponent {
                                                     showIcon={false}
                                                     onChange={(event,data) => { this.setState({ToTimePicker: false},()=> {
                                                         this.onToTimeSelected(event,data)
-                                                        console.log('onChangeForTime', this.state.toTimeDate)
                                                     })}}
                                                     customStyles={{
                                                         dateInput: {
@@ -564,11 +490,9 @@ export default class SchoolHoursScreen extends BaseComponent {
                         showIcon={false}
                         // onChange={(event,data) => { this.setState({timePicker: true},()=> {
                         //     this.onTimeSelected(event,data)
-                        //     console.log('onChangeForTime', this.state.time)
                         // })}}
                         onChange={(event, value) => {
                           this.onTimeSelected(event, value);
-                          console.log('onChangeForTime', this.state.time);
                         }}
                         customStyles={{
                           dateInput: {
@@ -606,10 +530,7 @@ export default class SchoolHoursScreen extends BaseComponent {
                         onChange={(event, data) => {
                           this.setState({ToTimePicker: false}, () => {
                             this.onToTimeSelected(event, data);
-                            console.log(
-                              'onChangeForTime',
-                              this.state.toTimeDate,
-                            );
+                            
                           });
                         }}
                         customStyles={{

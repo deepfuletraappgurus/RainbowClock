@@ -50,7 +50,6 @@ export default class ParentsAddUserScreen extends BaseComponent {
       startDate:moment().format('hh:mm A').toString(),
       endDate:moment(moment().add(moment.duration('01:00'))).format('hh:mm A').toString(),
     };
-    console.log('DATE<>', this.state.startDate);
   }
 
   componentDidMount() {
@@ -58,7 +57,6 @@ export default class ParentsAddUserScreen extends BaseComponent {
     this.checkRequestPermission();
     // this.setState({startDate:moment().format('hh:mm A')});
     // this.setState({endDate:moment(moment().add(moment.duration('01:00'))).format('hh:mm A')})
-    console.log('DATE<>', this.state.startDate + '<>'+this.state.endDate);
   }
 
   checkRequestPermission = () => {
@@ -133,7 +131,6 @@ export default class ParentsAddUserScreen extends BaseComponent {
     ImagePicker.openPicker({
       cropping: true,
     }).then(image => {
-      console.log('image.path', image.path);
       this.setState({
         profilePic: image.path,
         image: image,
@@ -166,7 +163,6 @@ export default class ParentsAddUserScreen extends BaseComponent {
         '',
       )
       .then(resJSON => {
-        console.log('✅✅✅', resJSON);
         if (resJSON.ok && resJSON.status == 200) {
           this.setState({isLoading: false});
           if (resJSON.data.success) {
@@ -187,7 +183,6 @@ export default class ParentsAddUserScreen extends BaseComponent {
                 this.onActionYes,
               );
             } catch (error) {
-              console.log('AsyncStorage Error: ', error);
             }
           } else {
             Helper.showErrorMessage(resJSON.data.message);
@@ -200,10 +195,8 @@ export default class ParentsAddUserScreen extends BaseComponent {
           Helper.showErrorMessage(Constants.SERVER_ERROR);
         }
       });
-      console.log(res)
   };
   onActionYes = () => {
-    console.log('yes')
   }
   onActionNo = () => {   
     Helper.showConfirmationMessageSingleAction(
@@ -222,7 +215,6 @@ export default class ParentsAddUserScreen extends BaseComponent {
       EventEmitter.emit(Constants.EVENT_DRAWER_UPDATE)
       this.props.navigation.push('ParentsSelectChildScreen')
   } catch (error) {
-      console.log('AsyncStorage Error: ', error)
   }
 
   }
@@ -235,7 +227,6 @@ export default class ParentsAddUserScreen extends BaseComponent {
             EventEmitter.emit(Constants.EVENT_CHILD_UPDATE)
         }, 100);
     } catch (error) {
-        console.log('AsyncStorage Error: ', error)
     }
 }
   //#region -> View Render

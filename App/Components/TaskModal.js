@@ -209,7 +209,6 @@ export default class TaskModal extends BaseComponent {
           }
         })
         .catch(error => {
-          console.log(error);
         });
     }
   };
@@ -241,7 +240,7 @@ export default class TaskModal extends BaseComponent {
       value,
       svg: {
         fill: [Colors.clear, Colors.blue][index],
-        onPress: () => console.log('press', index),
+        onPress: () => {},
       },
       key: `pie-${index}`,
       index: index,

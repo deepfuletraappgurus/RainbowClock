@@ -101,7 +101,6 @@ export default class SignupScreen extends BaseComponent {
         '',
       )
       .then(resJSON => {
-        console.log('✅✅✅', resJSON);
         if (resJSON.ok && resJSON.status == 200) {
           this.setState({isLoading: false});
           if (resJSON.data.success) {
@@ -127,7 +126,6 @@ export default class SignupScreen extends BaseComponent {
               );
               AsyncStorage.setItem(Constants.TASK_TIPS, JSON.stringify(true));
             } catch (error) {
-              console.log('AsyncStorage Error: ', error);
             }
             this.props.navigation.navigate('PinScreen');
           } else {

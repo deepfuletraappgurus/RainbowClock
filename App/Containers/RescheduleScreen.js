@@ -72,7 +72,6 @@ export default class RescheduleScreen extends BaseComponent {
         // __DEV__ ? '2019-07-03' :
         const aDate = Helper.dateFormater(this.state.arrWeekDays[0], 'dddd DD MMMM YYYY', 'YYYY-MM-DD')
         objSecureAPI.childTasksList(this.state.objSelectedChild.id, 'Pending', aDate, '1').then(response => {
-            console.log('CHILD TASK LIST ✅✅✅', JSON.stringify(response))
             if (response.ok) {
                 if (response.data.success) {
                     let arr = []
@@ -83,7 +82,6 @@ export default class RescheduleScreen extends BaseComponent {
                         })
                         this.state.isLoading = false
                         this.setState({ arrSchedule: arr })
-                        console.log('arrSchedule ✅✅✅', this.state.arrSchedule)
                     }
                 } else {
                     Helper.showErrorMessage(response.data.message)
@@ -94,7 +92,6 @@ export default class RescheduleScreen extends BaseComponent {
             }
         }).catch(error => {
             this.setState({ isLoading: false });
-            console.log(error);
         })
     }
 
@@ -120,7 +117,6 @@ export default class RescheduleScreen extends BaseComponent {
 
         const res = objSecureAPI.addTask(childId, mainCatId, subCatId, taskType, timeSloteName, taskName, taskDescription, taskFromTime,
             taskToTime, taskTime, taskColor, taskTokenType, taskNumberOfTokens, taskDates, taskCustomIcon, frequency,is_date).then((resJSON) => {
-                console.log('✅✅✅', resJSON)
                 if (resJSON.ok && resJSON.status == 200) {
                     if (resJSON.data.success) {
                         this.state.showDropdown = false
@@ -150,7 +146,6 @@ export default class RescheduleScreen extends BaseComponent {
 
     callRemoveTask = () => {
         const res = objSecureAPI.deleteTask(this.state.selectedTask.id, this.state.objSelectedChild.id).then((resJSON) => {
-            console.log('✅✅✅', resJSON)
             if (resJSON.ok && resJSON.status == 200) {
                 this.setState({ isLoading: false })
                 if (resJSON.data.success) {

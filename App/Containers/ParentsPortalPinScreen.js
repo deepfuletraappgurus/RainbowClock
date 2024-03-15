@@ -130,7 +130,6 @@ export default class ParentsPortalPinScreen extends BaseComponent {
         this.setState({ isLoading: true })
         var strPin = this.state.pin1 + this.state.pin2 + this.state.pin3 + this.state.pin4
         const res = objSecureAPI.doVerifyPin(strPin).then((resJSON) => {
-            console.log('✅✅✅', resJSON)
             if (resJSON.ok && resJSON.status == 200) {
                 this.setState({ isLoading: false })
                 if (resJSON.data.success) {
@@ -139,7 +138,6 @@ export default class ParentsPortalPinScreen extends BaseComponent {
                         EventEmitter.emit(Constants.EVENT_DRAWER_UPDATE)
                         this.props.navigation.navigate('ParentsSelectChildScreen')
                     } catch (error) {
-                        console.log('AsyncStorage Error: ', error)
                     }
                 }
                 else {
@@ -160,7 +158,6 @@ export default class ParentsPortalPinScreen extends BaseComponent {
     callForgotPin = async () => {
         this.setState({ isLoading: true })
         const res = objSecureAPI.doForgotPin().then((resJSON) => {
-            console.log('✅✅✅', resJSON)
             if (resJSON.ok && resJSON.status == 200) {
                 this.setState({ isLoading: false })
                 if (resJSON.data.success) {

@@ -107,7 +107,6 @@ export default class EditSelectTaskScreen extends BaseComponent {
     const scheduleDetails =
       this.props.navigation.state.params.dictCreateTask.scheduleDetails;
 
-      console.log('scheduleDetails?.no_of_token',scheduleDetails?.no_of_token,scheduleDetails?.no_of_token == 'null')
 
     const getCurrentCat = this.state.arrAllCategories?.filter(
       cat => cat.id === scheduleDetails?.mcid,
@@ -134,7 +133,6 @@ export default class EditSelectTaskScreen extends BaseComponent {
     var endTime = Moment(this.state.dictCreateTask['toTime'], 'hh:mm A');
     var startTime = Moment(this.state.dictCreateTask['fromTime'], 'hh:mm A');
     this.state.totalTaskSlotMinutes = endTime.diff(startTime, 'minutes');
-    console.log('✅, totalTaskSlotMinutes', this.state.totalTaskSlotMinutes);
   };
   getChildDetail = () => {
     AsyncStorage.getItem(Constants.KEY_SELECTED_CHILD, (err, child) => {
@@ -200,7 +198,6 @@ export default class EditSelectTaskScreen extends BaseComponent {
         .sub_task_id;
     var childId = this.state.objSelectedChild.id;
     const res = objSecureAPI.deleteSubTask(taskId, childId).then(resJSON => {
-      console.log('✅✅✅--', resJSON);
       if (resJSON.ok && resJSON.status == 200) {
         this.setState({isDeletesubTaskLoading: false});
         if (resJSON.data.success) {
@@ -221,7 +218,6 @@ export default class EditSelectTaskScreen extends BaseComponent {
               }
             });
           } catch (error) {
-            console.log('AsyncStorage Error: ', error);
           }
         } else {
           Helper.showErrorMessage(resJSON.data.message);
@@ -290,7 +286,6 @@ export default class EditSelectTaskScreen extends BaseComponent {
     ImagePicker.openPicker({
       cropping: true,
     }).then(image => {
-      console.log('image.path', image.path);
       this.state.taskCustomImagePath = image.path;
       this.setState({
         taskCustomImage: image,
@@ -303,7 +298,6 @@ export default class EditSelectTaskScreen extends BaseComponent {
   getTaskCategories = () => {
     this.setState({isLoading: true});
     const res = objSecureAPI.getCategories().then(resJSON => {
-      console.log('✅✅✅', resJSON);
       if (resJSON.ok && resJSON.status == 200) {
         this.setState({isLoading: false});
         if (resJSON.data.success) {
@@ -396,13 +390,11 @@ export default class EditSelectTaskScreen extends BaseComponent {
         is_saved_for_future
       )
       .then(resJSON => {
-        console.log('✅✅✅--', resJSON);
         if (resJSON.ok && resJSON.status == 200) {
           this.setState({isLoading: false});
           if (resJSON.data.success) {
             this.state.totalTaskSlotMinutes =
               this.state.totalTaskSlotMinutes - this.state?.taskTime;
-            console.log('✅✅✅', JSON.stringify(resJSON.data.data[0]));
             try {
               AsyncStorage.setItem(
                 Constants.KEY_SELECTED_CHILD,
@@ -425,7 +417,6 @@ export default class EditSelectTaskScreen extends BaseComponent {
                 }
               });
             } catch (error) {
-              console.log('AsyncStorage Error: ', error);
             }
           } else {
             Helper.showErrorMessage(resJSON.data.message);

@@ -195,7 +195,6 @@ export default class EditScheduleScreen extends BaseComponent {
             this.setState({calenderSelectedDay: scheduleDetails?.task_date});
           } else {
             scheduleDetails?.days.split(',').forEach(day => {
-              console.log('++++++----', moment().day(day).format('YYYY-MM-DD'));
               setTimeout(() => {
                 this.intialSelectedDay(day);
               }, 300);
@@ -265,7 +264,6 @@ export default class EditScheduleScreen extends BaseComponent {
           this.onActionNo,
           () => this.onActionYes(dictCreateTask),
         );
-        console.log('dictCreateTask=====>', dictCreateTask);
       }
     }
   };
@@ -303,7 +301,6 @@ export default class EditScheduleScreen extends BaseComponent {
 
   onActionYes = dictCreateTask => {
     this.setState({isLoading:true})
-    console.log('yes-----------',dictCreateTask);
     var tid =  dictCreateTask['tid']
     var child_id= this.state.childData.id
     var name= dictCreateTask['taskName']
@@ -327,7 +324,6 @@ export default class EditScheduleScreen extends BaseComponent {
         is_new
       )
       .then(resJSON => {
-        console.log('✅✅✅---', resJSON);
         if (resJSON.ok && resJSON.status == 200) {
           this.setState({isLoading: false});
           if (resJSON.data.success) {
@@ -345,7 +341,6 @@ export default class EditScheduleScreen extends BaseComponent {
       });
   };
   onActionNo = () => {
-    console.log('No');
   };
 
   setToggleColorPicker = () => {
@@ -398,7 +393,6 @@ export default class EditScheduleScreen extends BaseComponent {
   }
 
   renderDays(item, index) {
-    console.log('item?.date<>><', item);
     let formatDate = moment(item.date).format('dd');
     formatDate = formatDate.slice(0, 1);
     return (
@@ -444,14 +438,12 @@ export default class EditScheduleScreen extends BaseComponent {
   }
 
   selectedDay = date => {
-    console.log('date???????', date, this.state.arrSelectedDates);
     let temp = this.state.arrSelectedDates.map(obj => {
       if (date === obj.date) {
         return {...obj, selected: !obj.selected};
       }
       return obj;
     });
-    console.log('temp', temp);
     this.setState({
       arrSelectedDates: temp,
       is_date: 0,
@@ -459,14 +451,12 @@ export default class EditScheduleScreen extends BaseComponent {
   };
 
   intialSelectedDay = date => {
-    console.log('date???????', date, this.state.arrSelectedDates);
     let temp = this.state.arrSelectedDates.map(obj => {
       if (date === moment(obj.date).format('dddd')) {
         return {...obj, selected: !obj.selected};
       }
       return obj;
     });
-    console.log('temp', temp);
     this.setState({
       arrSelectedDates: temp,
     });
@@ -539,7 +529,6 @@ export default class EditScheduleScreen extends BaseComponent {
     this.setState({toTimePicker: true, timePicker: false});
   }
   onToTimeSelected(event, value) {
-    console.log('=========================', event, value);
     if (this.state.is_school_clock) {
       const selectedTime = new Date(value);
       const minTime = new Date();
@@ -588,7 +577,6 @@ export default class EditScheduleScreen extends BaseComponent {
       }
     }
 
-    console.log('aaaa', event.type);
     if (Platform.OS === 'android') {
       if (event.type === 'set') {
         this.setState({toTimePicker: false});
@@ -601,12 +589,10 @@ export default class EditScheduleScreen extends BaseComponent {
   }
 
   onDaySelectationCalenderPress() {
-    console.log('``````');
     this.setState({daySelectionCalender: !this.state.daySelectionCalender});
   }
 
   daySelectionCalenderPicker(event, value) {
-    console.log('------', event.type, value);
     this.handleResetSelection();
 
     if (Platform.OS === 'android') {
@@ -897,11 +883,9 @@ export default class EditScheduleScreen extends BaseComponent {
                             showIcon={false}
                             // onChange={(event,data) => { this.setState({timePicker: true},()=> {
                             //     this.onTimeSelected(event,data)
-                            //     console.log('onChangeForTime', this.state.time)
                             // })}}
                             onChange={(event, value) => {
                               this.onTimeSelected(event, value);
-                              console.log('onChangeForTime', this.state.time);
                             }}
                             customStyles={{
                               dateInput: {
@@ -935,10 +919,7 @@ export default class EditScheduleScreen extends BaseComponent {
                             showIcon={false}
                             onChange={(event, data) => {
                               this.onToTimeSelected(event, data);
-                              console.log(
-                                'onChangeForTime',
-                                this.state.toTimeDate,
-                              );
+                              
                             }}
                             customStyles={{
                               dateInput: {
@@ -1031,10 +1012,7 @@ export default class EditScheduleScreen extends BaseComponent {
                           showIcon={false}
                           onChange={(event, data) => {
                             this.daySelectionCalenderPicker(event, data);
-                            console.log(
-                              'onChangeForTime--',
-                              this.state.calenderSelectedDay,
-                            );
+                           
                           }}
                           customStyles={{
                             dateInput: {

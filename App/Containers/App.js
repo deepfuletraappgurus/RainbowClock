@@ -73,7 +73,6 @@ class App extends Component {
         });
       });
     } catch (error) {
-      console.log('AsyncStorage Error: ', error);
     }
     
     this.intervalID = setInterval(() => this.getImageBg(), 5000);
@@ -82,7 +81,6 @@ class App extends Component {
   getImageBg = () => {
     Helper.getBackgroudImage((image, navHeaderColor) => {
       // this.props.navigation.setParams({ navHeaderColor });
-      // console.log('imageimage',image)
       AsyncStorage.setItem(Constants.BACKGROUND_IMAGE, JSON.stringify(image))
       AsyncStorage.setItem(Constants.NAV_COLOR, JSON.stringify(navHeaderColor))
       // this.setState({ imageBg: image });

@@ -91,7 +91,6 @@ export default class LaunchScreen extends BaseComponent {
         '',
       )
       .then(resJSON => {
-        console.log('resJSON>>>>', resJSON);
         if (resJSON.ok && resJSON.status == 200) {
           this.setState({isLoading: false});
           if (resJSON.data.success) {
@@ -138,7 +137,6 @@ export default class LaunchScreen extends BaseComponent {
                 this.props.navigation.navigate('PinScreen');
               }
             } catch (error) {
-              console.log('AsyncStorage Error: ', error);
             }
           } else {
             Helper.showErrorMessage(resJSON.data.message);

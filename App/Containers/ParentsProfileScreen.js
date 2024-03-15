@@ -50,7 +50,6 @@ export default class ParentsProfileScreen extends BaseComponent {
         email: parseObject.email
       });
     }).catch((error) => {
-      console.log('Promise is rejected with error: ' + error);
     });
   }
   //#endregion

@@ -70,7 +70,6 @@ export default class SelectUserScreen extends BaseComponent {
     getImageBg = () => {
         Helper.getBackgroudImage((image, navHeaderColor) => {
           // this.props.navigation.setParams({ navHeaderColor });
-          // console.log('imageimage',image)
           this.setState({ imageBg: image });
           this.props.navigation.setParams({ navHeaderColor : navHeaderColor });
           AsyncStorage.setItem(Constants.BACKGROUND_IMAGE, JSON.stringify(image))
@@ -104,7 +103,6 @@ export default class SelectUserScreen extends BaseComponent {
                 EventEmitter.emit(Constants.EVENT_CHILD_UPDATE)
             }, 100);
         } catch (error) {
-            console.log('AsyncStorage Error: ', error)
         }
     }
     //#endregion
@@ -116,7 +114,6 @@ export default class SelectUserScreen extends BaseComponent {
             if (resJSON.ok && resJSON.status == 200) {
                 this.setState({ isLoading: false })
                 if (resJSON.data.success) {
-                    console.log('ALL CHILDREN ✅✅✅', JSON.stringify(resJSON.data.data))
                     arrAllChild = resJSON.data.data
                     if(arrAllChild.length === 0){
                         AsyncStorage.setItem(Constants.KEY_USER_HAVE_CHILDREN, '0');
@@ -129,7 +126,6 @@ export default class SelectUserScreen extends BaseComponent {
                                 try {
                                     AsyncStorage.setItem(Constants.KEY_SELECTED_CHILD, JSON.stringify(resJSON.data.data[0]))
                                 } catch (error) {
-                                    console.log('AsyncStorage Error: ', error)
                                 }
                             }
                             setTimeout(() => {

@@ -110,7 +110,6 @@ export default class HomeScreen extends BaseComponent {
       this.setState({taskTips});
     } else {
       const tipsVisible = this.homeTips.next();
-      //console.log("tipsVisible", tipsVisible);
       if (tipsVisible == 'house') {
         this.toggleSchool();
       } else if (tipsVisible == 'rewards') {
@@ -146,7 +145,6 @@ export default class HomeScreen extends BaseComponent {
   //#region -> Component Methods
   componentDidMount() {
     super.componentDidMount();
-    console.log('componentDidMount');
     var date, TimeType, hour;
 
     // Creating Date() function object.
@@ -166,7 +164,6 @@ export default class HomeScreen extends BaseComponent {
     // currentTime > 6 AM && currentTime <= 12 PM
     // currentTime > 12 PM && currentTime <= 6 PM
     // currentTime > 6 PM && currentTime <= 12 AM
-    console.log('HOUR== ' + hour + ' TIMETYPE== ' + TimeType);
     this.getJokeOfTheDay(this.state.currentIndex);
 
     //this.getJokeOfTheDay(this.state.currentIndex)
@@ -208,7 +205,6 @@ export default class HomeScreen extends BaseComponent {
 
     //check tips is already show or not in home if not then start showing tips
     // AsyncStorage.getItem(Constants.HOME_TIPS, (err, result) => {
-    //   //console.log("result", result);
     //   if (result == "true") {
     //     this.homeTips.options.disabled = true
     //   } else {
@@ -218,11 +214,9 @@ export default class HomeScreen extends BaseComponent {
 
     AsyncStorage.getItem(Constants.HOME_TIPS, (err, value) => {
       if (err) {
-        console.log(err);
       } else {
         let isShowTime = JSON.parse(value);
         if (isShowTime != null) {
-          console.log('isShowTime', isShowTime);
           if (isShowTime) {
             this.start();
           } else {
@@ -278,14 +272,7 @@ export default class HomeScreen extends BaseComponent {
   setWatchData(currentIndex) {
     var pieData = '';
     var stateData = this.state.dicPieData;
-    console.log(
-      ']]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]',
-      stateData?.pieDataAM,
-      stateData?.pieDataPM,
-      stateData?.pieDataAMPM,
-      this.state.selectedDay,
-      currentIndex,
-    );
+    
     if (!stateData) {
       pieData = [];
     }
@@ -297,13 +284,7 @@ export default class HomeScreen extends BaseComponent {
 
       // Getting current hour from Date object.
       hour = date.getHours();
-      console.log(
-        'hoursssssssss',
-        hour,
-        stateData?.pieDataAM,
-        stateData?.pieDataPM,
-        stateData?.pieDataAMPM,
-      );
+      
       if (
         stateData?.pieDataAMPM?.length == 1 &&
         stateData.pieDataAMPM[0].isEmpty
@@ -363,7 +344,6 @@ export default class HomeScreen extends BaseComponent {
             stateData.pieDataAMPM[stateData?.pieDataAMPM?.length - 1].value =
               timeDifference;
 
-            console.log('stateData?.pieDataAMPM', stateData?.pieDataAMPM);
           }
           // Extract the end time from the taskId
 
@@ -385,7 +365,6 @@ export default class HomeScreen extends BaseComponent {
           }
           pieData = stateData?.pieDataAMPM.concat(stateData.pieDataAMSchool);
 
-          console.log('HOMESCREEN PIEDATA-----', pieData);
         } else {
           pieData = stateData?.pieDataAMSchool;
         }
@@ -398,13 +377,7 @@ export default class HomeScreen extends BaseComponent {
 
       // Getting current hour from Date object.
       hour = date.getHours();
-      console.log(
-        'hoursssssssss',
-        hour,
-        stateData?.pieDataAM,
-        stateData?.pieDataPM,
-        stateData?.pieDataAMPM,
-      );
+     
       if (
         stateData?.pieDataAMPM?.length == 1 &&
         stateData.pieDataAMPM[0].isEmpty
@@ -464,7 +437,6 @@ export default class HomeScreen extends BaseComponent {
             stateData.pieDataAMPM[stateData?.pieDataAMPM?.length - 1].value =
               timeDifference;
 
-            console.log('stateData?.pieDataAMPM', stateData?.pieDataAMPM);
           }
           // Extract the end time from the taskId
 
@@ -486,7 +458,6 @@ export default class HomeScreen extends BaseComponent {
           }
           pieData = stateData?.pieDataAMPM.concat(stateData.pieDataAM);
 
-          console.log('HOMESCREEN PIEDATA-----', pieData);
         } else {
           pieData = stateData?.pieDataAM;
         }
@@ -497,9 +468,6 @@ export default class HomeScreen extends BaseComponent {
       //MP
       pieData = stateData?.pieDataPM;
     }
-    // console.log('stateData.pieDataPM', pieData);
-    // console.log('setWatchData', pieData, this.state.meridiam);
-    // console.log("stateData.pieDataAM_School", stateData.pieDataAM_School);
 
     if (this.state.currentTaskSlot) {
       Helper.getPaginatedArray(
@@ -552,7 +520,6 @@ export default class HomeScreen extends BaseComponent {
       );
       this.createSwiperDataForWeek();
     } catch (error) {
-      //console.log("AsyncStorage Error: ", error);
     }
     this.getImageBg();
     // this.setState({ pieData });
@@ -578,7 +545,6 @@ export default class HomeScreen extends BaseComponent {
   }
 
   setModalVisible(visible, timeSlot = '') {
-    console.log(timeSlot, '-----');
     const objSelectdTasks = this.state.arrFilteredTasks.filter(item => {
       return item.time == timeSlot;
     });
@@ -590,7 +556,6 @@ export default class HomeScreen extends BaseComponent {
     //         arr.push({ from: s[0].trim(), to: s[1].trim() })
     //     }
     // })
-    // console.log('modalVisible',arr.toString())
     if (objSelectdTasks.length > 0) {
       this.state.selectedTaskSlot = objSelectdTasks[0].tasks;
       this.setState({
@@ -601,11 +566,9 @@ export default class HomeScreen extends BaseComponent {
     //Check task tips already show or not if not then start showing tips
     AsyncStorage.getItem(Constants.TASK_TIPS, (err, value) => {
       if (err) {
-        console.log(err);
       } else {
         let isShowTime = JSON.parse(value);
         if (isShowTime != null) {
-          console.log('isShowTime', isShowTime);
           if (isShowTime) {
             this.startTask();
           } else {
@@ -642,10 +605,7 @@ export default class HomeScreen extends BaseComponent {
   }
 
   handleStateUpdates = () => {
-    console.log(
-      'this.state.tickCount--------------------------',
-      this.state.tickCount,
-    );
+    
     const isQAVisible = this.state.tickCount !== 2;
     const isAnswerOfJokeVisible = this.state.tickCount === 1;
 
@@ -653,20 +613,12 @@ export default class HomeScreen extends BaseComponent {
     const swiperData = [...this.state.swiperData];
     swiperData[currentIndex] = this.renderSwiperView();
 
-    console.log(
-      'this....222',
-      this.state.tickCount,
-      isAnswerOfJokeVisible,
-      isQAVisible,
-      currentIndex,
-    );
+    
 
     if (!isQAVisible) {
-      console.log('ddddddd===00');
       // Handle state updates or any other logic
     }
     if (this.state.tickCount === 1) {
-      console.log('ddddddd===01');
       // Handle state updates or any other logic
       this.startAnswerCounter(); // Assuming this is a method to handle some counter
     }
@@ -697,7 +649,6 @@ export default class HomeScreen extends BaseComponent {
   }; //MP
 
   hideAwnswer() {
-    console.log('8888888888888888888888888888888888');
     this.state.isAnswerOfJokeVisible = false;
     this.state.isQAVisible = false;
     this.state.swiperData[this.state.currentIndex] = this.renderSwiperView();
@@ -825,12 +776,7 @@ export default class HomeScreen extends BaseComponent {
                   </View>
                 ) : (
                   <View style={styles.shapeContainer}>
-                    {console.log(
-                      '----------------------------------',
-                      this.state.tickCount,
-                      this.state.isAnswerOfJokeVisible,
-                      this.state.isQAVisible,
-                    )}
+                    
                     {
                       // this.state.isQAVisible ? <View style={[styles.shapeView]}>
                       //   <Image source={Images.shapeRight} style={[styles.shapeRight, { tintColor: Colors.darkPink }]} />
@@ -891,7 +837,6 @@ export default class HomeScreen extends BaseComponent {
 
   renderClockView() {
     data = this.state.pieData;
-    console.log(':::::::HOME', JSON.stringify(this.state.pieData));
 
     date = new Date();
 
@@ -905,7 +850,6 @@ export default class HomeScreen extends BaseComponent {
       // If the Hour is Not less than equals to 11 then Set the Time format as PM.
       TimeType = 'PM';
     }
-    //console.log("data",data);
 
     const clearColor = Colors.clear;
     const pieData = data?.map(
@@ -922,7 +866,7 @@ export default class HomeScreen extends BaseComponent {
           // fill:color,
 
           onPress: () =>
-            isEmpty ? console.log('EMPTY') : this.setModalVisible(true, taskId),
+            isEmpty ? {} : this.setModalVisible(true, taskId),
         },
         key: `pie-${index}`,
         // key: `pie-5`,
@@ -930,7 +874,6 @@ export default class HomeScreen extends BaseComponent {
         is_school_clock: is_school_clock,
       }),
     );
-    console.log('pieData', pieData);
 
     const pieDataTrans = data?.map(
       ({taskId, value, isEmpty, is_school_clock}, index) => ({
@@ -938,7 +881,7 @@ export default class HomeScreen extends BaseComponent {
         svg: {
           fill: clearColor,
           onPress: () =>
-            isEmpty ? console.log('EMPTY') : this.setModalVisible(true, taskId),
+            isEmpty ? {}: this.setModalVisible(true, taskId),
         },
         key: `pie-${index}`,
         index: index,
@@ -946,7 +889,6 @@ export default class HomeScreen extends BaseComponent {
       }),
     );
 
-    console.log('HOME+++++', pieData, pieDataTrans);
 
     if (this.state.is_24HrsClock) {
       this.state.clockFormateImage = Images.clockFaceDigit24HRS;
@@ -962,15 +904,7 @@ export default class HomeScreen extends BaseComponent {
       this.state.clockFormateImage = images.pm_am;
     }
 
-    console.log(
-      'PIEDATA',
-      this.state.school
-        ? pieData.filter(item => item.is_school_clock === 1)
-        : pieData.filter(
-            item =>
-              item.is_school_clock !== 1 && item.is_school_clock !== undefined,
-          ),
-    );
+    
 
     return (
       <TouchableOpacity style={styles.clock} disabled>
@@ -1005,7 +939,6 @@ export default class HomeScreen extends BaseComponent {
             outerRadius={0}
             padAngle={0}
             sort={(a, b) => {
-              console.log('test', a.index, b.index + 1);
               return a.index > b.index;
             }}
           />
@@ -1040,7 +973,6 @@ export default class HomeScreen extends BaseComponent {
   }
 
   renderPage(pageIndex) {
-    console.log('this.state.arrFooterTasks', this.state.arrFooterTasks);
     const itemsCount = this.state.arrFooterTasks[pageIndex].length;
     const item = [...new Array(itemsCount)].map((item, index) => {
       return this.renderFooterItem(pageIndex, index);
@@ -1068,7 +1000,6 @@ export default class HomeScreen extends BaseComponent {
   }
 
   renderTaskRow = (item, index) => {
-    console.log('renderTaskRow');
     return (
       <TouchableOpacity
         style={styles.taskIconTouch}
@@ -1097,7 +1028,6 @@ export default class HomeScreen extends BaseComponent {
 
   onPressFooterTask(objTask) {
     if (objTask.status != Constants.TASK_STATUS_COMPLETED) {
-      console.log('11```');
       this.state.modalVisible = false;
       this.setState({
         taskComplete: true,
@@ -1110,7 +1040,6 @@ export default class HomeScreen extends BaseComponent {
         });
       }
     } else {
-      console.log('21111````', objTask);
       this.setState({
         objFooterSelectedTask: objTask,
       });
@@ -1134,7 +1063,6 @@ export default class HomeScreen extends BaseComponent {
     objSecureAPI
       .getJokeOfTheDay(day)
       .then(response => {
-        console.log('JOKE OF THE DAY ✅✅✅', JSON.stringify(response));
         if (response.ok) {
           if (response.data.success) {
             this.state.jokeData = response.data.data.jokes;
@@ -1155,12 +1083,10 @@ export default class HomeScreen extends BaseComponent {
         this.setState({
           isLoading: false,
         });
-        //console.log(error);
       });
   }
   //#region -> API Call
   getTaskList = index => {
-    console.log('GB Log getTaskList', index);
     if (this.state.isLoading) {
       return;
     }
@@ -1178,7 +1104,6 @@ export default class HomeScreen extends BaseComponent {
     objSecureAPI
       .childTasksList(this.state.objSelectedChild.id, '', aDate)
       .then(response => {
-        console.log('CHILD TASK LIST ✅✅✅', JSON.stringify(response));
         if (response.ok) {
           if (response.data.success) {
             let arr = [];
@@ -1246,7 +1171,6 @@ export default class HomeScreen extends BaseComponent {
         this.setState({
           isLoading: false,
         });
-        //console.log(error);
       });
   };
 
@@ -1263,8 +1187,7 @@ export default class HomeScreen extends BaseComponent {
     is_school_clock,
   ) {
     {
-      console.log('arrPM', JSON.stringify(arrPM));
-      console.log('arrAM', arrAM);
+      
 
       this.state.isLoading = false;
       const pieDataAM = Helper.generateClockTaskArray(
@@ -1286,7 +1209,6 @@ export default class HomeScreen extends BaseComponent {
         2,
         false,
       );
-      console.log('A------------', pieDataAM, pieDataPM, pieDataAMPM);
       // const pieDataAM_School = Helper.generateClockTaskArray(arrAM_School,"am",true);
       // const pieDataPM_School = Helper.generateClockTaskArray(arrPM_School,"pm",true);
       var pieDataAM_School = [];
@@ -1300,12 +1222,7 @@ export default class HomeScreen extends BaseComponent {
         // schoolHoursToMeradian =  "am"
 
         if (schoolHoursFromMeradian != schoolHoursToMeradian) {
-          console.log(
-            'schoolHoursFromMeradian != schoolHoursToMeradian',
-            schoolHoursFromMeradian,
-            schoolHoursToMeradian,
-          );
-          console.log('arrPM_School arrAM_School', arrAM_School, arrPM_School);
+          
           //here change arrAM_School to arrAM
           pieDataAM_School = Helper.generateClockTaskArraySchool(
             arrAM,
@@ -1324,11 +1241,7 @@ export default class HomeScreen extends BaseComponent {
             true,
           );
         } else {
-          console.log(
-            'schoolHoursFromMeradian',
-            schoolHoursFromMeradian,
-            schoolHoursToMeradian,
-          );
+          
           pieDataAM_School = Helper.generateClockTaskArraySchool(
             arrAM_School,
             'am',
@@ -1370,7 +1283,6 @@ export default class HomeScreen extends BaseComponent {
     objSecureAPI
       .restoreTask(objTask.id, this.state.objSelectedChild.id)
       .then(response => {
-        console.log('Task Restored ✅✅✅', JSON.stringify(response));
         if (response.ok) {
           if (response.data.success) {
             const objIndex = this.state.selectedTaskSlot.findIndex(
@@ -1402,12 +1314,10 @@ export default class HomeScreen extends BaseComponent {
         this.setState({
           isLoading: false,
         });
-        //console.log(error);
       });
   }
 
   indexChange = index => {
-    console.log('GB Log', index);
     // alert(1)
     this._timer ? clearInterval(this._timer) : null;
     this._timer_task ? clearTimeout(this._timer_task) : null;
@@ -1434,7 +1344,6 @@ export default class HomeScreen extends BaseComponent {
   setModal() {
     this.setState({modalVisible: false, objRestoreTask: ''});
     super.componentDidMount();
-    console.log('componentDidMount');
     var date, TimeType, hour;
 
     // Creating Date() function object.
@@ -1454,7 +1363,6 @@ export default class HomeScreen extends BaseComponent {
     // currentTime > 6 AM && currentTime <= 12 PM
     // currentTime > 12 PM && currentTime <= 6 PM
     // currentTime > 6 PM && currentTime <= 12 AM
-    console.log('HOUR== ' + hour + ' TIMETYPE== ' + TimeType);
     if (this.state.school) {
       this.state.clockFormateImage = images.am_pm;
     } else if (hour >= 0 && hour < 6) {
@@ -1495,11 +1403,9 @@ export default class HomeScreen extends BaseComponent {
     );
     AsyncStorage.getItem(Constants.HOME_TIPS, (err, value) => {
       if (err) {
-        console.log(err);
       } else {
         let isShowTime = JSON.parse(value);
         if (isShowTime != null) {
-          console.log('isShowTime', isShowTime);
           if (isShowTime) {
             this.start();
           } else {
@@ -1647,10 +1553,7 @@ export default class HomeScreen extends BaseComponent {
               {this.renderSwiperData()}
             </Swiper>
           ) : null}
-          {console.log(
-            'current task slot',
-            JSON.stringify(this.state.currentTaskSlot),
-          )}
+         
           <SafeAreaView
             style={[
               {justifyContent: 'center'},

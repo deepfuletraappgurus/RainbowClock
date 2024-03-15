@@ -75,11 +75,7 @@ export default class PrintPdfScreen extends BaseComponent {
   render() {
     // const source = { uri:, cache: false};
 
-    console.log(
-      'PDFFFF ',
-      'https://drive.google.com/viewerng/viewer?embedded=true&url=' +
-        this.props.navigation.getParam('pdfUrl', 'nothing sent'),
-    );
+   
     return (
       // <View style={styles.mainContainer}>
 

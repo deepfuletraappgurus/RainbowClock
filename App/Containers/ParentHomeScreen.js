@@ -89,7 +89,6 @@ export default class ParentHomeScreen extends BaseComponent {
   //show next tips
   handleNextTips() {
     const tipsVisible = this.homeTips.next();
-    console.log('tipsVisible', tipsVisible);
     this.setState({tipsVisible});
   }
 
@@ -135,11 +134,9 @@ export default class ParentHomeScreen extends BaseComponent {
     //check tips is already show or not in home if not then start showing tips
     AsyncStorage.getItem(Constants.PARENT_HOME_TIPS, (err, value) => {
       if (err) {
-        console.log(err);
       } else {
         let isShowTime = JSON.parse(value);
         if (isShowTime != null) {
-          console.log('isShowTime', isShowTime);
           if (isShowTime) {
             this.start();
           } else {
@@ -162,7 +159,6 @@ export default class ParentHomeScreen extends BaseComponent {
 
   getChildDetail = () => {
     AsyncStorage.getItem(Constants.KEY_SELECTED_CHILD, (err, child) => {
-      console.log('=======>>>child', child);
       if (child != '') {
         this.setState({objSelectedChild: JSON.parse(child)}, () =>
           this.getTaskList(),
@@ -180,7 +176,6 @@ export default class ParentHomeScreen extends BaseComponent {
         JSON.stringify(this.state.is_24HrsClock),
       );
     } catch (error) {
-      console.log('AsyncStorage Error: ', error);
     }
     this.setState({pieData});
   }
@@ -226,12 +221,7 @@ export default class ParentHomeScreen extends BaseComponent {
       var date, TimeType, hour;
       date = new Date();
       hour = date.getHours();
-      console.log(
-        'hhhhhhhhhhhhh',
-        hour,
-        this.state.pieDataAM,
-        this.state.pieDataAMPM,
-      );
+      
       if (
         this.state.pieDataAMPM.length == 1 &&
         this.state.pieDataAMPM[0].isEmpty
@@ -292,7 +282,6 @@ export default class ParentHomeScreen extends BaseComponent {
             this.state.pieDataAMPM[this.state.pieDataAMPM.length - 1].value =
               timeDifference;
 
-            console.log('this.state?.pieDataAMPM', this.state?.pieDataAMPM);
           }
           // Extract the end time from the taskId
 
@@ -313,7 +302,6 @@ export default class ParentHomeScreen extends BaseComponent {
             );
           }
           pieData = this.state?.pieDataAMPM.concat(this.state.pieDataAMSchool);
-          console.log('PARENTHOMESCREEN PIEDATA----', pieData);
         } else {
           pieData = this.state?.pieDataAMSchool;
         }
@@ -322,12 +310,7 @@ export default class ParentHomeScreen extends BaseComponent {
       var date, TimeType, hour;
       date = new Date();
       hour = date.getHours();
-      console.log(
-        'hhhhhhhhhhhhh',
-        hour,
-        this.state.pieDataAM,
-        this.state.pieDataAMPM,
-      );
+      
       if (
         this.state.pieDataAMPM.length == 1 &&
         this.state.pieDataAMPM[0].isEmpty
@@ -360,7 +343,6 @@ export default class ParentHomeScreen extends BaseComponent {
 
           // Filter tasks
           const filteredTasks = filterTasks(this.state.pieDataAMPM);
-          console.log('FILTERDDDDDD', filteredTasks);
           this.state.pieDataAMPM = filteredTasks;
           let secondLastTaskEndTime =
             this.state.pieDataAMPM[
@@ -388,7 +370,6 @@ export default class ParentHomeScreen extends BaseComponent {
             this.state.pieDataAMPM[this.state.pieDataAMPM.length - 1].value =
               timeDifference;
 
-            console.log('this.state?.pieDataAMPM', this.state?.pieDataAMPM);
           }
           // Extract the end time from the taskId
 
@@ -409,7 +390,6 @@ export default class ParentHomeScreen extends BaseComponent {
             );
           }
           pieData = this.state?.pieDataAMPM.concat(this.state.pieDataAM);
-          console.log('PARENTHOMESCREEN PIEDATA----', pieData);
         } else {
           pieData = this.state?.pieDataAM;
         }
@@ -433,7 +413,6 @@ export default class ParentHomeScreen extends BaseComponent {
 
   renderClockView() {
     data = this.state.pieData;
-    console.log(':::::::PARENTHOME', JSON.stringify(this.state.pieData));
     const clearColor = Colors.clear;
     var date, TimeType, hour;
 
@@ -459,7 +438,6 @@ export default class ParentHomeScreen extends BaseComponent {
     //           ? Colors.gray
     //           : clearColor
     //         : color,
-    //     onPress: () => console.log('press', index),
     //   },
     //   key: `pie-${index}`,
     //   index: index,
@@ -479,7 +457,7 @@ export default class ParentHomeScreen extends BaseComponent {
           // fill: this.state.school ?!color ? Colors.black:Colors.blue:Colors.bloodOrange,
           // fill:color,
 
-          onPress: () => console.log('press', index),
+          onPress: () => {},
         },
         key: `pie-${index}`,
         // key: `pie-5`,
@@ -487,7 +465,6 @@ export default class ParentHomeScreen extends BaseComponent {
         is_school_clock: is_school_clock,
       }),
     );
-    // console.log('CLOCK', value+'==> '+ this.state.school);
     const pieDataTras = data.map(
       ({taskId, value, isEmpty, is_school_clock}, index) => ({
         value,
@@ -503,7 +480,6 @@ export default class ParentHomeScreen extends BaseComponent {
       }),
     );
 
-    console.log('PARENT HOME+++++', pieData, pieDataTras);
     // const clockFormateImage = this.state.is_24HrsClock
     //   ? Images.clockFaceDigit24HRS
     //   : Images.clockFaceDigit;
@@ -521,15 +497,7 @@ export default class ParentHomeScreen extends BaseComponent {
       this.state.clockFormateImage = images.pm_am;
     }
 
-    console.log(
-      'PIEDATA',
-      this.state.school
-        ? pieData.filter(item => item.is_school_clock === 1)
-        : pieData.filter(
-            item =>
-              item.is_school_clock !== 1 && item.is_school_clock !== undefined,
-          ),
-    );
+    
     return (
       <TouchableOpacity
         style={styles.clock}
@@ -567,7 +535,6 @@ export default class ParentHomeScreen extends BaseComponent {
             outerRadius={0}
             padAngle={0}
             sort={(a, b) => {
-              console.log('test', a.index, b.index + 1);
               return a.index > b.index;
             }}
           />
@@ -649,7 +616,6 @@ export default class ParentHomeScreen extends BaseComponent {
     objSecureAPI
       .childTasksList(this.state.objSelectedChild.id, '', aDate)
       .then(response => {
-        console.log('CHILD TASK LIST ✅✅✅', JSON.stringify(response));
         if (response.ok) {
           if (response.data.success) {
             let arr = [];
@@ -665,7 +631,6 @@ export default class ParentHomeScreen extends BaseComponent {
               this.setState({arrTasks: arr, arrFilteredTasks: arr});
               const todaysSchoolHours =
                 response.data.data[0].school_hours[Helper.getTodaysDay()];
-              console.log('TODAYS 222', response.data.data[0].school_hours);
               const schoolHoursFrom = moment(
                 todaysSchoolHours ? todaysSchoolHours.FROM : '00:00',
                 'hh:mm A',
@@ -713,7 +678,6 @@ export default class ParentHomeScreen extends BaseComponent {
       })
       .catch(error => {
         this.setState({isLoading: false});
-        console.log(error);
       });
   };
 
@@ -762,36 +726,15 @@ export default class ParentHomeScreen extends BaseComponent {
         2,
         true,
       );
-      console.log(
-        'PieDataAM',
-        pieDataAM,
-        is_school_clock,
-        JSON.stringify(arrAM),
-        JSON.stringify(arrPM),
-      );
-      console.log(
-        '++++++++++',
-        pieDataAM,
-        pieDataPM,
-        is_school_clock,
-        pieDataAMPM,
-      );
-      console.log('24 Hour CLOCK', pieDataAM24Hour, pieDataPM24Hour);
+      
       // const pieDataAM_School = Helper.generateClockTaskArray(arrAM_School,"am",true);
       // const pieDataPM_School = Helper.generateClockTaskArray(arrPM_School,"pm",true);
       var pieDataAM_School = [];
       var pieDataPM_School = [];
       if (todaysSchoolHours) {
-        console.log(
-          'TODAYS School Hours111111',
-          schoolHoursFromMeradian + ' ' + schoolHoursToMeradian,
-        );
+        
         if (schoolHoursFromMeradian != schoolHoursToMeradian) {
-          console.log(
-            'schoolHoursFromMeradian != schoolHoursToMeradian',
-            schoolHoursFromMeradian,
-            schoolHoursToMeradian,
-          );
+          
           pieDataAM_School = Helper.generateClockTaskArraySchool(
             arrAM_School,
             'am',
@@ -809,11 +752,7 @@ export default class ParentHomeScreen extends BaseComponent {
             true,
           );
         } else {
-          console.log(
-            'schoolHoursFromMeradian',
-            schoolHoursFromMeradian,
-            schoolHoursToMeradian,
-          );
+          
           pieDataAM_School = Helper.generateClockTaskArraySchool(
             arrAM_School,
             'am',
@@ -856,7 +795,6 @@ export default class ParentHomeScreen extends BaseComponent {
     objSecureAPI
       .clearRewardNotification(this.state.objSelectedChild.id)
       .then(response => {
-        console.log('Clear Reward Count  ✅✅✅', JSON.stringify(response));
         if (response.ok) {
           if (response.data.success) {
           }
@@ -867,7 +805,6 @@ export default class ParentHomeScreen extends BaseComponent {
       })
       .catch(error => {
         this.setState({isLoading: false});
-        console.log(error);
       });
   }
   //#endregion

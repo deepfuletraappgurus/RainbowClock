@@ -52,7 +52,6 @@ export default class RewardScreen extends BaseComponent {
                 Helper.showErrorMessage(response.problem)
             }
         }).catch(error => {
-            console.log(error);
         })
     }
 

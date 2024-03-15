@@ -62,7 +62,6 @@ export default class ParentsUpdateProfileScreen extends BaseComponent {
         email: parseObject.email
       });
     }).catch((error) => {
-      console.log('Promise is rejected with error: ' + error);
     });
   }
   //#endregion
@@ -184,7 +183,6 @@ export default class ParentsUpdateProfileScreen extends BaseComponent {
   //#endregion 
 callDeleteProfile =async()=>{
   const res = objSecureAPI.deleteProfile().then((resJSON) => {
-    console.log('✅✅✅', resJSON)
     if (resJSON.ok && resJSON.status == 200) {
       if (resJSON.data.success) {
         this.setState({ isLoading: false })
@@ -202,7 +200,6 @@ callDeleteProfile =async()=>{
           })
           
         } catch (error) {
-          console.log('AsyncStorage Error: ', error)
         }
       }
       else {
@@ -225,7 +222,6 @@ callDeleteProfile =async()=>{
     var strPin = this.state.pin1 + this.state.pin2 + this.state.pin3 + this.state.pin4;
     const res = objSecureAPI.doUpdateParentProfile(this.state.username, this.state.email, strPin, '',
       Platform.OS.toUpperCase(), '').then((resJSON) => {
-        console.log('✅✅✅', resJSON)
         if (resJSON.ok && resJSON.status == 200) {
           if (resJSON.data.success) {
             this.setState({ isLoading: false })
@@ -235,7 +231,6 @@ callDeleteProfile =async()=>{
               AsyncStorage.setItem(Constants.KEY_USER_TOKEN, resJSON.data.data.token + "")
               Helper.showErrorMessage(resJSON.data.message);
             } catch (error) {
-              console.log('AsyncStorage Error: ', error)
             }
           }
           else {
@@ -327,7 +322,6 @@ callDeleteProfile =async()=>{
                               textAlign={'center'}
                               keyboardType={"number-pad"}
                               maxLength={1}
-                              onKeyPress={this.onKeyPress}
                               onKeyPress={(e) => {
                                 if (e.nativeEvent.key == "Backspace") {
                                   this.manageNextField(2, '', txtInputType)
@@ -349,7 +343,6 @@ callDeleteProfile =async()=>{
                               textAlign={'center'}
                               keyboardType={"number-pad"}
                               maxLength={1}
-                              onKeyPress={this.onKeyPress}
                               onKeyPress={(e) => {
                                 if (e.nativeEvent.key == "Backspace") {
                                   this.manageNextField(3, '', txtInputType)
@@ -401,7 +394,6 @@ callDeleteProfile =async()=>{
                               textAlign={'center'}
                               maxLength={1}
                               keyboardType={"number-pad"}
-                              onKeyPress={this.onKeyPress}
                               onKeyPress={(e) => {
                                 if (e.nativeEvent.key == "Backspace") {
                                   this.manageNextField(1, '', '')
@@ -423,7 +415,6 @@ callDeleteProfile =async()=>{
                               textAlign={'center'}
                               keyboardType={"number-pad"}
                               maxLength={1}
-                              onKeyPress={this.onKeyPress}
                               onKeyPress={(e) => {
                                 if (e.nativeEvent.key == "Backspace") {
                                   this.manageNextField(2, '', '')
@@ -445,7 +436,6 @@ callDeleteProfile =async()=>{
                               textAlign={'center'}
                               keyboardType={"number-pad"}
                               maxLength={1}
-                              onKeyPress={this.onKeyPress}
                               onKeyPress={(e) => {
                                 if (e.nativeEvent.key == "Backspace") {
                                   this.manageNextField(3, '', '')
@@ -453,7 +443,7 @@ callDeleteProfile =async()=>{
                                 else {
                                   this.manageNextField(3, e.nativeEvent.key, '')
                                 }
-                              }}
+                              }}    
                               onChangeText={(e) => {
                                 if (Platform.OS != 'ios') {
                                   this.manageNextField(3, e, '')

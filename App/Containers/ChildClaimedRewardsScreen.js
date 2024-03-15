@@ -45,7 +45,6 @@ export default class ChildClaimedRewardsScreen extends BaseComponent {
 
     getImageBg = () => {
         // Helper.getBackgroudImageTwelveHrsOnly((image, navHeaderColor) => {
-        //     console.log('navHeaderColor', navHeaderColor);
         //   this.props.navigation.setParams({ navHeaderColor });
         //   this.setState({ imageBg: image })
         // })
@@ -88,7 +87,6 @@ export default class ChildClaimedRewardsScreen extends BaseComponent {
                 Helper.showErrorMessage(response.problem)
             }
         }).catch(error => {
-            console.log(error);
         })
     }
 
@@ -96,7 +94,6 @@ export default class ChildClaimedRewardsScreen extends BaseComponent {
         mAPi.childReward(childId).then(response => {
             if (response.ok) {
                 if (response.data.success) {
-                    console.log('✅✅✅ Child Reward LIST', JSON.stringify(response));
                     this.state.arrReward_original = response.data.data
                     Helper.getPaginatedArray(response.data.data, 2, (arrReward) => {
                         this.setState({ arrReward })
@@ -108,7 +105,6 @@ export default class ChildClaimedRewardsScreen extends BaseComponent {
                 Helper.showErrorMessage(response.problem)
             }
         }).catch(error => {
-            console.log(error);
         })
     }
 
@@ -206,8 +202,6 @@ export default class ChildClaimedRewardsScreen extends BaseComponent {
         const item = arrItems[index]
         const tokenDiffrence = ((item.type == "Special" ? Constants.specialReward : Constants.standardReward) * 100) / item.no_of_tokens
         const canClaimReward = item.is_claimed ? true : tokenDiffrence >= 100 ? true : false
-        console.log('canClaimReward', canClaimReward);
-        console.log('item type', item.type);
         
         
         return (

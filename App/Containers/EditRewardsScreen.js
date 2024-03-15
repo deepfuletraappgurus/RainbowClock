@@ -65,7 +65,6 @@ export default class EditRewardsScreen extends BaseComponent {
                 Helper.showErrorMessage(response.problem)
             }
         }).catch(error => {
-            console.log(error);
         })
     }
 
@@ -209,7 +208,6 @@ export default class EditRewardsScreen extends BaseComponent {
                                                             this.state.updateItem.name = rewardName
                                                             this.setState({})
                                                         }}
-                                                        autoCapitalize='characters'
                                                     />
                                                 </View>
                                                 <View style={[styles.iconContainer, { flexGrow: 1 }]}>
@@ -305,7 +303,6 @@ export default class EditRewardsScreen extends BaseComponent {
                 }
 
             }).catch(error => {
-                console.log(error);
                 this.setState({ saveLoading: false })
             })
         }
@@ -363,7 +360,6 @@ export default class EditRewardsScreen extends BaseComponent {
         ImagePicker.openPicker({
             cropping: true
         }).then(image => {
-            console.log('image.path', image);
             this.state.updateItem.icon = image.path
             this.setState({ imageData: image })
         });

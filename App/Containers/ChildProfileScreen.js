@@ -77,7 +77,6 @@ export default class ChildProfileScreen extends BaseComponent {
 
     checkRequestPermission = () => {
         Permission.checkMultiple(['photo', 'camera', 'microphone']).then(response => {
-            console.log('response',response)
             if (response.photo == 'authorized') {
                 if (response.camera == 'authorized') {
                 } else {
@@ -135,7 +134,6 @@ export default class ChildProfileScreen extends BaseComponent {
         ImagePicker.openPicker({
             cropping: true
         }).then(image => {
-            console.log('image.path', image.path);
             this.state.objSelectedChild.profile_pic = image.path
             this.setState({
                 image: image
@@ -178,7 +176,6 @@ export default class ChildProfileScreen extends BaseComponent {
     callGetRewardsIcons = () => {
         this.setState({ isLoading: true })
         const res = objAPI.getRewardIcons().then((resJSON) => {
-            console.log('✅✅✅', JSON.stringify(resJSON.data.data))
             if (resJSON.ok && resJSON.status == 200) {
                 this.setState({ isLoading: false })
                 if (resJSON.data.success) {
@@ -210,7 +207,6 @@ export default class ChildProfileScreen extends BaseComponent {
         var child = this.state.objSelectedChild
         var rewardIcon = this.state.selectedRewardIcon.split("/").slice(-1)[0];
         const res = objSecureAPI.updateChild(child.id, child.name, this.state.image != null ? this.state.image : '', rewardIcon).then((resJSON) => {
-            console.log('✅✅✅', resJSON)
             if (resJSON.ok && resJSON.status == 200) {
                 this.setState({ isLoading: false })
                 if (resJSON.data.success) {
@@ -221,7 +217,6 @@ export default class ChildProfileScreen extends BaseComponent {
                         EventEmitter.emit(Constants.EVENT_CHILD_UPDATE)
                         Helper.showErrorMessage(resJSON.data.message)
                     } catch (error) {
-                        console.log('AsyncStorage Error: ', error)
                     }
                 }
                 else {
