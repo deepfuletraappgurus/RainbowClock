@@ -31,6 +31,8 @@ import RBSheet from 'react-native-raw-bottom-sheet';
 
 // Styles
 import styles from './Styles/SelectTaskScreenStyles';
+import images from '../Themes/Images';
+import colors from '../Themes/Colors';
 
 // Global Variables
 const objSecureAPI = Api.createSecure();
@@ -80,7 +82,7 @@ export default class SelectTaskScreen extends BaseComponent {
       customTaskName: '', //For custom task name
       taskType: '',
       taskName: '',
-      taskTokenType: Constants.TASK_TOKEN_STANDARD,
+      taskTokenType: '',
       taskNumberOfToken: '',
       taskImage: '',
       taskTime: '',
@@ -312,7 +314,7 @@ export default class SelectTaskScreen extends BaseComponent {
     var taskTime = this.state.taskTime;
     var taskColor = this.state.dictCreateTask['taskColor'];
     var taskTokenType =
-      this.state.taskTokenType || Constants.TASK_TOKEN_STANDARD;
+      this.state.taskTokenType || '';
     var taskNumberOfTokens = this.state.taskNumberOfToken;
     var taskDates = this.state.dictCreateTask['task_date'].join();
     var frequency = this.state.dictCreateTask['frequency'];
@@ -430,7 +432,7 @@ export default class SelectTaskScreen extends BaseComponent {
 
   tokenTypeSelected = tokenType => {
     this.setState({
-      taskTokenType: tokenType,
+      taskTokenType: this.state.taskTokenType === tokenType ? '' : tokenType,
       typeOfTokensDropdown: false,
     });
   };
@@ -513,9 +515,62 @@ export default class SelectTaskScreen extends BaseComponent {
         ]}
         onPress={() => this.setSavedTaskModelVisible(item)}>
         <Image source={{uri: item.image}} style={styles.taskIcon} />
+        <TouchableOpacity
+          onPress={() => this.onsavedTaskDeletePress(item)}
+          style={{
+            padding: 5,
+            borderRadius: 5,
+            borderWidth: 1,
+            borderColor: Colors.snow,
+            position: 'absolute',
+            right: 0,
+            top: 0,
+            zIndex: 10000,
+          }}>
+          <Image
+            source={Images.bin}
+            style={{
+              width: 15,
+              height: 15,
+              // tintColor: colors.black,
+              resizeMode: 'contain',
+            }}
+          />
+        </TouchableOpacity>
       </TouchableOpacity>
     );
   }
+
+  onsavedTaskDeletePress = item => {
+    Helper.showConfirmationMessageActions(
+      'Are You sure you want to delete this saved task ?',
+      'No',
+      'Yes',
+      () => {},
+      () => this.onActionYes(item),
+    );
+  };
+
+  onActionYes = item => {
+    const res = objSecureAPI
+      .deleteSavedtask(item?.id, this.state.objSelectedChild.id)
+      .then(resJSON => {
+        if (resJSON.ok && resJSON.status == 200) {
+          this.setState({isLoading: false});
+          if (resJSON.data.success) {
+            this.getSavedtask();
+          } else {
+            Helper.showErrorMessage(resJSON.data.message);
+          }
+        } else if (resJSON.status == 500) {
+          this.setState({isLoading: false});
+          Helper.showErrorMessage(resJSON.data.message);
+        } else {
+          this.setState({isLoading: false});
+          Helper.showErrorMessage(Constants.SERVER_ERROR);
+        }
+      });
+  };
 
   setTaskModelVisible(item) {
     // if (
@@ -1057,6 +1112,22 @@ export default class SelectTaskScreen extends BaseComponent {
                                   ? this.state.taskTime + ' Minutes'
                                   : 'Select Time'}
                               </Text>
+                              <TouchableOpacity
+                                style={{
+                                  padding: 5,
+                                  position: 'absolute',
+                                  right: 5,
+                                }}
+                                onPress={() => this.setState({taskTime: ''})}>
+                                <Image
+                                  source={images.cross}
+                                  style={{
+                                    width: 24,
+                                    height: 24,
+                                    tintColor: Colors.charcoal,
+                                  }}
+                                />
+                              </TouchableOpacity>
                             </TouchableOpacity>
                             <FlatList
                               data={this.state.arrDefaultTaskTime}
@@ -1172,7 +1243,7 @@ export default class SelectTaskScreen extends BaseComponent {
 
                           <View style={{marginVertical: 10}}>
                             <Text style={[styles.dropdownButtonText]}>
-                              Number Of Tokens
+                              {'Number Of Tokens'.toUpperCase()}
                             </Text>
                             <TextInput
                               style={{
@@ -1185,7 +1256,7 @@ export default class SelectTaskScreen extends BaseComponent {
                               autoCapitalize="characters"
                               underlineColorAndroid={'transparent'}
                               returnKeyType={'done'}
-                              placeholder={'Number of token'.toUpperCase()}
+                              placeholder={'Number of tokens'.toUpperCase()}
                               maxLength={20}
                               value={this.state.taskNumberOfToken}
                               keyboardType={'number-pad'}
@@ -1408,6 +1479,22 @@ export default class SelectTaskScreen extends BaseComponent {
                                 ? this.state.taskTime + ' Minutes'
                                 : 'Select Time'}
                             </Text>
+                            <TouchableOpacity
+                              style={{
+                                padding: 5,
+                                position: 'absolute',
+                                right: 5,
+                              }}
+                              onPress={() => this.setState({taskTime: ''})}>
+                              <Image
+                                source={images.cross}
+                                style={{
+                                  width: 24,
+                                  height: 24,
+                                  tintColor: Colors.charcoal,
+                                }}
+                              />
+                            </TouchableOpacity>
                           </TouchableOpacity>
                           <FlatList
                             data={this.state.arrDefaultTaskTime}
@@ -1523,7 +1610,7 @@ export default class SelectTaskScreen extends BaseComponent {
 
                         <View style={{marginVertical: 10}}>
                           <Text style={[styles.dropdownButtonText]}>
-                            Number Of Tokens
+                            {'Number Of Tokens'.toUpperCase()}
                           </Text>
                           <TextInput
                             style={{
@@ -1536,7 +1623,7 @@ export default class SelectTaskScreen extends BaseComponent {
                             autoCapitalize="characters"
                             underlineColorAndroid={'transparent'}
                             returnKeyType={'done'}
-                            placeholder={'Task Name'.toUpperCase()}
+                            placeholder={'Number of tokens'.toUpperCase()}
                             maxLength={20}
                             value={this.state.taskNumberOfToken}
                             keyboardType={'number-pad'}

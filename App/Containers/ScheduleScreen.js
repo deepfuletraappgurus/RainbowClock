@@ -2,6 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import React from 'react';
 import {
   Alert,
+  BackHandler,
   Dimensions,
   FlatList,
   Image,
@@ -18,6 +19,8 @@ import {Colors, Images, Metrics} from '../Themes';
 import * as Helper from '../Lib/Helper';
 import TaskModal from '../Components/TaskModal';
 import TaskListModel from '../Components/TaskListModel';
+import Icon from 'react-native-vector-icons/FontAwesome';
+
 
 // Styles
 // import styles from './Styles/HomeScreenStyles';
@@ -57,6 +60,26 @@ export default class ScheduleScreen extends BaseComponent {
       username: '',
       isPdfLoading: false,
     };
+    this.handleBackButtonClick = this.handleBackButtonClick.bind(this);
+  }
+
+  componentWillMount() {
+    BackHandler.addEventListener(
+      'hardwareBackPress',
+      this.handleBackButtonClick,
+    );
+  }
+
+  componentWillUnmount() {
+    BackHandler.removeEventListener(
+      'hardwareBackPress',
+      this.handleBackButtonClick,
+    );
+  }
+
+  handleBackButtonClick() {
+    alert('back')
+    return true;
   }
 
   //#region -> Component Methods
@@ -73,6 +96,12 @@ export default class ScheduleScreen extends BaseComponent {
       'didFocus',
       () => {
         this.getChildId();
+      },
+    );
+    this.navFocusListener = this.props.navigation.addListener(
+      'didFocus',
+      () => {
+        Helper.getChildRewardPoints(this.props.navigation);
       },
     );
   }
@@ -126,8 +155,7 @@ export default class ScheduleScreen extends BaseComponent {
           this.setState({isLoading: false});
         }
       })
-      .catch(error => {
-      });
+      .catch(error => {});
   };
   callRecoverTask(objTask) {
     this.state.isLoading = true;
@@ -214,25 +242,24 @@ export default class ScheduleScreen extends BaseComponent {
     if (this.state.isMenuAsParentPortal) {
       this.parentViewEditTask(objTask);
     } else {
-      // if (
-      //   objTask.status != Constants.TASK_STATUS_COMPLETED &&
-      //   !this.state.isMenuAsParentPortal
-      // ) {
-      //   this.setState({
-      //     showTaskList: true,
-      //     item: item,
-      //   });
-      // } else {
-
-      //   this.setState({
-      //     objFooterSelectedTask: objTask,
-      //     taskComplete: true,
-      //   });
-      // }
-      this.setState({
-        showTaskList: true,
-        item: item,
-      });
+      if (
+        objTask.status != Constants.TASK_STATUS_COMPLETED &&
+        !this.state.isMenuAsParentPortal
+      ) {
+        this.setState({
+          objFooterSelectedTask: objTask,
+          taskComplete: true,
+        });
+      } else {
+        this.setState({
+          showTaskList: true,
+          item: item,
+        });
+      }
+      // this.setState({
+      //   showTaskList: true,
+      //   item: item,
+      // });
     }
   }
 
@@ -264,13 +291,14 @@ export default class ScheduleScreen extends BaseComponent {
           this.setState({isPdfLoading: false});
         }
       })
-      .catch(error => {
-      });
+      .catch(error => {});
   }
 
   setModal() {
+    console.log('CLOSEEEEEEEEEEEE')
     this.setState({showTaskList: false});
     this.getChildId();
+    Helper.getChildRewardPoints(this.props.navigation);
   }
 
   onTimeBlockDeletePress(dictCreateTask) {
@@ -280,12 +308,12 @@ export default class ScheduleScreen extends BaseComponent {
 
     if (currentTime.isBetween(startTime, endTime)) {
       Helper.showErrorMessage(
-        'You can not Delete the task because you are already in this time block.',
+        'You can not delete the task because you are already in this time block.',
       );
     } else {
       dictCreateTask = dictCreateTask.tasks[0];
       Helper.showConfirmationMessageActions(
-        "Are You Sure, You Want to Delete This Time Block.It's also remove All Task In This Time Block.",
+        'Are you sure you want to delete this block of time?  It will also remove all the tasks saved in this time block.',
         'No',
         'Yes',
         () => {},
@@ -313,7 +341,7 @@ export default class ScheduleScreen extends BaseComponent {
         } else if (resJSON.status == 500) {
           this.setState({isLoading: false});
           Helper.showErrorMessage(resJSON.data.message);
-        } else {
+         } else {
           this.setState({isLoading: false});
           Helper.showErrorMessage(Constants.SERVER_ERROR);
         }
@@ -335,7 +363,6 @@ export default class ScheduleScreen extends BaseComponent {
       });
     }
   }
-
   onTimeBlockAddPress(item) {
     item = item?.tasks[0];
     var dictCreateTask = {
@@ -414,7 +441,11 @@ export default class ScheduleScreen extends BaseComponent {
               ? item.tasks.map((data, i) => {
                   return (
                     <TouchableOpacity
-                      style={{marginRight: 12,justifyContent: 'center',alignItems:'center'}}
+                      style={{
+                        marginRight: 12,
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                      }}
                       onPress={() => this.onPressTask(data, item)}>
                       {/* <Text style={styles.timer}>{data.time_from} {data.start_time_meridiem}-{data.time_to} {data.end_time_meridiem}</Text> */}
                       <View style={{flexDirection: 'row'}}>
@@ -434,8 +465,8 @@ export default class ScheduleScreen extends BaseComponent {
                               borderRadius: Metrics.screenWidth / 20,
                               height: Metrics.screenWidth / 16,
                               width: Metrics.screenWidth / 16,
-                              justifyContent:'center',
-                              alignItems:'center'
+                              justifyContent: 'center',
+                              alignItems: 'center',
                             }}>
                             <Image
                               source={Images.bell}
@@ -449,7 +480,7 @@ export default class ScheduleScreen extends BaseComponent {
                         ) : null}
                       </View>
                       <Text
-                      numberOfLines={1}
+                        numberOfLines={1}
                         style={[
                           styles.timer,
                           {
@@ -457,7 +488,7 @@ export default class ScheduleScreen extends BaseComponent {
                             marginBottom: 0,
                             marginTop: 8,
                             textAlign: 'center',
-                            width:70,
+                            width: 70,
                           },
                         ]}>
                         {data?.task_name}
@@ -489,30 +520,21 @@ export default class ScheduleScreen extends BaseComponent {
               style={{marginBottom: 5, padding: 5}}
               hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}
               onPress={() => this.onTimeBlockAddPress(item)}>
-              <Image
-                source={Images.add}
-                style={[styles.scheduleEditImage, {resizeMode: 'contain'}]}
-              />
+              <Icon name="plus" size={25} color={Colors.snow} />
             </TouchableOpacity>
 
             <TouchableOpacity
               style={{marginBottom: 5, padding: 5, zIndex: 10000}}
               hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}
               onPress={() => this.onTimeBlockEditPress(item)}>
-              <Image
-                source={Images.edit}
-                style={[styles.scheduleEditImage, {resizeMode: 'contain'}]}
-              />
+              <Icon name="pencil" size={25} color={Colors.snow} />
             </TouchableOpacity>
 
             <TouchableOpacity
               style={{marginBottom: 5, padding: 5, zIndex: 10000}}
               hitSlop={{top: 10, bottom: 10, left: 10, right: 10}}
               onPress={() => this.onTimeBlockDeletePress(item)}>
-              <Image
-                source={Images.delete}
-                style={[styles.scheduleEditImage, {resizeMode: 'contain'}]}
-              />
+              <Icon name="trash" size={25} color={Colors.snow} />
             </TouchableOpacity>
           </View>
         )}

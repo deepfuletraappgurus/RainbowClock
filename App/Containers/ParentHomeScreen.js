@@ -131,6 +131,13 @@ export default class ParentHomeScreen extends BaseComponent {
       this.setState({pauseUserInteraction: false});
     }, 3000);
 
+    this.navFocusListener = this.props.navigation.addListener(
+      'didFocus',
+      () => {
+        Helper.getChildRewardPoints(this.props.navigation);
+      },
+    );
+
     //check tips is already show or not in home if not then start showing tips
     AsyncStorage.getItem(Constants.PARENT_HOME_TIPS, (err, value) => {
       if (err) {
@@ -175,8 +182,7 @@ export default class ParentHomeScreen extends BaseComponent {
         Constants.KEY_IS_24HRS_CLOCK,
         JSON.stringify(this.state.is_24HrsClock),
       );
-    } catch (error) {
-    }
+    } catch (error) {}
     this.setState({pieData});
   }
 
@@ -221,7 +227,7 @@ export default class ParentHomeScreen extends BaseComponent {
       var date, TimeType, hour;
       date = new Date();
       hour = date.getHours();
-      
+
       if (
         this.state.pieDataAMPM.length == 1 &&
         this.state.pieDataAMPM[0].isEmpty
@@ -281,7 +287,6 @@ export default class ParentHomeScreen extends BaseComponent {
             // Update the value property of the last task
             this.state.pieDataAMPM[this.state.pieDataAMPM.length - 1].value =
               timeDifference;
-
           }
           // Extract the end time from the taskId
 
@@ -310,7 +315,7 @@ export default class ParentHomeScreen extends BaseComponent {
       var date, TimeType, hour;
       date = new Date();
       hour = date.getHours();
-      
+
       if (
         this.state.pieDataAMPM.length == 1 &&
         this.state.pieDataAMPM[0].isEmpty
@@ -369,7 +374,6 @@ export default class ParentHomeScreen extends BaseComponent {
             // Update the value property of the last task
             this.state.pieDataAMPM[this.state.pieDataAMPM.length - 1].value =
               timeDifference;
-
           }
           // Extract the end time from the taskId
 
@@ -497,7 +501,6 @@ export default class ParentHomeScreen extends BaseComponent {
       this.state.clockFormateImage = images.pm_am;
     }
 
-    
     return (
       <TouchableOpacity
         style={styles.clock}
@@ -726,15 +729,13 @@ export default class ParentHomeScreen extends BaseComponent {
         2,
         true,
       );
-      
+
       // const pieDataAM_School = Helper.generateClockTaskArray(arrAM_School,"am",true);
       // const pieDataPM_School = Helper.generateClockTaskArray(arrPM_School,"pm",true);
       var pieDataAM_School = [];
       var pieDataPM_School = [];
       if (todaysSchoolHours) {
-        
         if (schoolHoursFromMeradian != schoolHoursToMeradian) {
-          
           pieDataAM_School = Helper.generateClockTaskArraySchool(
             arrAM_School,
             'am',
@@ -752,7 +753,6 @@ export default class ParentHomeScreen extends BaseComponent {
             true,
           );
         } else {
-          
           pieDataAM_School = Helper.generateClockTaskArraySchool(
             arrAM_School,
             'am',
@@ -931,7 +931,25 @@ export default class ParentHomeScreen extends BaseComponent {
                       <Image source={Images.school} style={styles.school} />
                     )}
                   </TouchableOpacity>
-                  {this.state.school ? null : (
+                  {this.state.school ? (
+                    <View
+                      style={
+                        ([
+                          styles.clockBottomItem,
+                          styles.clockBottomRight,
+                          styles.center,
+                        ],
+                        {alignItems: 'flex-start'})
+                      }>
+                      <TouchableOpacity
+                        onPress={() => this.onPressMoveToSchedule()}>
+                        <Image
+                          source={Images.navIcon3}
+                          style={styles.calendarIcon}
+                        />
+                      </TouchableOpacity>
+                    </View>
+                  ) : (
                     <TouchableOpacity
                       style={[
                         styles.Switch,
@@ -961,27 +979,30 @@ export default class ParentHomeScreen extends BaseComponent {
                                         <View style={styles.SwitchButton}></View>
                                     </TouchableOpacity> */}
                 </View>
+                {!this.state.school && (
+                  <View
+                    style={[
+                      styles.clockBottomItem,
+                      styles.clockBottomRight,
+                      styles.center,
+                    ]}>
+                    <TouchableOpacity
+                      onPress={() => this.onPressMoveToSchedule()}>
+                      <Image
+                        source={Images.navIcon3}
+                        style={styles.calendarIcon}
+                      />
+                    </TouchableOpacity>
+                  </View>
+                )}
+
                 <View
                   style={[
                     styles.clockBottomItem,
                     styles.clockBottomRight,
                     styles.center,
                   ]}>
-                  <TouchableOpacity
-                    onPress={() => this.onPressMoveToSchedule()}>
-                    <Image
-                      source={Images.navIcon3}
-                      style={styles.calendarIcon}
-                    />
-                  </TouchableOpacity>
-                </View>
-                <View
-                  style={[
-                    styles.clockBottomItem,
-                    styles.clockBottomRight,
-                    styles.center,
-                  ]}>
-                  {this.state.isRewardClaimed == true ? (
+                  {/* {this.state.isRewardClaimed !== true ? (
                     <View style={[styles.clockBottomRight]}>
                       <TouchableOpacity activeOpacity={1}>
                         <View style={[styles.shapeContainer]}>
@@ -1009,7 +1030,7 @@ export default class ParentHomeScreen extends BaseComponent {
                         </View>
                       </TouchableOpacity>
                     </View>
-                  ) : null}
+                  ) : null} */}
                   {this.state.school === true ? (
                     <Image
                       source={Images.schoolBus}

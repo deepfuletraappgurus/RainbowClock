@@ -11,6 +11,7 @@ import {
   View,
   FlatList,
   Dimensions,
+  BackHandler,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import EventEmitter from '../Lib/EventEmitter';
@@ -51,6 +52,30 @@ export default class TaskModal extends BaseComponent {
       is_new: this.props.objFooterSelectedTask?.is_new,
       showSuccess: false,
     };
+    this.handleBackButtonClick = this.handleBackButtonClick.bind(this);
+  }
+
+  componentWillMount() {
+    BackHandler.addEventListener(
+      'hardwareBackPress',
+      this.handleBackButtonClick,
+    );
+  }
+
+  componentWillUnmount() {
+    BackHandler.removeEventListener(
+      'hardwareBackPress',
+      this.handleBackButtonClick,
+    );
+  }
+
+  handleBackButtonClick() {
+    this.state.objFooterSelectedTask.start_time = null;
+    this.setModal(false);
+    setTimeout(() => {
+      Helper.getChildRewardPoints(this.props.navigation);
+    }, 300);
+    return true;
   }
 
   componentWillReceiveProps(props) {
@@ -67,7 +92,6 @@ export default class TaskModal extends BaseComponent {
           ? 'START TIME'
           : 'PAUSE TIME',
     });
-    
   }
   componentWillUnmount() {
     clearInterval(this._timer);
@@ -126,7 +150,6 @@ export default class TaskModal extends BaseComponent {
         this.state.reward =
           this.state.objSelectedChild.points.standard.toString();
       }
-      
 
       this.callStartTask(taskStatus, true);
       this, this.setState({playing: true});
@@ -138,10 +161,10 @@ export default class TaskModal extends BaseComponent {
     // this?.props?.closeParentModal();
     this.setModal(false);
     this.props.onStateChange(false);
+    Helper.getChildRewardPoints(this.props.navigation);
   };
 
   callStartTask = (taskStatus, showAnimation) => {
-    
     if (Helper.checkTaskTimeAndDate(this.state.objFooterSelectedTask)) {
       Helper.showErrorMessage(Constants.MESSAGE_NO_FUTURE_TASK);
       // this.navFocusListener =  this.props.navigation.addListener('didFocus', () => {
@@ -156,6 +179,7 @@ export default class TaskModal extends BaseComponent {
           this.state.is_new,
         )
         .then(response => {
+          console.log('responseeeeee', response);
           if (response.ok) {
             if (response.data.success) {
               this.setState({
@@ -173,21 +197,23 @@ export default class TaskModal extends BaseComponent {
                   let timer = setTimeout(() => {
                     this.setState({showSuccess: false});
                     Helper.showConfirmationMessageSingleAction(
-                      'Super Job!! \n You have completed this task.\n Congratulations you have earned ' +
-                        ((this.state.objFooterSelectedTask.no_of_token ==
-                          null ||
+                      `Super Job!! \nYou have completed this task. ${
+                        this.state.objFooterSelectedTask.no_of_token == null ||
                         this.state.objFooterSelectedTask.no_of_token ==
-                          undefined
-                          ? 0
-                          : this.state.objFooterSelectedTask.no_of_token) +
-                          ' ' +
-                          (this.state.objFooterSelectedTask.token_type ==
-                            null ||
-                          this.state.objFooterSelectedTask.token_type ==
-                            undefined
-                            ? ''
-                            : this.state.objFooterSelectedTask.token_type) +
-                          ' token'),
+                          undefined ||
+                        this.state.objFooterSelectedTask.no_of_token == ''
+                          ? ''
+                          : '\nCongratulations you have earned ' +
+                            (this.state.objFooterSelectedTask.no_of_token +
+                              ' ' +
+                              (this.state.objFooterSelectedTask.token_type ==
+                                null ||
+                              this.state.objFooterSelectedTask.token_type ==
+                                undefined
+                                ? ''
+                                : this.state.objFooterSelectedTask.token_type) +
+                              ' token')
+                      }`,
                       'OK',
                       this.onActionOK,
                     );
@@ -208,8 +234,7 @@ export default class TaskModal extends BaseComponent {
             Helper.showErrorMessage(response.problem);
           }
         })
-        .catch(error => {
-        });
+        .catch(error => {});
     }
   };
 
@@ -219,7 +244,6 @@ export default class TaskModal extends BaseComponent {
         let remainTime = Helper.getPercentageArrForTask(
           this.state.objFooterSelectedTask,
         )[0];
-       
 
         if (remainTime > this.state.currentTaskRemainTime) {
           this.state.currentTaskRemainTime = remainTime;
@@ -285,7 +309,11 @@ export default class TaskModal extends BaseComponent {
           visible={this.state.visible}
           onRequestClose={() => {
             // this.state.objFooterSelectedTask.start_time = null
-            this.setState({visible: false});
+            this.state.objFooterSelectedTask.start_time = null;
+            this.setModal(false);
+            setTimeout(() => {
+              Helper.getChildRewardPoints(this.props.navigation);
+            }, 300);
           }}>
           <View style={styles.modal}>
             <SafeAreaView style={styles.SafeAreaView}>
@@ -294,6 +322,9 @@ export default class TaskModal extends BaseComponent {
                 onPress={() => {
                   this.state.objFooterSelectedTask.start_time = null;
                   this.setModal(false);
+                  setTimeout(() => {
+                    Helper.getChildRewardPoints(this.props.navigation);
+                  }, 300);
                 }}>
                 <Image source={Images.close} style={styles.close} />
               </TouchableOpacity>
@@ -384,18 +415,22 @@ export default class TaskModal extends BaseComponent {
                   style={[
                     styles.button,
                     styles.buttonCarrot,
-                    {marginTop: 0, marginBottom: 0},
+                    {marginLeft:20}
+                    // {marginTop: 0, marginBottom: 0},
                   ]}
                   onPress={() =>
                     this.completeTask(Constants.TASK_STATUS_COMPLETED)
                   }>
-                  <Text style={[styles.buttonText, {paddingLeft: 40}]}>
+                  <Text style={[styles.buttonText, {alignSelf:'center',textAlign:'center'}]}>
                     {'TASK COMPLETE'}
                   </Text>
                 </TouchableOpacity>
                 <Image
-                  source={Images.taskReward}
-                  style={[styles.taskRewardImage, {marginRight: -40}]}
+                  source={Images.rewardClaim}
+                  style={[
+                    styles.taskRewardImage,
+                    {position:'absolute', width: 120, height: 120,right:0,bottom:30, },
+                  ]}
                 />
                 <Image
                   source={Images.success_animation}

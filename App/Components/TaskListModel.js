@@ -17,7 +17,7 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 import EventEmitter from '../Lib/EventEmitter';
 import Constants from './Constants';
 import * as Helper from '../Lib/Helper';
-import {Images, Colors} from '../Themes';
+import {Images, Colors, Metrics} from '../Themes';
 import {PieChart} from 'react-native-svg-charts';
 import Api from '../Services/Api';
 import {CountdownCircleTimer} from 'react-native-countdown-circle-timer';
@@ -45,6 +45,26 @@ export default class TaskListModel extends Component {
       buttonText: 'PAUSE TASK',
       taskComplete: false,
     };
+    this.handleBackButtonClick = this.handleBackButtonClick.bind(this);
+  }
+
+  componentWillMount() {
+    BackHandler.addEventListener(
+      'hardwareBackPress',
+      this.handleBackButtonClick,
+    );
+  }
+
+  componentWillUnmount() {
+    BackHandler.removeEventListener(
+      'hardwareBackPress',
+      this.handleBackButtonClick,
+    );
+  }
+
+  handleBackButtonClick() {
+    this?.props?.onClose();
+    return true;
   }
 
   componentWillReceiveProps(props) {
@@ -75,28 +95,30 @@ export default class TaskListModel extends Component {
     });
   }
   callRecoverTask(objTask) {
+    console.log('!!!!!!!!-----!!!!!!!!', objTask);
     objSecureAPI
       .restoreTask(objTask.sub_task_id, this.state.objSelectedChild.id)
       .then(response => {
+        console.log('   RECOVER RESPONSE', response);
         if (response.ok) {
           if (response.data.success) {
             this.setState({
-              objFooterSelectedTask:response.data.data
-            })
+              objFooterSelectedTask: response.data.data,
+            });
             // this?.props?.onClose()
           } else {
             Helper.showErrorMessage(response.data.message);
           }
         } else {
           this.setState({
-            isLoading: false
+            isLoading: false,
           });
           Helper.showErrorMessage(response.problem);
         }
       })
       .catch(error => {
         this.setState({
-          isLoading: false
+          isLoading: false,
         });
       });
   }
@@ -128,7 +150,6 @@ export default class TaskListModel extends Component {
   };
 
   render() {
-    
     return (
       <Modal
         animationType="slide"
@@ -136,60 +157,92 @@ export default class TaskListModel extends Component {
         visible={this.state.visible}
         onRequestClose={() => {
           // Alert.alert('Modal has been closed.');
-          this.setState({visible: false});
+          this?.props?.onClose();
         }}>
         <View style={styles.modal}>
           <SafeAreaView style={styles.SafeAreaView}>
             <TouchableOpacity
               style={styles.modalCloseTouch}
               onPress={() => {
-                this?.props?.onClose()
+                this?.props?.onClose();
               }}>
               <Image source={Images.close} style={styles.close} />
             </TouchableOpacity>
-            <View style={styles.modalBody}>
-              <ScrollView horizontal contentContainerStyle={{flex:1}} style={styles.modalBodyTop}>
-                {/* {this.state.objFooterSelectedTask !=null ?
-            <Image source={{ uri: this.state.objFooterSelectedTask}} style={styles.bigTaskIcon} />
-            <Text  style={[styles.waitText, styles.textCenter]}>{Constants.TEXT_NO_TASKS}</Text>
-                                    // <FlatList
-                                    //     data={this.state.objSelectedTaskList}
-                                    //     extraData={this.state}
-                                    //     keyExtractor={(item, index) => (index + '')}
-                                    //     renderItem={({ item, index }) => this.renderTaskRow(item, index)}
-                                    // /> 
-                                    :
-                                    <View style={styles.notFoundMessage}>
-                                        <Text  style={[styles.waitText, styles.textCenter]}>{Constants.TEXT_NO_TASKS}</Text>
-                                    </View> } 
-                                     */}
+            <View
+              style={[
+                {
+                  // flexGrow: 1,
+                  paddingLeft: 30,
+                  paddingRight: 30,
+                  paddingTop: 20,
+                  // paddingBottom: 15,
+                  flex:1,
+                },
+              ]}>
+              {console.log(
+                'objFooterSelectedTask',
+                this.state.objFooterSelectedTask,
+              )}
+              <ScrollView showsVerticalScrollIndicator={false}>
                 {this.state.objFooterSelectedTask.tasks &&
                 this.state.objFooterSelectedTask.tasks.length > 0
                   ? this.state.objFooterSelectedTask.tasks.map((data, i) => {
                       return (
                         <TouchableOpacity
-                          style={{marginRight:20}}
+                          style={{
+                            paddingVertical: 10,
+                            alignItems: 'center',
+                            flexDirection: 'row',
+                            borderBottomWidth: 0.3,
+                            borderBottomColor: Colors.snow,
+                          }}
                           onPress={() => this.onPressTask(data)}>
                           <Image
                             source={{uri: data.cate_image}}
                             style={
                               data.status == Constants.TASK_STATUS_COMPLETED
-                                ? styles.fadedIcon
+                                ? [
+                                    styles.fadedIcon,
+                                    {
+                                      width: Metrics.screenWidth / 6,
+                                      height: Metrics.screenWidth / 6,
+                                    },
+                                  ]
                                 : styles.iconTaskList
                             }
                           />
                           <Text
+                            numberOfLines={1}
                             style={[
                               styles.minComplete,
-                              {color: Colors.snow, alignSelf: 'center',marginTop:10},
+                              {
+                                color: Colors.snow,
+                                alignSelf: 'center',
+                                marginLeft: 10,
+                                width: '50%',
+                              },
                             ]}>
                             {data?.task_name}
                           </Text>
                           {data.status == Constants.TASK_STATUS_COMPLETED ? (
                             <TouchableOpacity
-                              style={[styles.taskRecover,{alignSelf:'flex-start',width:'110%',justifyContent:'center'}]}
+                              style={[
+                                {
+                                  backgroundColor: Colors.restoreGreen,
+                                  justifyContent: 'center',
+                                  alignSelf: 'center',
+                                  height: 30,
+                                  borderRadius: 3,
+                                  padding: 5,
+                                  position: 'absolute',
+                                  right: 0,
+                                  // alignSelf: 'flex-start',
+                                  // width: '110%',
+                                  // justifyContent: 'center',
+                                },
+                              ]}
                               onPress={() => this.callRecoverTask(data)}>
-                              <Text style={[styles.taskRecoverText,{}]}>
+                              <Text style={[styles.taskRecoverText, {}]}>
                                 {'Recover'.toUpperCase()}
                               </Text>
                             </TouchableOpacity>

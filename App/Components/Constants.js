@@ -45,7 +45,7 @@ const Constants = {
         // { title: 'Edit Clock', img: Images.navIcon5, screen: 'ParentsPortalPinScreen' },
         { title: 'Change User', img: Images.navIcon6, screen: 'SelectUserScreen' },
         { title: 'Share This App', img: Images.navIcon7, screen: 'ShareScreen' },
-        { title: 'Logout', img: Images.navIcon8, screen: '' },
+        // { title: 'Logout', img: Images.navIcon8, screen: '' },
     ],
 
     ARR_PARENT_PORTAL_DRAWER: [
@@ -53,7 +53,7 @@ const Constants = {
         { title: 'Schedule', img: Images.navIcon3, screen: 'ScheduleScreen' },
         // { title: 'School Hours', img: Images.navIcon9, screen: 'SchoolHoursScreen' },
         { title: 'Reward', img: Images.navIcon2, screen: 'RewardScreen' },
-        { title: 'My Tasks', img: Images.navIcon10, screen: 'RescheduleScreen' },
+        // { title: 'My Tasks', img: Images.navIcon10, screen: 'RescheduleScreen' },
         { title: 'Change User', img: Images.navIcon6, screen: 'ParentsSelectChildScreen' },
         // { title: 'Admin Profile', img: Images.navIcon11, screen: 'ParentsProfileScreen' },
         { title: 'Admin Profile', img: Images.navIcon11, screen: 'ParentsUpdateProfileScreen' },
@@ -105,7 +105,7 @@ const Constants = {
     MESSAGE_PIN_LENGTH: "PIN and Confirm PIN must be of 4 digit.",
     MESSAGE_ONLY_PIN_LENGTH: "PIN must be of 4 digit.",
     MESSAGE_NOTMATCH_CONFIRMPIN: "PIN and Confirm PIN does not match.",
-    MESSAGE_VALID_CHILD_NAME: "Please enter valid childs name.",
+    MESSAGE_VALID_CHILD_NAME: "Please enter valid child's name.",
     MESSAGE_EDIT_CHILD_INFO: "Please edit child profile to update it.",
     MESSAGE_SELECT_BOTH_TIME: "Please select From and To time.",
     MESSAGE_SELECT_DAY_SH: "Please select at least one day to update the school hours.",

@@ -272,216 +272,214 @@ export default class HomeScreen extends BaseComponent {
   setWatchData(currentIndex) {
     var pieData = '';
     var stateData = this.state.dicPieData;
-    
+
     if (!stateData) {
       pieData = [];
     }
-    if (this.state.is_24HrsClock) {
-      pieData = stateData?.pieData24Hour;
-    } else if (this.state.school) {
-      var date, TimeType, hour;
-      date = new Date();
-
-      // Getting current hour from Date object.
-      hour = date.getHours();
-      
-      if (
-        stateData?.pieDataAMPM?.length == 1 &&
-        stateData.pieDataAMPM[0].isEmpty
-      ) {
-        pieData = stateData?.pieDataAMSchool;
-      } else {
-        if (hour >= 6) {
-          function filterTasks(tasks) {
-            let endIndex = -1;
-            for (let i = 0; i < tasks?.length; i++) {
-              const task = tasks[i];
-              if (!task.taskId) continue;
-              const startTime = moment(task.taskId.split(' - ')[0], 'hh:mm A');
-              const endTime = moment(task.taskId.split(' - ')[1], 'hh:mm A');
-              const sixPM = moment('06:00 PM', 'hh:mm A');
-              if (startTime.isAfter(sixPM)) {
-                endIndex = i;
-                break;
-              }
-              if (endTime.isAfter(sixPM)) {
-                task.value = sixPM.diff(startTime, 'minutes');
-              }
-            }
-            if (endIndex !== -1) {
-              return tasks.slice(0, endIndex);
-            } else {
-              return tasks;
-            }
-          }
-
-          // Filter tasks
-          const filteredTasks = filterTasks(stateData?.pieDataAMPM);
-          if (
-            typeof filteredTasks !== 'undefined' ||
-            filteredTasks !== undefined
-          ) {
-          stateData.pieDataAMPM = filteredTasks;
-          let secondLastTaskEndTime =
-            stateData.pieDataAMPM[
-              stateData?.pieDataAMPM?.length - 2
-            ]?.taskId?.split(' - ')[1];
-            let endTimeMeridiem =
-              stateData.pieDataAMPM[stateData?.pieDataAMPM?.length - 2]
-                .endTimeMeridiem;
-
-            // Create moment objects for end time and 6:00 PM
-            let endTaskTime = moment(
-              secondLastTaskEndTime + ' ' + endTimeMeridiem,
-              'hh:mm A',
-            );
-            let sixPMTime = moment('06:00 PM', 'hh:mm A');
-
-            // Calculate the difference between end time and 6:00 PM
-            let timeDifference = sixPMTime.diff(endTaskTime, 'minutes');
-
-            // Update the value property of the last task
-            stateData.pieDataAMPM[stateData?.pieDataAMPM?.length - 1].value =
-              timeDifference;
-
-          }
-          // Extract the end time from the taskId
-
-          const startTime = parseInt(
-            stateData?.pieDataAMSchool[1]?.taskId.split(' ')[0].split(':')[0],
-          );
-
-          // Check if the start time is greater than or equal to 6:00 AM
-          if (startTime <= 6) {
-            // Update the value property of the first element to 0
-            stateData.pieDataAMSchool[0].value = 0;
-          } else {
-            // Calculate the difference between 6:00 AM and the start time of the second element in minutes
-            const differenceInMinutes = (6 - startTime) * 60;
-            // Update the value property of the first element with the calculated difference
-            stateData.pieDataAMSchool[0].value = Math.abs(
-              isNaN(differenceInMinutes) ? 360 : differenceInMinutes,
-            );
-          }
-          pieData = stateData?.pieDataAMPM.concat(stateData.pieDataAMSchool);
-
-        } else {
+    if (!this.state.isLoading) {
+      if (this.state.is_24HrsClock) {
+        pieData = stateData?.pieData24Hour;
+      } else if (this.state.school) {
+        var date, TimeType, hour;
+        date = new Date();
+  
+        // Getting current hour from Date object.
+        hour = date.getHours();
+  
+        if (
+          stateData?.pieDataAMPM?.length == 1 &&
+          stateData.pieDataAMPM[0].isEmpty
+        ) {
           pieData = stateData?.pieDataAMSchool;
-        }
-      }
-
-      //MP
-    } else if (this.state.meridiam == 'AM') {
-      var date, TimeType, hour;
-      date = new Date();
-
-      // Getting current hour from Date object.
-      hour = date.getHours();
-     
-      if (
-        stateData?.pieDataAMPM?.length == 1 &&
-        stateData.pieDataAMPM[0].isEmpty
-      ) {
-        pieData = stateData?.pieDataAM;
-      } else {
-        if (hour >= 6) {
-          function filterTasks(tasks) {
-            let endIndex = -1;
-            for (let i = 0; i < tasks.length; i++) {
-              const task = tasks[i];
-              if (!task.taskId) continue;
-              const startTime = moment(task.taskId.split(' - ')[0], 'hh:mm A');
-              const endTime = moment(task.taskId.split(' - ')[1], 'hh:mm A');
-              const sixPM = moment('06:00 PM', 'hh:mm A');
-              if (startTime.isAfter(sixPM)) {
-                endIndex = i;
-                break;
-              }
-              if (endTime.isAfter(sixPM)) {
-                task.value = sixPM.diff(startTime, 'minutes');
-              }
-            }
-            if (endIndex !== -1) {
-              return tasks.slice(0, endIndex);
-            } else {
-              return tasks;
-            }
-          }
-
-          // Filter tasks
-          const filteredTasks = filterTasks(stateData.pieDataAMPM);
-          stateData.pieDataAMPM = filteredTasks;
-          let secondLastTaskEndTime =
-            stateData.pieDataAMPM[
-              stateData?.pieDataAMPM?.length - 2
-            ]?.taskId.split(' - ')[1];
-          if (
-            typeof secondLastTaskEndTime !== 'undefined' ||
-            secondLastTaskEndTime !== undefined
-          ) {
-            let endTimeMeridiem =
-              stateData.pieDataAMPM[stateData?.pieDataAMPM?.length - 2]
-                .endTimeMeridiem;
-
-            // Create moment objects for end time and 6:00 PM
-            let endTaskTime = moment(
-              secondLastTaskEndTime + ' ' + endTimeMeridiem,
-              'hh:mm A',
-            );
-            let sixPMTime = moment('06:00 PM', 'hh:mm A');
-
-            // Calculate the difference between end time and 6:00 PM
-            let timeDifference = sixPMTime.diff(endTaskTime, 'minutes');
-
-            // Update the value property of the last task
-            stateData.pieDataAMPM[stateData?.pieDataAMPM?.length - 1].value =
-              timeDifference;
-
-          }
-          // Extract the end time from the taskId
-
-          const startTime = parseInt(
-            stateData.pieDataAM[1]?.taskId.split(' ')[0].split(':')[0],
-          );
-
-          // Check if the start time is greater than or equal to 6:00 AM
-          if (startTime <= 6) {
-            // Update the value property of the first element to 0
-            stateData.pieDataAM[0].value = 0;
-          } else {
-            // Calculate the difference between 6:00 AM and the start time of the second element in minutes
-            const differenceInMinutes = (6 - startTime) * 60;
-            // Update the value property of the first element with the calculated difference
-            stateData.pieDataAM[0].value = Math.abs(
-              isNaN(differenceInMinutes) ? 360 : differenceInMinutes,
-            );
-          }
-          pieData = stateData?.pieDataAMPM.concat(stateData.pieDataAM);
-
         } else {
-          pieData = stateData?.pieDataAM;
+          if (hour >= 6) {
+            function filterTasks(tasks) {
+              let endIndex = -1;
+              for (let i = 0; i < tasks?.length; i++) {
+                const task = tasks[i];
+                if (!task.taskId) continue;
+                const startTime = moment(task.taskId.split(' - ')[0], 'hh:mm A');
+                const endTime = moment(task.taskId.split(' - ')[1], 'hh:mm A');
+                const sixPM = moment('06:00 PM', 'hh:mm A');
+                if (startTime.isAfter(sixPM)) {
+                  endIndex = i;
+                  break;
+                }
+                if (endTime.isAfter(sixPM)) {
+                  task.value = sixPM.diff(startTime, 'minutes');
+                }
+              }
+              if (endIndex !== -1) {
+                return tasks.slice(0, endIndex);
+              } else {
+                return tasks;
+              }
+            }
+  
+            // Filter tasks
+            const filteredTasks = filterTasks(stateData?.pieDataAMPM);
+            if (
+              typeof filteredTasks !== 'undefined' ||
+              filteredTasks !== undefined
+            ) {
+              stateData.pieDataAMPM = filteredTasks;
+              let secondLastTaskEndTime =
+                stateData.pieDataAMPM[
+                  stateData?.pieDataAMPM?.length - 2
+                ]?.taskId?.split(' - ')[1];
+              let endTimeMeridiem =
+                stateData.pieDataAMPM[stateData?.pieDataAMPM?.length - 2]
+                  .endTimeMeridiem;
+  
+              // Create moment objects for end time and 6:00 PM
+              let endTaskTime = moment(
+                secondLastTaskEndTime + ' ' + endTimeMeridiem,
+                'hh:mm A',
+              );
+              let sixPMTime = moment('06:00 PM', 'hh:mm A');
+  
+              // Calculate the difference between end time and 6:00 PM
+              let timeDifference = sixPMTime.diff(endTaskTime, 'minutes');
+  
+              // Update the value property of the last task
+              stateData.pieDataAMPM[stateData?.pieDataAMPM?.length - 1].value =
+                timeDifference;
+            }
+            // Extract the end time from the taskId
+  
+            const startTime = parseInt(
+              stateData?.pieDataAMSchool[1]?.taskId.split(' ')[0].split(':')[0],
+            );
+  
+            // Check if the start time is greater than or equal to 6:00 AM
+            if (startTime <= 6) {
+              // Update the value property of the first element to 0
+              stateData.pieDataAMSchool[0].value = 0;
+            } else {
+              // Calculate the difference between 6:00 AM and the start time of the second element in minutes
+              const differenceInMinutes = (6 - startTime) * 60;
+              // Update the value property of the first element with the calculated difference
+              stateData.pieDataAMSchool[0].value = Math.abs(
+                isNaN(differenceInMinutes) ? 360 : differenceInMinutes,
+              );
+            }
+            pieData = stateData?.pieDataAMPM.concat(stateData.pieDataAMSchool);
+          } else {
+            pieData = stateData?.pieDataAMSchool;
+          }
         }
+  
+        //MP
+      } else if (this.state.meridiam == 'AM') {
+        var date, TimeType, hour;
+        date = new Date();
+  
+        // Getting current hour from Date object.
+        hour = date.getHours();
+  
+        if (
+          stateData?.pieDataAMPM?.length == 1 &&
+          stateData.pieDataAMPM[0].isEmpty
+        ) {
+          pieData = stateData?.pieDataAM;
+        } else {
+          if (hour >= 6) {
+            function filterTasks(tasks) {
+              let endIndex = -1;
+              for (let i = 0; i < tasks.length; i++) {
+                const task = tasks[i];
+                if (!task.taskId) continue;
+                const startTime = moment(task.taskId.split(' - ')[0], 'hh:mm A');
+                const endTime = moment(task.taskId.split(' - ')[1], 'hh:mm A');
+                const sixPM = moment('06:00 PM', 'hh:mm A');
+                if (startTime.isAfter(sixPM)) {
+                  endIndex = i;
+                  break;
+                }
+                if (endTime.isAfter(sixPM)) {
+                  task.value = sixPM.diff(startTime, 'minutes');
+                }
+              }
+              if (endIndex !== -1) {
+                return tasks.slice(0, endIndex);
+              } else {
+                return tasks;
+              }
+            }
+  
+            // Filter tasks
+            const filteredTasks = filterTasks(stateData.pieDataAMPM);
+            stateData.pieDataAMPM = filteredTasks;
+            let secondLastTaskEndTime =
+              stateData.pieDataAMPM[
+                stateData?.pieDataAMPM?.length - 2
+              ]?.taskId.split(' - ')[1];
+            if (
+              typeof secondLastTaskEndTime !== 'undefined' ||
+              secondLastTaskEndTime !== undefined
+            ) {
+              let endTimeMeridiem =
+                stateData.pieDataAMPM[stateData?.pieDataAMPM?.length - 2]
+                  .endTimeMeridiem;
+  
+              // Create moment objects for end time and 6:00 PM
+              let endTaskTime = moment(
+                secondLastTaskEndTime + ' ' + endTimeMeridiem,
+                'hh:mm A',
+              );
+              let sixPMTime = moment('06:00 PM', 'hh:mm A');
+  
+              // Calculate the difference between end time and 6:00 PM
+              let timeDifference = sixPMTime.diff(endTaskTime, 'minutes');
+  
+              // Update the value property of the last task
+              stateData.pieDataAMPM[stateData?.pieDataAMPM?.length - 1].value =
+                timeDifference;
+            }
+            // Extract the end time from the taskId
+  
+            const startTime = parseInt(
+              stateData.pieDataAM[1]?.taskId.split(' ')[0].split(':')[0],
+            );
+  
+            // Check if the start time is greater than or equal to 6:00 AM
+            if (startTime <= 6) {
+              // Update the value property of the first element to 0
+              stateData.pieDataAM[0].value = 0;
+            } else {
+              // Calculate the difference between 6:00 AM and the start time of the second element in minutes
+              const differenceInMinutes = (6 - startTime) * 60;
+              // Update the value property of the first element with the calculated difference
+              stateData.pieDataAM[0].value = Math.abs(
+                isNaN(differenceInMinutes) ? 360 : differenceInMinutes,
+              );
+            }
+            pieData = stateData?.pieDataAMPM.concat(stateData.pieDataAM);
+          } else {
+            pieData = stateData?.pieDataAM;
+          }
+        }
+  
+        //MP
+      } else if (this.state.meridiam == 'PM') {
+        //MP
+        pieData = stateData?.pieDataPM;
       }
-
-      //MP
-    } else if (this.state.meridiam == 'PM') {
-      //MP
-      pieData = stateData?.pieDataPM;
+  
+      if (this.state.currentTaskSlot) {
+        Helper.getPaginatedArray(
+          this.state.currentTaskSlot[0].tasks,
+          4,
+          arrFooterTasks => {
+            this.setState({arrFooterTasks});
+          },
+        );
+      }
+      this.state.pieData = pieData;
+      this.state.swiperData[currentIndex] = this.renderSwiperView();
+      this.setState({pieData});
+      this.setState({isLoading: false});
     }
-
-    if (this.state.currentTaskSlot) {
-      Helper.getPaginatedArray(
-        this.state.currentTaskSlot[0].tasks,
-        4,
-        arrFooterTasks => {
-          this.setState({arrFooterTasks});
-        },
-      );
-    }
-    this.state.pieData = pieData;
-    this.state.swiperData[currentIndex] = this.renderSwiperView();
-    this.setState({pieData});
-    this.setState({isLoading:false})
   }
 
   setPlanetIcon = () => {
@@ -519,8 +517,7 @@ export default class HomeScreen extends BaseComponent {
         JSON.stringify(this.state.is_24HrsClock),
       );
       this.createSwiperDataForWeek();
-    } catch (error) {
-    }
+    } catch (error) {}
     this.getImageBg();
     // this.setState({ pieData });
   }
@@ -605,15 +602,12 @@ export default class HomeScreen extends BaseComponent {
   }
 
   handleStateUpdates = () => {
-    
     const isQAVisible = this.state.tickCount !== 2;
     const isAnswerOfJokeVisible = this.state.tickCount === 1;
 
     const currentIndex = this.state.currentIndex;
     const swiperData = [...this.state.swiperData];
     swiperData[currentIndex] = this.renderSwiperView();
-
-    
 
     if (!isQAVisible) {
       // Handle state updates or any other logic
@@ -698,7 +692,7 @@ export default class HomeScreen extends BaseComponent {
         <View style={styles.clockBottom}>
           <View style={styles.clockBottomLeft}>
             <TouchableOpacity
-            disabled={this.state.isLoading}
+              disabled={this.state.isLoading}
               style={styles.bellTouch}
               onPress={() => this.toggleSchool()}>
               {!this.state.school ? (
@@ -776,7 +770,6 @@ export default class HomeScreen extends BaseComponent {
                   </View>
                 ) : (
                   <View style={styles.shapeContainer}>
-                    
                     {
                       // this.state.isQAVisible ? <View style={[styles.shapeView]}>
                       //   <Image source={Images.shapeRight} style={[styles.shapeRight, { tintColor: Colors.darkPink }]} />
@@ -865,8 +858,7 @@ export default class HomeScreen extends BaseComponent {
           // fill: this.state.school ?!color ? Colors.black:Colors.blue:Colors.bloodOrange,
           // fill:color,
 
-          onPress: () =>
-            isEmpty ? {} : this.setModalVisible(true, taskId),
+          onPress: () => (isEmpty ? {} : this.setModalVisible(true, taskId)),
         },
         key: `pie-${index}`,
         // key: `pie-5`,
@@ -880,15 +872,13 @@ export default class HomeScreen extends BaseComponent {
         value,
         svg: {
           fill: clearColor,
-          onPress: () =>
-            isEmpty ? {}: this.setModalVisible(true, taskId),
+          onPress: () => (isEmpty ? {} : this.setModalVisible(true, taskId)),
         },
         key: `pie-${index}`,
         index: index,
         is_school_clock: is_school_clock,
       }),
     );
-
 
     if (this.state.is_24HrsClock) {
       this.state.clockFormateImage = Images.clockFaceDigit24HRS;
@@ -903,8 +893,6 @@ export default class HomeScreen extends BaseComponent {
     } else if (hour >= 18 && hour < 24) {
       this.state.clockFormateImage = images.pm_am;
     }
-
-    
 
     return (
       <TouchableOpacity style={styles.clock} disabled>
@@ -999,25 +987,64 @@ export default class HomeScreen extends BaseComponent {
     );
   }
 
-  renderTaskRow = (item, index) => {
+  renderTaskRow = (data, index) => {
     return (
       <TouchableOpacity
-        style={styles.taskIconTouch}
-        onPress={() => this.onPressFooterTask(item)}>
+        style={{
+          paddingVertical: 10,
+          alignItems: 'center',
+          flexDirection: 'row',
+          borderBottomWidth: 0.3,
+          borderBottomColor: Colors.snow,
+          width: '100%',
+        }}
+        onPress={() => this.onPressFooterTask(data)}>
         <Image
-          source={{uri: item.cate_image}}
+          source={{uri: data.cate_image}}
           style={
-            item.status == Constants.TASK_STATUS_COMPLETED
-              ? styles.fadedTaskIcon
-              : styles.taskIcon
+            data.status == Constants.TASK_STATUS_COMPLETED
+              ? [
+                  styles.fadedIcon,
+                  {
+                    width: Metrics.screenWidth / 6,
+                    height: Metrics.screenWidth / 6,
+                  },
+                ]
+              : styles.iconTaskList
           }
         />
-        <Text style={styles.timer}>{item.task_name}</Text>
-        {item.status == Constants.TASK_STATUS_COMPLETED ? (
+        <Text
+          numberOfLines={1}
+          style={[
+            styles.minComplete,
+            {
+              color: Colors.snow,
+              alignSelf: 'center',
+              marginLeft: 10,
+              width: '50%',
+            },
+          ]}>
+          {data?.task_name}
+        </Text>
+        {data.status == Constants.TASK_STATUS_COMPLETED ? (
           <TouchableOpacity
-            style={styles.taskRecover}
-            onPress={() => this.callRecoverTask(item)}>
-            <Text style={styles.taskRecoverText}>
+            style={[
+              {
+                backgroundColor: Colors.restoreGreen,
+                justifyContent: 'center',
+                alignSelf: 'center',
+                height: 30,
+                borderRadius: 3,
+                padding: 5,
+                position: 'absolute',
+                right: 0,
+                // alignSelf: 'flex-start',
+                // width: '110%',
+                // justifyContent: 'center',
+              },
+            ]}
+            onPress={() => this.callRecoverTask(data)}>
+            <Text style={[styles.taskRecoverText, {}]}>
               {'Recover'.toUpperCase()}
             </Text>
           </TouchableOpacity>
@@ -1027,6 +1054,7 @@ export default class HomeScreen extends BaseComponent {
   };
 
   onPressFooterTask(objTask) {
+    console.log('objTask', objTask);
     if (objTask.status != Constants.TASK_STATUS_COMPLETED) {
       this.state.modalVisible = false;
       this.setState({
@@ -1034,11 +1062,11 @@ export default class HomeScreen extends BaseComponent {
         objRestoreTask: '',
         showRecoverModel: false,
       });
-      if (this.state.needToChangeFooterObj) {
-        this.setState({
-          objFooterSelectedTask: objTask,
-        });
-      }
+      // if (this.state.needToChangeFooterObj) {
+      this.setState({
+        objFooterSelectedTask: objTask,
+      });
+      // }
     } else {
       this.setState({
         objFooterSelectedTask: objTask,
@@ -1087,6 +1115,7 @@ export default class HomeScreen extends BaseComponent {
   }
   //#region -> API Call
   getTaskList = index => {
+    Helper.getChildRewardPoints(this.props.navigation);
     if (this.state.isLoading) {
       return;
     }
@@ -1156,11 +1185,10 @@ export default class HomeScreen extends BaseComponent {
               );
             }
           } else {
-            this.setState({isLoading:false})
+            this.setState({isLoading: false});
             Helper.showErrorMessage(response.data.message);
           }
         } else {
-
           this.setState({
             isLoading: false,
           });
@@ -1187,8 +1215,6 @@ export default class HomeScreen extends BaseComponent {
     is_school_clock,
   ) {
     {
-      
-
       this.state.isLoading = false;
       const pieDataAM = Helper.generateClockTaskArray(
         arrAM,
@@ -1222,7 +1248,6 @@ export default class HomeScreen extends BaseComponent {
         // schoolHoursToMeradian =  "am"
 
         if (schoolHoursFromMeradian != schoolHoursToMeradian) {
-          
           //here change arrAM_School to arrAM
           pieDataAM_School = Helper.generateClockTaskArraySchool(
             arrAM,
@@ -1241,7 +1266,6 @@ export default class HomeScreen extends BaseComponent {
             true,
           );
         } else {
-          
           pieDataAM_School = Helper.generateClockTaskArraySchool(
             arrAM_School,
             'am',
@@ -1279,9 +1303,10 @@ export default class HomeScreen extends BaseComponent {
     }
   }
   callRecoverTask(objTask) {
+    console.log('!!!!!!!!-----!!!!!!!!', objTask);
     this.state.isLoading = true;
     objSecureAPI
-      .restoreTask(objTask.id, this.state.objSelectedChild.id)
+      .restoreTask(objTask.sub_task_id, this.state.objSelectedChild.id)
       .then(response => {
         if (response.ok) {
           if (response.data.success) {
@@ -1291,11 +1316,12 @@ export default class HomeScreen extends BaseComponent {
             this.state.selectedTaskSlot[objIndex].status = '';
             this.state.selectedTaskSlot[objIndex].start_time = '';
             this.state.objRestoreTask = {};
+            console.log('response.data.data', response.data.data);
             this.setState({
               isLoading: false,
             });
             this.setState({
-              objFooterSelectedTask: response.data.data.tasks[0],
+              selectedTaskSlot: response.data.data.tasks,
             });
             this.setState({
               needToChangeFooterObj: false,
@@ -1428,7 +1454,7 @@ export default class HomeScreen extends BaseComponent {
           tooltipContainerStyle={[
             styles.tooltipContainerStyle,
             {
-              left: 0, //MP
+              left: 10, //MP
               top: Helper.isIPhoneX() ? 190 : 170,
             },
           ]}
@@ -1553,7 +1579,7 @@ export default class HomeScreen extends BaseComponent {
               {this.renderSwiperData()}
             </Swiper>
           ) : null}
-         
+
           <SafeAreaView
             style={[
               {justifyContent: 'center'},
@@ -1625,9 +1651,11 @@ export default class HomeScreen extends BaseComponent {
             <SafeAreaView style={styles.SafeAreaView}>
               <TouchableOpacity
                 style={styles.modalCloseTouch}
-                onPress={() =>
-                  this.setState({modalVisible: false, objRestoreTask: ''})
-                }>
+                onPress={() => {
+                  this.setState({modalVisible: false, objRestoreTask: ''});
+                  Helper.getChildRewardPoints(this.props.navigation);
+                  this.setModal();
+                }}>
                 <Image source={Images.close} style={styles.close} />
               </TouchableOpacity>
               <View style={styles.modalBody}>
@@ -1674,7 +1702,10 @@ export default class HomeScreen extends BaseComponent {
                       this.renderTaskRow(item, index)
                     }
                     extraData={this.state}
-                    numColumns={3}
+                    // numColumns={3}
+                    contentContainerStyle={{
+                      width: '100%',
+                    }}
                   />
                 ) : null}
               </View>
@@ -1684,7 +1715,9 @@ export default class HomeScreen extends BaseComponent {
                   {
                     justifyContent: 'center',
                     alignItems: 'center',
-                    flexDirection: 'column-reverse',
+                    flexDirection: 'row-reverse',
+                    marginLeft: 15,
+                    marginRight: 15,
                   },
                 ]}>
                 <TouchableOpacity
@@ -1693,16 +1726,14 @@ export default class HomeScreen extends BaseComponent {
                     styles.buttonCarrot,
                     {marginTop: 0, marginBottom: 0},
                   ]}>
-                  <Text style={styles.buttonText}>
-                    {/* {"Task Complete".toUpperCase()} */}
-                    {'Select Task'.toUpperCase()}
+                  <Text style={[styles.buttonText, {paddingLeft: 40}]}>
+                    {'SELECT TASK'}
                   </Text>
                 </TouchableOpacity>
-                {/* <Image
-                  // source={Images.rewardClaim}
+                <Image
                   source={Images.taskReward}
-                  style={styles.taskRewardImage}
-                /> */}
+                  style={[styles.taskRewardImage, {marginRight: -50}]}
+                />
               </View>
             </SafeAreaView>
           </View>

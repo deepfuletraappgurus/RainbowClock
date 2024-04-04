@@ -88,6 +88,7 @@ export default class RewardScreen extends BaseComponent {
         this.getRewardList()
         this.navFocusListener =  this.props.navigation.addListener('didFocus', () => {
             Helper.getChildRewardPoints(this.props.navigation)
+            this.getRewardList()
           });
     }
     // componentWillUnmount() {

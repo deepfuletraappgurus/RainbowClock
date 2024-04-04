@@ -27,7 +27,6 @@ import styles from './Styles/SetupTimeBlockScreenStyles';
 import Api from '../Services/Api';
 import colors from '../Themes/Colors';
 
-
 let days = [];
 
 let colours = [
@@ -69,7 +68,6 @@ let colours = [
 ];
 
 const objSecureAPI = Api.createSecure();
-
 
 export default class EditScheduleScreen extends BaseComponent {
   static navigationOptions = ({navigation}) => ({
@@ -130,14 +128,19 @@ export default class EditScheduleScreen extends BaseComponent {
       is_date: 1,
       is_new: 1,
       is_school_clock: false,
-      tid:''
+      tid: '',
     };
   }
 
   componentDidMount() {
     super.componentDidMount();
     this.getChildDetail();
-
+    this.navFocusListener = this.props.navigation.addListener(
+      'didFocus',
+      () => {
+        Helper.getChildRewardPoints(this.props.navigation);
+      },
+    );
     // Helper.checkChoosenTimeIsValidOrNot(this.state.fromTime, (aNewDay, isPastSelectedTime, todayIsSunday) => {
     //     this.state.strMinimumDate = aNewDay
     //     this.state.arrSelectedDates[aNewDay] = { selected: true, marked: true, selectedColor: 'white' }
@@ -171,6 +174,7 @@ export default class EditScheduleScreen extends BaseComponent {
           'scheduleDetails',
           {},
         );
+        console.log('SCHEDULEDETAILS',scheduleDetails)
         if (scheduleDetails) {
           const taskName = this.state.taskNameList.includes(
             scheduleDetails?.name,
@@ -188,7 +192,7 @@ export default class EditScheduleScreen extends BaseComponent {
             is_school_clock: scheduleDetails?.is_school_clock,
             time: moment(scheduleDetails?.time_from, 'h:mm A').toDate(),
             toTimeDate: moment(scheduleDetails?.time_to, 'h:mm A').toDate(),
-            tid: scheduleDetails?.id
+            tid: scheduleDetails?.id,
           });
           if (scheduleDetails?.is_date) {
             // this.setState({arrSelectedDates:[]})
@@ -258,7 +262,7 @@ export default class EditScheduleScreen extends BaseComponent {
           scheduleDetails,
         };
         Helper.showConfirmationMessageActions(
-          'Are You Sure, You want to Update This Task?',
+          'Are You Sure, You want to update this schedule?',
           'No',
           'Yes',
           this.onActionNo,
@@ -300,16 +304,16 @@ export default class EditScheduleScreen extends BaseComponent {
   };
 
   onActionYes = dictCreateTask => {
-    this.setState({isLoading:true})
-    var tid =  dictCreateTask['tid']
-    var child_id= this.state.childData.id
-    var name= dictCreateTask['taskName']
-    var time_from= dictCreateTask['fromTime']
-    var time_to= dictCreateTask['toTime']
-    var color= dictCreateTask['taskColor']
-    var task_date= dictCreateTask['task_date']
-    var is_date= dictCreateTask['is_date']
-    var is_new= dictCreateTask['is_new']
+    this.setState({isLoading: true});
+    var tid = dictCreateTask['tid'];
+    var child_id = this.state.childData.id;
+    var name = dictCreateTask['taskName'];
+    var time_from = dictCreateTask['fromTime'];
+    var time_to = dictCreateTask['toTime'];
+    var color = dictCreateTask['taskColor'];
+    var task_date = dictCreateTask['task_date'];
+    var is_date = dictCreateTask['is_date'];
+    var is_new = dictCreateTask['is_new'];
 
     const res = objSecureAPI
       .updateSchedule(
@@ -321,13 +325,13 @@ export default class EditScheduleScreen extends BaseComponent {
         color,
         task_date,
         is_date,
-        is_new
+        is_new,
       )
       .then(resJSON => {
         if (resJSON.ok && resJSON.status == 200) {
           this.setState({isLoading: false});
           if (resJSON.data.success) {
-            this.props.navigation.goBack()
+            this.props.navigation.goBack();
           } else {
             Helper.showErrorMessage(resJSON.data.message);
           }
@@ -340,8 +344,7 @@ export default class EditScheduleScreen extends BaseComponent {
         }
       });
   };
-  onActionNo = () => {
-  };
+  onActionNo = () => {};
 
   setToggleColorPicker = () => {
     Keyboard.dismiss();
@@ -487,31 +490,61 @@ export default class EditScheduleScreen extends BaseComponent {
           Constants.MESSAGE_SCHOOL_DAY_VALIDATION,
         );
       }
+      else{
+        if (value instanceof Date) {
+          // If value is already a Date object, use it directly
+          this.setState({
+            time: value,
+            fromTime: Helper.dateFormater(value, 'hh:mm A', 'hh:mm A').toString(),
+            fromTimeFormate: Helper.dateFormater(value, 'hh:mm a', 'A'),
+          });
+        } else {
+          // If value is not a Date object, try converting it to a Date
+          const dateValue = new Date(value);
+          if (!isNaN(dateValue.getTime())) {
+            // Check if the conversion was successful
+            this.setState({
+              time: dateValue,
+              fromTime: Helper.dateFormater(
+                dateValue,
+                'hh:mm A',
+                'hh:mm A',
+              ).toString(),
+              fromTimeFormate: Helper.dateFormater(dateValue, 'hh:mm a', 'A'),
+            });
+          } else {
+            // Handle the case where the conversion fails
+            console.error('Invalid date format for toTime:', value);
+          }
+        }
+      }
     }
-    if (value instanceof Date) {
-      // If value is already a Date object, use it directly
-      this.setState({
-        time: value,
-        fromTime: Helper.dateFormater(value, 'hh:mm A', 'hh:mm A').toString(),
-        fromTimeFormate: Helper.dateFormater(value, 'hh:mm a', 'A'),
-      });
-    } else {
-      // If value is not a Date object, try converting it to a Date
-      const dateValue = new Date(value);
-      if (!isNaN(dateValue.getTime())) {
-        // Check if the conversion was successful
+    else{
+      if (value instanceof Date) {
+        // If value is already a Date object, use it directly
         this.setState({
-          time: dateValue,
-          fromTime: Helper.dateFormater(
-            dateValue,
-            'hh:mm A',
-            'hh:mm A',
-          ).toString(),
-          fromTimeFormate: Helper.dateFormater(dateValue, 'hh:mm a', 'A'),
+          time: value,
+          fromTime: Helper.dateFormater(value, 'hh:mm A', 'hh:mm A').toString(),
+          fromTimeFormate: Helper.dateFormater(value, 'hh:mm a', 'A'),
         });
       } else {
-        // Handle the case where the conversion fails
-        console.error('Invalid date format for toTime:', value);
+        // If value is not a Date object, try converting it to a Date
+        const dateValue = new Date(value);
+        if (!isNaN(dateValue.getTime())) {
+          // Check if the conversion was successful
+          this.setState({
+            time: dateValue,
+            fromTime: Helper.dateFormater(
+              dateValue,
+              'hh:mm A',
+              'hh:mm A',
+            ).toString(),
+            fromTimeFormate: Helper.dateFormater(dateValue, 'hh:mm a', 'A'),
+          });
+        } else {
+          // Handle the case where the conversion fails
+          console.error('Invalid date format for toTime:', value);
+        }
       }
     }
     if (Platform.OS === 'android') {
@@ -549,31 +582,61 @@ export default class EditScheduleScreen extends BaseComponent {
           Constants.MESSAGE_SCHOOL_DAY_VALIDATION,
         );
       }
+      else{
+        if (value instanceof Date) {
+          // If value is already a Date object, use it directly
+          this.setState({
+            toTimeDate: value,
+            toTime: Helper.dateFormater(value, 'hh:mm A', 'hh:mm A').toString(),
+            toTimeFormate: Helper.dateFormater(value, 'hh:mm a', 'A'),
+          });
+        } else {
+          // If value is not a Date object, try converting it to a Date
+          const dateValue = new Date(value);
+          if (!isNaN(dateValue.getTime())) {
+            // Check if the conversion was successful
+            this.setState({
+              toTimeDate: dateValue,
+              toTime: Helper.dateFormater(
+                dateValue,
+                'hh:mm A',
+                'hh:mm A',
+              ).toString(),
+              toTimeFormate: Helper.dateFormater(dateValue, 'hh:mm a', 'A'),
+            });
+          } else {
+            // Handle the case where the conversion fails
+            console.error('Invalid date format for toTime:', value);
+          }
+        }
+      }
     }
-    if (value instanceof Date) {
-      // If value is already a Date object, use it directly
-      this.setState({
-        toTimeDate: value,
-        toTime: Helper.dateFormater(value, 'hh:mm A', 'hh:mm A').toString(),
-        toTimeFormate: Helper.dateFormater(value, 'hh:mm a', 'A'),
-      });
-    } else {
-      // If value is not a Date object, try converting it to a Date
-      const dateValue = new Date(value);
-      if (!isNaN(dateValue.getTime())) {
-        // Check if the conversion was successful
+    else{
+      if (value instanceof Date) {
+        // If value is already a Date object, use it directly
         this.setState({
-          toTimeDate: dateValue,
-          toTime: Helper.dateFormater(
-            dateValue,
-            'hh:mm A',
-            'hh:mm A',
-          ).toString(),
-          toTimeFormate: Helper.dateFormater(dateValue, 'hh:mm a', 'A'),
+          toTimeDate: value,
+          toTime: Helper.dateFormater(value, 'hh:mm A', 'hh:mm A').toString(),
+          toTimeFormate: Helper.dateFormater(value, 'hh:mm a', 'A'),
         });
       } else {
-        // Handle the case where the conversion fails
-        console.error('Invalid date format for toTime:', value);
+        // If value is not a Date object, try converting it to a Date
+        const dateValue = new Date(value);
+        if (!isNaN(dateValue.getTime())) {
+          // Check if the conversion was successful
+          this.setState({
+            toTimeDate: dateValue,
+            toTime: Helper.dateFormater(
+              dateValue,
+              'hh:mm A',
+              'hh:mm A',
+            ).toString(),
+            toTimeFormate: Helper.dateFormater(dateValue, 'hh:mm a', 'A'),
+          });
+        } else {
+          // Handle the case where the conversion fails
+          console.error('Invalid date format for toTime:', value);
+        }
       }
     }
 
@@ -692,7 +755,7 @@ export default class EditScheduleScreen extends BaseComponent {
                       style={styles.nextButton}
                       onPress={() => {
                         Helper.showConfirmationMessageActions(
-                          'Are You Sure, You don not want to Update This Task?',
+                          "Are You Sure, You don't want to update this schedule?",
                           'No',
                           'Yes',
                           this.onActionNo,
@@ -705,9 +768,9 @@ export default class EditScheduleScreen extends BaseComponent {
                       />
                     </TouchableOpacity>
                     <TouchableOpacity
-                      style={[styles.nextButton,{marginLeft:15}]}
+                      style={[styles.nextButton, {marginLeft: 15}]}
                       onPress={() => this.moveToScheduleTask()}>
-                        {this.state.isLoading ? (
+                      {this.state.isLoading ? (
                         <View
                           style={{
                             backgroundColor: colors.yellow,
@@ -919,7 +982,6 @@ export default class EditScheduleScreen extends BaseComponent {
                             showIcon={false}
                             onChange={(event, data) => {
                               this.onToTimeSelected(event, data);
-                              
                             }}
                             customStyles={{
                               dateInput: {
@@ -1012,7 +1074,6 @@ export default class EditScheduleScreen extends BaseComponent {
                           showIcon={false}
                           onChange={(event, data) => {
                             this.daySelectionCalenderPicker(event, data);
-                           
                           }}
                           customStyles={{
                             dateInput: {

@@ -175,7 +175,7 @@ export default class LaunchScreen extends BaseComponent {
                       <Image source={Images.user} style={styles.inputIcon} />
                       <TextInput
                         style={styles.input}
-                        autoCapitalize="characters"
+                        // autoCapitalize="characters"
                         placeholder={'Username'.toUpperCase()}
                         underlineColorAndroid={'transparent'}
                         placeholderTextColor={Colors.placeHolderText}

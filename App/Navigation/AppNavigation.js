@@ -157,7 +157,7 @@ const drawerStack = createStackNavigator(
     },
     ParentsPortalPinScreen: {
       screen: ParentsPortalPinScreen,
-      navigationOptions: {title: 'My Rainbow Clock'.toUpperCase()},
+      navigationOptions: {title: 'My Rainbow Clock'.toUpperCase(), headerRight : () => <></>},
     },
     ParentsSelectChildScreen: {
       screen: ParentsSelectChildScreen,

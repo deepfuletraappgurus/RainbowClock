@@ -525,8 +525,8 @@ const ApplicationStyles = {
       resizeMode:'contain'
     },
     iconTaskList:{
-      width:Metrics.screenWidth/5,
-      height:Metrics.screenWidth/5,
+      width:Metrics.screenWidth/6,
+      height:Metrics.screenWidth/6,
       resizeMode:'contain'
     },
     fadedIcon :{
@@ -975,7 +975,7 @@ const ApplicationStyles = {
       borderRadius:8,
       shadowOpacity: 0.5,
       shadowOffset: { height: 1 },
-      shadowColor:'#000',
+      shadowColor:Colors.gray,
       elevation: 6,
       marginTop:15
     },

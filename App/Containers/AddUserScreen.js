@@ -22,7 +22,7 @@ import {Colors, Images} from '../Themes';
 // Styles
 import styles from './Styles/AddUserScreenStyles';
 import Spinner from '../Components/Spinner';
-import { log } from 'react-native-reanimated';
+import {log} from 'react-native-reanimated';
 import moment from 'moment';
 
 const objAPISecure = Api.createSecure();
@@ -37,9 +37,11 @@ export default class AddUserScreen extends BaseComponent {
       image: '',
       isLoading: false,
       imageBg: Images.BgDay,
-      data:[],
-      startDate:moment().format('hh:mm A').toString(),
-      endDate:moment(moment().add(moment.duration('01:00'))).format('hh:mm A').toString(),
+      data: [],
+      startDate: moment().format('hh:mm A').toString(),
+      endDate: moment(moment().add(moment.duration('01:00')))
+        .format('hh:mm A')
+        .toString(),
     };
   }
 
@@ -52,7 +54,6 @@ export default class AddUserScreen extends BaseComponent {
   }
 
   getImageBg = () => {
-
     // Helper.getBackgroudImage((image, navHeaderColor) => {
     //   this.props.navigation.setParams({navHeaderColor});
     //   this.setState({imageBg: image});
@@ -60,14 +61,14 @@ export default class AddUserScreen extends BaseComponent {
 
     AsyncStorage.getItem(Constants.BACKGROUND_IMAGE, (err, result) => {
       if (result) {
-        this.setState({ imageBg: result });
+        this.setState({imageBg: result});
       }
-    })
+    });
     AsyncStorage.getItem(Constants.NAV_COLOR, (err, result) => {
       if (result) {
-        this.props.navigation.setParams({ navHeaderColor : result });
+        this.props.navigation.setParams({navHeaderColor: result});
       }
-    })
+    });
   };
 
   checkRequestPermission = () => {
@@ -163,7 +164,6 @@ export default class AddUserScreen extends BaseComponent {
 
   //#region -> API Calls
   callAPI_AddUser = async () => {
-
     this.setState({isLoading: true});
     const res = objAPISecure
       .addchild(
@@ -182,7 +182,7 @@ export default class AddUserScreen extends BaseComponent {
               username: '',
               profilePic: '',
               image: '',
-              data:resJSON.data.data
+              data: resJSON.data.data,
             });
             try {
               AsyncStorage.setItem(Constants.KEY_USER_HAVE_CHILDREN, '1');
@@ -192,7 +192,10 @@ export default class AddUserScreen extends BaseComponent {
                 'Yes',
                 this.onActionNo,
                 this.onActionYes,
-              );            } catch (error) {
+              );
+            } catch (error) {
+              Helper.showErrorMessage("Alert!\nYour Storage is Full\nPlease try again latter!");
+              this.setState({isLoading: false});
             }
             AsyncStorage.getItem(Constants.KEY_SELECTED_CHILD, (err, child) => {
               if (child == null) {
@@ -202,6 +205,8 @@ export default class AddUserScreen extends BaseComponent {
                     JSON.stringify(resJSON.data.data[0]),
                   );
                 } catch (error) {
+                  Helper.showErrorMessage("Alert!\nYour Storage is Full\nPlease try again latter!");
+                  this.setState({isLoading: false});
                 }
               }
               setTimeout(() => {
@@ -209,6 +214,7 @@ export default class AddUserScreen extends BaseComponent {
               }, 100);
             });
           } else {
+            this.setState({isLoading: false});
             Helper.showErrorMessage(resJSON.data.message);
           }
         } else if (resJSON.status == 500) {
@@ -221,32 +227,34 @@ export default class AddUserScreen extends BaseComponent {
       });
   };
 
-  onActionYes = () => {
-  }
+  onActionYes = () => {};
   onActionNo = () => {
     Helper.showConfirmationMessageSingleAction(
       Constants.ADD_CHILD_CONFIRMATION_NO,
       'OK',
       this.onActionOK,
     );
-  }
+  };
 
   onActionOK = () => {
-    const newChildId = Math.max(...this.state.data.map(data => data.id))
-    const getNewestChild = this.state.data?.filter(data => data.id === newChildId);
+    const newChildId = Math.max(...this.state.data.map(data => data.id));
+    const getNewestChild = this.state.data?.filter(
+      data => data.id === newChildId,
+    );
     this.moveToHomeScreen(getNewestChild[0]);
-
-  }
-  moveToHomeScreen = (selectedChild) => {
+  };
+  moveToHomeScreen = selectedChild => {
     try {
-        AsyncStorage.setItem(Constants.KEY_SELECTED_CHILD, JSON.stringify(selectedChild))
-        setTimeout(() => {
-            this.props.navigation.navigate('HomeScreen')
-            EventEmitter.emit(Constants.EVENT_CHILD_UPDATE)
-        }, 100);
-    } catch (error) {
-    }
-}
+      AsyncStorage.setItem(
+        Constants.KEY_SELECTED_CHILD,
+        JSON.stringify(selectedChild),
+      );
+      setTimeout(() => {
+        this.props.navigation.navigate('HomeScreen');
+        EventEmitter.emit(Constants.EVENT_CHILD_UPDATE);
+      }, 100);
+    } catch (error) {}
+  };
   //#endregion
 
   //#region -> View Render
@@ -272,7 +280,7 @@ export default class AddUserScreen extends BaseComponent {
                     autoCapitalize="characters"
                     value={this.state.username}
                     maxLength={15} //MP
-                    placeholder={'Childs name'.toUpperCase()}
+                    placeholder={"Child's name".toUpperCase()}
                     underlineColorAndroid={'transparent'}
                     placeholderTextColor={Colors.placeHolderText}
                     onChangeText={username => this.setState({username})}

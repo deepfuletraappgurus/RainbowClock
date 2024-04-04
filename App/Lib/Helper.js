@@ -1654,3 +1654,16 @@ export function isCheckTaskValid(
   }
   return isValidValue;
 }
+
+export function isNullOrUndefinedOrEmpty(value) {
+  return value === null || value === undefined || value === '';
+}
+
+// Example usage:
+export const checkEmptyValue = (value) => {
+  if (isNullOrUndefinedOrEmpty(value)) {
+    return true;
+  } else {
+    return false;
+  }
+};

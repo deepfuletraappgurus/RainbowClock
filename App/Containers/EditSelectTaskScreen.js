@@ -29,6 +29,7 @@ import RBSheet from 'react-native-raw-bottom-sheet';
 
 // Styles
 import styles from './Styles/SelectTaskScreenStyles';
+import images from '../Themes/Images';
 
 // Global Variables
 const objSecureAPI = Api.createSecure();
@@ -81,8 +82,8 @@ export default class EditSelectTaskScreen extends BaseComponent {
       taskCustomImagePath: '',
       totalTaskSlotMinutes: 0,
       isUpLoading: false,
-      isDeletesubTaskLoading:false,
-      isSavedForFuture:0
+      isDeletesubTaskLoading: false,
+      isSavedForFuture: 0,
     };
   }
 
@@ -107,6 +108,7 @@ export default class EditSelectTaskScreen extends BaseComponent {
     const scheduleDetails =
       this.props.navigation.state.params.dictCreateTask.scheduleDetails;
 
+      console.log('SCHEDULEEEEKKNKN',scheduleDetails)
 
     const getCurrentCat = this.state.arrAllCategories?.filter(
       cat => cat.id === scheduleDetails?.mcid,
@@ -120,7 +122,10 @@ export default class EditSelectTaskScreen extends BaseComponent {
       this.setState({
         selectTaskModel: true,
         taskName: scheduleDetails?.task_name,
-        taskNumberOfToken: scheduleDetails?.no_of_token == 'null' ? '' : scheduleDetails?.no_of_token,
+        taskNumberOfToken:
+          scheduleDetails?.no_of_token == 'null'
+            ? ''
+            : scheduleDetails?.no_of_token,
         taskType: scheduleDetails?.type == 'null' ? '' : scheduleDetails?.type,
         isSavedForFuture: scheduleDetails?.is_saved_for_future,
       });
@@ -181,7 +186,7 @@ export default class EditSelectTaskScreen extends BaseComponent {
 
   deleteTask = () => {
     Helper.showConfirmationMessageActions(
-      'Are You Sure, You Want to Delete This Task.',
+      'Are you sure you want to delete this task ?',
       'No',
       'Yes',
       () => {},
@@ -191,8 +196,8 @@ export default class EditSelectTaskScreen extends BaseComponent {
 
   onActionYes = () => {
     this.setState({
-      isDeletesubTaskLoading:true
-    })
+      isDeletesubTaskLoading: true,
+    });
     var taskId =
       this.props.navigation.state.params.dictCreateTask.scheduleDetails
         .sub_task_id;
@@ -217,8 +222,7 @@ export default class EditSelectTaskScreen extends BaseComponent {
                 }
               }
             });
-          } catch (error) {
-          }
+          } catch (error) {}
         } else {
           Helper.showErrorMessage(resJSON.data.message);
         }
@@ -365,15 +369,14 @@ export default class EditSelectTaskScreen extends BaseComponent {
     var taskToTime = this.state.dictCreateTask['toTime'];
     var taskTime = this.state?.taskTime;
     var taskColor = this.state.dictCreateTask['taskColor'];
-    var taskTokenType =
-      this.state.taskTokenType || Constants.TASK_TOKEN_STANDARD;
+    var taskTokenType = this.state.taskTokenType || '';
     var taskNumberOfTokens = this.state.taskNumberOfToken;
     var taskDates = this.state.dictCreateTask['task_date'].join();
     var frequency = this.state.dictCreateTask['frequency'];
     var taskCustomIcon = this.state.taskCustomImage;
     var is_date = this.state.dictCreateTask['is_date'];
     var is_new = this.state.dictCreateTask['is_new'];
-    var is_saved_for_future = this.state.isSavedForFuture
+    var is_saved_for_future = this.state.isSavedForFuture;
     // var taskId =
 
     const res = objSecureAPI
@@ -387,7 +390,7 @@ export default class EditSelectTaskScreen extends BaseComponent {
         taskTime,
         taskTokenType,
         taskNumberOfTokens,
-        is_saved_for_future
+        is_saved_for_future,
       )
       .then(resJSON => {
         if (resJSON.ok && resJSON.status == 200) {
@@ -416,8 +419,7 @@ export default class EditSelectTaskScreen extends BaseComponent {
                   }
                 }
               });
-            } catch (error) {
-            }
+            } catch (error) {}
           } else {
             Helper.showErrorMessage(resJSON.data.message);
           }
@@ -465,7 +467,7 @@ export default class EditSelectTaskScreen extends BaseComponent {
 
   tokenTypeSelected = tokenType => {
     this.setState({
-      taskTokenType: tokenType,
+      taskTokenType: this.state.taskTokenType === tokenType ? '' : tokenType,
       typeOfTokensDropdown: false,
     });
   };
@@ -485,7 +487,7 @@ export default class EditSelectTaskScreen extends BaseComponent {
       taskTime: time == 'null' ? '' : time,
       timeForTaskDropdown: false,
     });
-    this.RBSheetTimer.close()
+    this.RBSheetTimer.close();
   };
 
   defaultTaskTimeSelected = time => {
@@ -541,6 +543,7 @@ export default class EditSelectTaskScreen extends BaseComponent {
   }
 
   setTaskModelVisible(item) {
+    console.log('IIIIIIIITTTTTTTTEEEEEEEMMMMMM',item)
     if (
       this.state.selectedCategory == '' &&
       item &&
@@ -793,12 +796,13 @@ export default class EditSelectTaskScreen extends BaseComponent {
                           onPress={() => {
                             this.deleteTask();
                           }}>
-                            {this.state.isDeletesubTaskLoading ? (
+                          {this.state.isDeletesubTaskLoading ? (
                             <Spinner color={'#FFFFFF'} size={'small'} />
                           ) : (
-                            <Text style={styles.buttonText}>{'DELETE TASK'}</Text>
+                            <Text style={styles.buttonText}>
+                              {'DELETE TASK'}
+                            </Text>
                           )}
-                          
                         </TouchableOpacity>
                         <TouchableOpacity
                           style={[
@@ -912,6 +916,22 @@ export default class EditSelectTaskScreen extends BaseComponent {
                                   ? this.state.taskTime + ' Minutes'
                                   : 'Select Time'}
                               </Text>
+                              <TouchableOpacity
+                                style={{
+                                  padding: 5,
+                                  position: 'absolute',
+                                  right: 5,
+                                }}
+                                onPress={() => this.setState({taskTime: ''})}>
+                                <Image
+                                  source={images.cross}
+                                  style={{
+                                    width: 24,
+                                    height: 24,
+                                    tintColor: Colors.charcoal,
+                                  }}
+                                />
+                              </TouchableOpacity>
                             </TouchableOpacity>
                             <FlatList
                               data={this.state.arrDefaultTaskTime}
@@ -1027,7 +1047,7 @@ export default class EditSelectTaskScreen extends BaseComponent {
 
                           <View style={{marginVertical: 10}}>
                             <Text style={[styles.dropdownButtonText]}>
-                              Number Of Tokens
+                              {'Number Of Tokens'.toUpperCase()}
                             </Text>
                             <TextInput
                               style={{
@@ -1040,7 +1060,7 @@ export default class EditSelectTaskScreen extends BaseComponent {
                               autoCapitalize="characters"
                               underlineColorAndroid={'transparent'}
                               returnKeyType={'done'}
-                              placeholder={'Number Of Token'.toUpperCase()}
+                              placeholder={'Number Of Tokens'.toUpperCase()}
                               maxLength={20}
                               value={this.state.taskNumberOfToken}
                               keyboardType={'number-pad'}
@@ -1202,7 +1222,7 @@ export default class EditSelectTaskScreen extends BaseComponent {
                                       styles.label,
                                       {marginBottom: 0, paddingBottom: 0},
                                     ]}>
-                                    {'NUMBER OF TOKENS'}
+                                    {'NUMBER OF TOKENS'.toUpperCase()}
                                   </Text>
                                   <View style={{flex: 1, paddingLeft: 15}}>
                                     <TextInput

@@ -164,7 +164,7 @@ export default class SignupScreen extends BaseComponent {
                       <Image source={Images.user} style={styles.inputIcon} />
                       <TextInput
                         style={styles.input}
-                        autoCapitalize="characters"
+                        // autoCapitalize="characters"
                         placeholder={'Username'.toUpperCase()}
                         underlineColorAndroid={'transparent'}
                         placeholderTextColor={Colors.placeHolderText}
@@ -179,7 +179,7 @@ export default class SignupScreen extends BaseComponent {
                       <Image source={Images.inbox} style={styles.inputIcon} />
                       <TextInput
                         style={styles.input}
-                        autoCapitalize="characters"
+                        // autoCapitalize="characters"
                         placeholder={'Email'.toUpperCase()}
                         keyboardType={'email-address'}
                         ref="email"

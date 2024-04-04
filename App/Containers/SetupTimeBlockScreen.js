@@ -135,8 +135,13 @@ export default class SetupTimeBlockScreen extends BaseComponent {
   }
 
   componentDidMount() {
-    
     super.componentDidMount();
+    this.navFocusListener = this.props.navigation.addListener(
+      'didFocus',
+      () => {
+        Helper.getChildRewardPoints(this.props.navigation);
+      },
+    );
     this.getChildDetail();
     // Helper.checkChoosenTimeIsValidOrNot(this.state.fromTime, (aNewDay, isPastSelectedTime, todayIsSunday) => {
     //     this.state.strMinimumDate = aNewDay
@@ -166,8 +171,7 @@ export default class SetupTimeBlockScreen extends BaseComponent {
       {
         arrSelectedDates: days,
       },
-      () => {
-      },
+      () => {},
     );
   }
 
@@ -212,7 +216,7 @@ export default class SetupTimeBlockScreen extends BaseComponent {
           is_date: this.state.is_date,
           is_school_clock: this.state.is_school_clock,
           from_listing: 0,
-          is_new: 1
+          is_new: 1,
         };
 
         const res = objSecureAPI
@@ -227,8 +231,8 @@ export default class SetupTimeBlockScreen extends BaseComponent {
               this.setState({isLoading: false});
               if (resJSON.data.success) {
                 try {
-                  dictCreateTask.task_id = resJSON.data?.data?.task_id
-                  
+                  dictCreateTask.task_id = resJSON.data?.data?.task_id;
+
                   if (resJSON?.data?.show_popup) {
                     Helper.showConfirmationMessageActions(
                       resJSON.data.message,
@@ -242,8 +246,7 @@ export default class SetupTimeBlockScreen extends BaseComponent {
                       dictCreateTask: dictCreateTask,
                     });
                   }
-                } catch (error) {
-                }
+                } catch (error) {}
               } else {
                 Helper.showErrorMessage(resJSON.data.message);
               }
@@ -256,7 +259,6 @@ export default class SetupTimeBlockScreen extends BaseComponent {
             }
           });
 
-        
         // this.props.navigation.navigate('ScheduleTaskScreen', { dictCreateTask: dictCreateTask })
       } else {
         this.setState({isLoading: false});
@@ -421,53 +423,94 @@ export default class SetupTimeBlockScreen extends BaseComponent {
   }
 
   onTimeSelected(event, value) {
-    if (this.state.is_school_clock) {
-      const selectedTime = new Date(value);
-      const minTime = new Date();
-      minTime.setHours(6, 0, 0, 0); // 6:00 AM
-
-      const maxTime = new Date();
-      maxTime.setHours(18, 0, 0, 0);
-      if (selectedTime < minTime) {
-        // If selected time is before the minimum time, set it to the minimum time
-        Alert.alert(
-          Constants.APP_NAME,
-          Constants.MESSAGE_SCHOOL_DAY_VALIDATION,
-        );
-      } else if (selectedTime > maxTime) {
-        // If selected time is after the maximum time, set it to the maximum time
-        Alert.alert(
-          Constants.APP_NAME,
-          Constants.MESSAGE_SCHOOL_DAY_VALIDATION,
-        );
-      }
-    }
-    if (value instanceof Date) {
-      // If value is already a Date object, use it directly
-      this.setState({
-        time: value,
-        fromTime: Helper.dateFormater(value, 'hh:mm A', 'hh:mm A').toString(),
-        fromTimeFormate: Helper.dateFormater(value, 'hh:mm a', 'A'),
-      });
+    if (event.type === 'dismissed') {
+      this.setState({timePicker: false});
     } else {
-      // If value is not a Date object, try converting it to a Date
-      const dateValue = new Date(value);
-      if (!isNaN(dateValue.getTime())) {
-        // Check if the conversion was successful
-        this.setState({
-          time: dateValue,
-          fromTime: Helper.dateFormater(
-            dateValue,
-            'hh:mm A',
-            'hh:mm A',
-          ).toString(),
-          fromTimeFormate: Helper.dateFormater(dateValue, 'hh:mm a', 'A'),
-        });
+      if (this.state.is_school_clock) {
+        const selectedTime = new Date(value);
+        const minTime = new Date();
+        minTime.setHours(6, 0, 0, 0); // 6:00 AM
+
+        const maxTime = new Date();
+        maxTime.setHours(18, 0, 0, 0);
+        if (selectedTime < minTime) {
+          // If selected time is before the minimum time, set it to the minimum time
+          Alert.alert(
+            Constants.APP_NAME,
+            Constants.MESSAGE_SCHOOL_DAY_VALIDATION,
+          );
+        } else if (selectedTime > maxTime) {
+          // If selected time is after the maximum time, set it to the maximum time
+          Alert.alert(
+            Constants.APP_NAME,
+            Constants.MESSAGE_SCHOOL_DAY_VALIDATION,
+          );
+        } else {
+          if (value instanceof Date) {
+            // If value is already a Date object, use it directly
+            this.setState({
+              time: value,
+              fromTime: Helper.dateFormater(
+                value,
+                'hh:mm A',
+                'hh:mm A',
+              ).toString(),
+              fromTimeFormate: Helper.dateFormater(value, 'hh:mm a', 'A'),
+            });
+          } else {
+            // If value is not a Date object, try converting it to a Date
+            const dateValue = new Date(value);
+            if (!isNaN(dateValue.getTime())) {
+              // Check if the conversion was successful
+              this.setState({
+                time: dateValue,
+                fromTime: Helper.dateFormater(
+                  dateValue,
+                  'hh:mm A',
+                  'hh:mm A',
+                ).toString(),
+                fromTimeFormate: Helper.dateFormater(dateValue, 'hh:mm a', 'A'),
+              });
+            } else {
+              // Handle the case where the conversion fails
+              console.error('Invalid date format for toTime:', value);
+            }
+          }
+        }
       } else {
-        // Handle the case where the conversion fails
-        console.error('Invalid date format for toTime:', value);
+        if (value instanceof Date) {
+          // If value is already a Date object, use it directly
+          this.setState({
+            time: value,
+            fromTime: Helper.dateFormater(
+              value,
+              'hh:mm A',
+              'hh:mm A',
+            ).toString(),
+            fromTimeFormate: Helper.dateFormater(value, 'hh:mm a', 'A'),
+          });
+        } else {
+          // If value is not a Date object, try converting it to a Date
+          const dateValue = new Date(value);
+          if (!isNaN(dateValue.getTime())) {
+            // Check if the conversion was successful
+            this.setState({
+              time: dateValue,
+              fromTime: Helper.dateFormater(
+                dateValue,
+                'hh:mm A',
+                'hh:mm A',
+              ).toString(),
+              fromTimeFormate: Helper.dateFormater(dateValue, 'hh:mm a', 'A'),
+            });
+          } else {
+            // Handle the case where the conversion fails
+            console.error('Invalid date format for toTime:', value);
+          }
+        }
       }
     }
+    console.log('EVENT', event);
     if (Platform.OS === 'android') {
       if (event.type === 'set') {
         this.setState({timePicker: false});
@@ -485,51 +528,87 @@ export default class SetupTimeBlockScreen extends BaseComponent {
   }
 
   onToTimeSelected(event, value) {
-    if (this.state.is_school_clock) {
-      const selectedTime = new Date(value);
-      const minTime = new Date();
-      minTime.setHours(6, 0, 0, 0); // 6:00 AM
-
-      const maxTime = new Date();
-      maxTime.setHours(18, 0, 0, 0);
-      if (selectedTime < minTime) {
-        // If selected time is before the minimum time, set it to the minimum time
-        Alert.alert(
-          Constants.APP_NAME,
-          Constants.MESSAGE_SCHOOL_DAY_VALIDATION,
-        );
-      } else if (selectedTime > maxTime) {
-        // If selected time is after the maximum time, set it to the maximum time
-        Alert.alert(
-          Constants.APP_NAME,
-          Constants.MESSAGE_SCHOOL_DAY_VALIDATION,
-        );
-      }
-    }
-    if (value instanceof Date) {
-      // If value is already a Date object, use it directly
-      this.setState({
-        toTimeDate: value,
-        toTime: Helper.dateFormater(value, 'hh:mm A', 'hh:mm A').toString(),
-        toTimeFormate: Helper.dateFormater(value, 'hh:mm a', 'A'),
-      });
+    if (event.type === 'dismissed') {
+      this.setState({toTimePicker: false});
     } else {
-      // If value is not a Date object, try converting it to a Date
-      const dateValue = new Date(value);
-      if (!isNaN(dateValue.getTime())) {
-        // Check if the conversion was successful
-        this.setState({
-          toTimeDate: dateValue,
-          toTime: Helper.dateFormater(
-            dateValue,
-            'hh:mm A',
-            'hh:mm A',
-          ).toString(),
-          toTimeFormate: Helper.dateFormater(dateValue, 'hh:mm a', 'A'),
-        });
+      if (this.state.is_school_clock) {
+        const selectedTime = new Date(value);
+        const minTime = new Date();
+        minTime.setHours(6, 0, 0, 0); // 6:00 AM
+
+        const maxTime = new Date();
+        maxTime.setHours(18, 0, 0, 0);
+        if (selectedTime < minTime) {
+          // If selected time is before the minimum time, set it to the minimum time
+          Alert.alert(
+            Constants.APP_NAME,
+            Constants.MESSAGE_SCHOOL_DAY_VALIDATION,
+          );
+        } else if (selectedTime > maxTime) {
+          // If selected time is after the maximum time, set it to the maximum time
+          Alert.alert(
+            Constants.APP_NAME,
+            Constants.MESSAGE_SCHOOL_DAY_VALIDATION,
+          );
+        } else {
+          if (value instanceof Date) {
+            // If value is already a Date object, use it directly
+            this.setState({
+              toTimeDate: value,
+              toTime: Helper.dateFormater(
+                value,
+                'hh:mm A',
+                'hh:mm A',
+              ).toString(),
+              toTimeFormate: Helper.dateFormater(value, 'hh:mm a', 'A'),
+            });
+          } else {
+            // If value is not a Date object, try converting it to a Date
+            const dateValue = new Date(value);
+            if (!isNaN(dateValue.getTime())) {
+              // Check if the conversion was successful
+              this.setState({
+                toTimeDate: dateValue,
+                toTime: Helper.dateFormater(
+                  dateValue,
+                  'hh:mm A',
+                  'hh:mm A',
+                ).toString(),
+                toTimeFormate: Helper.dateFormater(dateValue, 'hh:mm a', 'A'),
+              });
+            } else {
+              // Handle the case where the conversion fails
+              console.error('Invalid date format for toTime:', value);
+            }
+          }
+        }
       } else {
-        // Handle the case where the conversion fails
-        console.error('Invalid date format for toTime:', value);
+        if (value instanceof Date) {
+          // If value is already a Date object, use it directly
+          this.setState({
+            toTimeDate: value,
+            toTime: Helper.dateFormater(value, 'hh:mm A', 'hh:mm A').toString(),
+            toTimeFormate: Helper.dateFormater(value, 'hh:mm a', 'A'),
+          });
+        } else {
+          // If value is not a Date object, try converting it to a Date
+          const dateValue = new Date(value);
+          if (!isNaN(dateValue.getTime())) {
+            // Check if the conversion was successful
+            this.setState({
+              toTimeDate: dateValue,
+              toTime: Helper.dateFormater(
+                dateValue,
+                'hh:mm A',
+                'hh:mm A',
+              ).toString(),
+              toTimeFormate: Helper.dateFormater(dateValue, 'hh:mm a', 'A'),
+            });
+          } else {
+            // Handle the case where the conversion fails
+            console.error('Invalid date format for toTime:', value);
+          }
+        }
       }
     }
 
@@ -549,10 +628,39 @@ export default class SetupTimeBlockScreen extends BaseComponent {
   }
 
   daySelectionCalenderPicker(event, value) {
-    this.handleResetSelection();
+    if (event.type === 'dismissed') {
+      this.setState({daySelectionCalender: false});
+    } else {
+      console.log('EVENT-----', event);
 
-    if (Platform.OS === 'android') {
-      if (event.type === 'set') {
+      if (Platform.OS === 'android') {
+        if (event.type === 'set') {
+          if (value instanceof Date) {
+            // If value is already a Date object, use it directly
+            this.setState({
+              calenderSelectedDay: value,
+            });
+          } else {
+            // If value is not a Date object, try converting it to a Date
+            const dateValue = new Date(value);
+            if (!isNaN(dateValue.getTime())) {
+              // Check if the conversion was successful
+              this.setState({
+                calenderSelectedDay: dateValue,
+              });
+            } else {
+              // Handle the case where the conversion fails
+              console.error('Invalid date format for toTime:', value);
+            }
+          }
+          setTimeout(() => {
+            this.handleResetSelection();
+          }, 300);
+          this.setState({daySelectionCalender: false});
+        } else {
+          this.setState({daySelectionCalender: false});
+        }
+      } else {
         if (value instanceof Date) {
           // If value is already a Date object, use it directly
           this.setState({
@@ -570,28 +678,6 @@ export default class SetupTimeBlockScreen extends BaseComponent {
             // Handle the case where the conversion fails
             console.error('Invalid date format for toTime:', value);
           }
-        }
-        this.setState({daySelectionCalender: false});
-      } else {
-        this.setState({daySelectionCalender: false});
-      }
-    } else {
-      if (value instanceof Date) {
-        // If value is already a Date object, use it directly
-        this.setState({
-          calenderSelectedDay: value,
-        });
-      } else {
-        // If value is not a Date object, try converting it to a Date
-        const dateValue = new Date(value);
-        if (!isNaN(dateValue.getTime())) {
-          // Check if the conversion was successful
-          this.setState({
-            calenderSelectedDay: dateValue,
-          });
-        } else {
-          // Handle the case where the conversion fails
-          console.error('Invalid date format for toTime:', value);
         }
       }
     }
@@ -654,7 +740,7 @@ export default class SetupTimeBlockScreen extends BaseComponent {
                       />
                     </TouchableOpacity>
                     <TouchableOpacity
-                      style={[styles.nextButton,{marginLeft:15}]}
+                      style={[styles.nextButton, {marginLeft: 15}]}
                       onPress={() => this.moveToScheduleTask()}>
                       {this.state.isLoading ? (
                         <View
@@ -826,8 +912,10 @@ export default class SetupTimeBlockScreen extends BaseComponent {
                             }
                             is24Hour={false}
                             style={{width: '100%', height: '100%'}}
-                            confirmBtnText="Confirm"
-                            cancelBtnText="Cancel"
+                            confirmBtnText="ok"
+                            onTouchCancel={() =>
+                              this.setState({timePicker: false})
+                            }
                             showIcon={false}
                             // onChange={(event,data) => { this.setState({timePicker: true},()=> {
                             //     this.onTimeSelected(event,data)
@@ -863,11 +951,9 @@ export default class SetupTimeBlockScreen extends BaseComponent {
                             is24Hour={false}
                             style={{width: '100%', height: '100%'}}
                             confirmBtnText="Confirm"
-                            cancelBtnText="Cancel"
                             showIcon={false}
                             onChange={(event, data) => {
                               this.onToTimeSelected(event, data);
-                              
                             }}
                             customStyles={{
                               dateInput: {
@@ -957,11 +1043,9 @@ export default class SetupTimeBlockScreen extends BaseComponent {
                           }
                           // style={{width: '100%', height: '100%'}}
                           confirmBtnText="Confirm"
-                          cancelBtnText="Cancel"
                           showIcon={false}
                           onChange={(event, data) => {
                             this.daySelectionCalenderPicker(event, data);
-                            
                           }}
                           customStyles={{
                             dateInput: {

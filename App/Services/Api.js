@@ -27,6 +27,15 @@ const create = (baseURL = base_url) => {
     timeout: 10000,
   });
 
+
+  // api.addResponseTransform(response => {
+  //   console.log('RESPONSE  API RESPONSE--------------',response)
+  //   if (response.data && response.data.error === "no user found") {
+  //     // Call logout function here
+  //   }
+  // });
+
+
   // const apiMonitor = (response) => {
   // }
   // api.addMonitor(apiMonitor)
@@ -124,14 +133,19 @@ const createSecure = (baseURL = base_url) => {
   // }
 
   api.addAsyncRequestTransform(request => async () => {
-    
     request.headers.Authorization =
       'Bearer ' + (await AsyncStorage.getItem(Constants.KEY_USER_TOKEN));
   });
 
-  const apiMonitor = response => {
-  };
+  const apiMonitor = response => {};
   api.addMonitor(apiMonitor);
+
+  // api.addResponseTransform(response => {
+  //   console.log('API RESPONSE--------------',response)
+  //   if (response.data && response.data.error === "no user found") {
+  //     // Call logout function here
+  //   }
+  // });
 
   // ------
   // STEP 2
@@ -169,7 +183,7 @@ const createSecure = (baseURL = base_url) => {
       const mime = photo.mime;
       const arrMime = mime.split('/').reverse();
       const strExtension = arrMime[0];
-      
+
       data.append('profile_pic', {
         uri: photo.path,
         type: mime,
@@ -194,6 +208,13 @@ const createSecure = (baseURL = base_url) => {
     return api.post('/futuretasks', data);
   };
 
+  const deleteSavedtask = (tid, child_id) => {
+    const data = new FormData();
+    data.append('tid', tid);
+    data.append('child_id', child_id);
+    return api.post('/deleteFutureTask', data);
+  };
+
   const updateChild = (childId, name, photo, rewardIcon) => {
     const data = new FormData();
     //Parms
@@ -211,7 +232,7 @@ const createSecure = (baseURL = base_url) => {
       const mime = photo.mime;
       const arrMime = mime.split('/').reverse();
       const strExtension = arrMime[0];
-     
+
       data.append('profile_pic', {
         uri: photo.path,
         type: mime,
@@ -288,7 +309,7 @@ const createSecure = (baseURL = base_url) => {
     is_saved_for_future,
     task_id,
     from_listing,
-    is_new
+    is_new,
   ) => {
     const data = new FormData();
     //Parms
@@ -310,8 +331,8 @@ const createSecure = (baseURL = base_url) => {
     data.append('is_school_clock', is_school_clock?.toString());
     data.append('is_saved_for_future', is_saved_for_future?.toString());
     data.append('task_id', task_id);
-    data.append('from_listing',from_listing)
-    data.append('is_new',is_new)
+    data.append('from_listing', from_listing);
+    data.append('is_new', is_new);
     if (frequency) {
       data.append('frequency', frequency);
     }
@@ -326,7 +347,7 @@ const createSecure = (baseURL = base_url) => {
       const mime = taskCustomIcon.mime;
       const arrMime = mime.split('/').reverse();
       const strExtension = arrMime[0];
-      
+
       data.append('cicon', {
         uri: taskCustomIcon.path,
         type: mime,
@@ -334,7 +355,7 @@ const createSecure = (baseURL = base_url) => {
       });
     }
 
-
+    console.log('ADD TASK', data);
     return api.post('/addtask', data);
   };
 
@@ -345,7 +366,6 @@ const createSecure = (baseURL = base_url) => {
     data.append('time_from', fromTime);
     data.append('time_to', toTime);
     data.append('task_date', task_date);
-
 
     return api.post('/check_time_exist', data);
   };
@@ -360,7 +380,7 @@ const createSecure = (baseURL = base_url) => {
     taskTime,
     taskTokenType,
     taskNumberOfTokens,
-    is_saved_for_future
+    is_saved_for_future,
   ) => {
     const data = new FormData();
     //Parms
@@ -373,9 +393,7 @@ const createSecure = (baseURL = base_url) => {
     data.append('task_time', taskTime);
     data.append('token_type', taskTokenType);
     data.append('no_of_token', taskNumberOfTokens);
-    data.append('is_saved_for_future',is_saved_for_future)
-    
-
+    data.append('is_saved_for_future', is_saved_for_future);
 
     // if (
     //   taskCustomIcon != undefined &&
@@ -387,7 +405,7 @@ const createSecure = (baseURL = base_url) => {
     //   const mime = taskCustomIcon.mime;
     //   const arrMime = mime.split('/').reverse();
     //   const strExtension = arrMime[0];
-    
+
     //   data.append('cicon', {
     //     uri: taskCustomIcon.path,
     //     type: mime,
@@ -419,36 +437,29 @@ const createSecure = (baseURL = base_url) => {
     data.append('task_date', task_date.join(','));
     data.append('is_date', is_date);
     data.append('is_new', is_new);
-    data.append('description','')
-
+    data.append('description', '');
 
     return api.post('/updatetask', data);
   };
 
-  const deleteSchedule = (
-    tid,
-    child_id,
-    is_new
-  ) => {
+  const deleteSchedule = (tid, child_id, is_new) => {
     const data = new FormData();
     //Parms
     data.append('tid', tid);
     data.append('child_id', child_id);
-    data.append('is_new',is_new)
-
+    data.append('is_new', is_new);
 
     return api.post('/deletetask', data);
   };
 
-  const deleteSubTask = (tid,child_id) => {
+  const deleteSubTask = (tid, child_id) => {
     const data = new FormData();
     //Parms
     data.append('tid', tid);
     data.append('child_id', child_id);
 
-
     return api.post('/deleteSubTask', data);
-  }
+  };
 
   const childTasksList = (childId, childStatus, date, is_week = '0') => {
     const data = new FormData();
@@ -515,6 +526,7 @@ const createSecure = (baseURL = base_url) => {
     data.append('child_id', childId);
     data.append('status', status);
     data.append('is_new', is_new);
+    console.log('ISSSSSSSSSSSSS', data);
     return api.post('status', data);
   };
 
@@ -522,6 +534,7 @@ const createSecure = (baseURL = base_url) => {
     const data = new FormData();
     data.append('tid', taskId);
     data.append('child_id', childId);
+    console.log('RESTORE CALL', data);
     return api.post('restore', data);
   };
 
@@ -538,6 +551,10 @@ const createSecure = (baseURL = base_url) => {
 
   const deleteProfile = () => {
     return api.delete('delete-profile');
+  };
+
+  const logout = () => {
+    return api.get('logout');
   };
   return {
     doSetPin,
@@ -571,7 +588,9 @@ const createSecure = (baseURL = base_url) => {
     getSavedtask,
     updateSchedule,
     deleteSchedule,
-    deleteSubTask
+    deleteSubTask,
+    deleteSavedtask,
+    logout,
   };
 };
 

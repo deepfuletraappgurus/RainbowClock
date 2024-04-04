@@ -46,9 +46,11 @@ export default class ParentsAddUserScreen extends BaseComponent {
       profilePic: '',
       image: '',
       isLoading: false,
-      data:[],
-      startDate:moment().format('hh:mm A').toString(),
-      endDate:moment(moment().add(moment.duration('01:00'))).format('hh:mm A').toString(),
+      data: [],
+      startDate: moment().format('hh:mm A').toString(),
+      endDate: moment(moment().add(moment.duration('01:00')))
+        .format('hh:mm A')
+        .toString(),
     };
   }
 
@@ -140,7 +142,7 @@ export default class ParentsAddUserScreen extends BaseComponent {
 
   isValidate = () => {
     if (this.state.username.trim() == '') {
-      Helper.showErrorMessage(Constants.MESSAGE_NO_USERNAME);
+      Helper.showErrorMessage(Constants.MESSAGE_NO_CHILDNAME);
       return false;
     } else if (!Helper.validateChildName(this.state.username.trim())) {
       Helper.showErrorMessage(Constants.MESSAGE_VALID_CHILD_NAME);
@@ -170,11 +172,11 @@ export default class ParentsAddUserScreen extends BaseComponent {
               username: '',
               profilePic: '',
               image: '',
-              data:resJSON.data.data
+              data: resJSON.data.data,
             });
             try {
               AsyncStorage.setItem(Constants.KEY_USER_HAVE_CHILDREN, '1');
-            //   Helper.showErrorMessage(resJSON.data.message);
+              //   Helper.showErrorMessage(resJSON.data.message);
               Helper.showConfirmationMessageActions(
                 resJSON.data.message,
                 'No',
@@ -182,8 +184,7 @@ export default class ParentsAddUserScreen extends BaseComponent {
                 this.onActionNo,
                 this.onActionYes,
               );
-            } catch (error) {
-            }
+            } catch (error) {}
           } else {
             Helper.showErrorMessage(resJSON.data.message);
           }
@@ -196,39 +197,39 @@ export default class ParentsAddUserScreen extends BaseComponent {
         }
       });
   };
-  onActionYes = () => {
-  }
-  onActionNo = () => {   
+  onActionYes = () => {};
+  onActionNo = () => {
     Helper.showConfirmationMessageSingleAction(
       Constants.ADD_CHILD_SUCCESS,
       'OK',
       this.onActionOK,
     );
-  }
- 
+  };
+
   onActionOK = () => {
     // const newChildId = Math.max(...this.state.data.map(data => data.id))
     // const getNewestChild = this.state.data.filter(data => data.id === newChildId);
     // this.moveToHomeScreen(getNewestChild[0]);
-    try {//MP
-      AsyncStorage.setItem(Constants.KEY_ACCESS_AS_PARENTS, '1')
-      EventEmitter.emit(Constants.EVENT_DRAWER_UPDATE)
-      this.props.navigation.push('ParentsSelectChildScreen')
-  } catch (error) {
-  }
-
-  }
-
-  moveToHomeScreen = (selectedChild) => {
     try {
-        AsyncStorage.setItem(Constants.KEY_SELECTED_CHILD, JSON.stringify(selectedChild))
-        setTimeout(() => {
-            this.props.navigation.navigate('HomeScreen')
-            EventEmitter.emit(Constants.EVENT_CHILD_UPDATE)
-        }, 100);
-    } catch (error) {
-    }
-}
+      //MP
+      AsyncStorage.setItem(Constants.KEY_ACCESS_AS_PARENTS, '1');
+      EventEmitter.emit(Constants.EVENT_DRAWER_UPDATE);
+      this.props.navigation.push('ParentsSelectChildScreen');
+    } catch (error) {}
+  };
+
+  moveToHomeScreen = selectedChild => {
+    try {
+      AsyncStorage.setItem(
+        Constants.KEY_SELECTED_CHILD,
+        JSON.stringify(selectedChild),
+      );
+      setTimeout(() => {
+        this.props.navigation.navigate('HomeScreen');
+        EventEmitter.emit(Constants.EVENT_CHILD_UPDATE);
+      }, 100);
+    } catch (error) {}
+  };
   //#region -> View Render
   render() {
     return (
@@ -252,7 +253,7 @@ export default class ParentsAddUserScreen extends BaseComponent {
                     autoCapitalize="characters"
                     value={this.state.username}
                     maxLength={15} //MP
-                    placeholder={'Childs name'.toUpperCase()}
+                    placeholder={"Child's name".toUpperCase()}
                     underlineColorAndroid={'transparent'}
                     placeholderTextColor={Colors.placeHolderText}
                     returnKeyType={'next'}
@@ -288,6 +289,7 @@ export default class ParentsAddUserScreen extends BaseComponent {
               </View>
               <View style={styles.justifyFooter}>
                 <TouchableOpacity
+                  disabled={this.state.isLoading}
                   style={[styles.button, styles.buttonPrimary]}
                   onPress={() => this.onPressAddChild()}>
                   {this.state.isLoading ? (

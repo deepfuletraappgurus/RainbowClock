@@ -58,7 +58,7 @@ export default class ShareScreen extends BaseComponent {
         const shareOptions = {
             title: Constants.APP_NAME,
             message: 'Please download the app',
-            url: 'some share url',
+            url: 'https://projects.invisionapp.com/share/ZH132Y3AFMCU#/screens/470680003',
         };
         Share.open(shareOptions)
             .then((res) => {  })
