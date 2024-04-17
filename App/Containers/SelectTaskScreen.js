@@ -670,7 +670,8 @@ export default class SelectTaskScreen extends BaseComponent {
   }
 
   onActionOK() {
-    this.setState({createdTaskCount:0})
+    this.setState({createdTaskCount: 0});
+    Helper.getChildRewardPoints(this.props.navigation);
     Helper.resetNavigationToScreenWithStack(
       this.props.navigation,
       'ParentHomeScreen',
@@ -985,22 +986,23 @@ export default class SelectTaskScreen extends BaseComponent {
 
               <View style={{flexDirection: 'row', alignItems: 'center'}}>
                 <TouchableOpacity
-                  style={styles.nextButton}
+                  disabled={this.state.createdTaskCount == 0 ? false : true}
+                  style={[styles.nextButton,{opacity:this.state.createdTaskCount == 0 ? 1 : 0.4}]}
                   onPress={() => this.props.navigation.goBack()}>
                   <Image
                     source={Images.circleArrowLeft}
-                    style={styles.circleArrow}
+                    style={[styles.circleArrow]}
                   />
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={[styles.nextButton, {marginLeft: 15}]}
                   onPress={() => {
                     if (this.state.createdTaskCount) {
-                      
                       this.moveToParentHomeScreen();
-                    }
-                    else{
-                      Helper.showErrorMessage(Constants.MESSAGE_NO_CREATE_TASK_ERROR)
+                    } else {
+                      Helper.showErrorMessage(
+                        Constants.MESSAGE_NO_CREATE_TASK_ERROR,
+                      );
                     }
                   }}>
                   <Image

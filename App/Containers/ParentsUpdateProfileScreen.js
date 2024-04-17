@@ -316,7 +316,7 @@ export default class ParentsUpdateProfileScreen extends BaseComponent {
                     <View style={styles.formControl}>
                       <Image source={Images.user} style={styles.inputIcon} />
                       <TextInput
-                        value={this.state.username.toUpperCase()}
+                        value={this.state.username}
                         autoCapitalize="characters"
                         style={styles.input}
                         placeholder={'Username'.toUpperCase()}
@@ -333,7 +333,7 @@ export default class ParentsUpdateProfileScreen extends BaseComponent {
                     <View style={styles.formControl}>
                       <Image source={Images.inbox} style={styles.inputIcon} />
                       <TextInput
-                        value={this.state.email.toUpperCase()}
+                        value={this.state.email}
                         style={styles.input}
                         autoCapitalize="characters"
                         ref="email"

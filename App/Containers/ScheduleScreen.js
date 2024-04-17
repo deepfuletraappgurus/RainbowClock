@@ -313,7 +313,7 @@ export default class ScheduleScreen extends BaseComponent {
         'No',
         'Yes',
         () => {},
-        () => this.onDeleteScheduleActionYes(),
+        () => this.onDeleteScheduleActionYes(dictCreateTask.tasks[0]),
       );
     } else {
       dictCreateTask = dictCreateTask.tasks[0];
@@ -322,7 +322,7 @@ export default class ScheduleScreen extends BaseComponent {
         'No',
         'Yes',
         () => {},
-        () => this.onActionYes(dictCreateTask),
+        () => this.onActionYes(dictCreateTask.tasks[0]),
       );
     }
   }
@@ -379,7 +379,7 @@ export default class ScheduleScreen extends BaseComponent {
     });
   }
 
-  onDeleteScheduleActionYes() {
+  onDeleteScheduleActionYes(dictCreateTask) {
     Helper.showConfirmationMessageActions(
       'Are you sure you want to delete this block of time?  It will also remove all the tasks saved in this time block.',
       'No',

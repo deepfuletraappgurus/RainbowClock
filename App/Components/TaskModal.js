@@ -487,14 +487,14 @@ export default class TaskModal extends BaseComponent {
                       undefined ||
                     this.state?.objFooterSelectedTask?.no_of_token == ''
                       ? ''
-                      : '\nCongratulations you have earned '
+                      : '\nyou have earned '
                   }`}
                   {this.state?.objFooterSelectedTask?.no_of_token &&
                     `${this.state?.objFooterSelectedTask?.no_of_token} ${
                       this.state?.objFooterSelectedTask?.token_type == null ||
                       this.state?.objFooterSelectedTask?.token_type == undefined
                         ? ''
-                        : this.state?.objFooterSelectedTask?.token_type
+                        : this.state?.objFooterSelectedTask?.token_type.toLowerCase()
                     }  `}
                   {this.state?.objFooterSelectedTask?.no_of_token &&
                     (this.state?.objFooterSelectedTask?.token_type ==
@@ -524,7 +524,7 @@ export default class TaskModal extends BaseComponent {
                         }}
                       />
                     ))}
-                  {this.state?.objFooterSelectedTask?.no_of_token ? 'token' : ''}
+                  {this.state?.objFooterSelectedTask?.no_of_token ? 'tokens' : ''}
                 </Text>
                 <TouchableOpacity
                   onPress={this.onActionOK}
