@@ -21,12 +21,12 @@ import TaskModal from '../Components/TaskModal';
 import TaskListModel from '../Components/TaskListModel';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
-
 // Styles
 // import styles from './Styles/HomeScreenStyles';
 import styles from './Styles/ScheduleScreenStyles';
 import Spinner from '../Components/Spinner';
 import moment from 'moment';
+import { Linking } from 'react-native';
 
 // Global Variables
 const mApi = Api.createSecure();
@@ -78,7 +78,7 @@ export default class ScheduleScreen extends BaseComponent {
   }
 
   handleBackButtonClick() {
-    alert('back')
+    alert('back');
     return true;
   }
 
@@ -242,6 +242,7 @@ export default class ScheduleScreen extends BaseComponent {
     if (this.state.isMenuAsParentPortal) {
       this.parentViewEditTask(objTask);
     } else {
+      console.log('-----------',objTask,item)
       if (
         objTask.status != Constants.TASK_STATUS_COMPLETED &&
         !this.state.isMenuAsParentPortal
@@ -278,8 +279,8 @@ export default class ScheduleScreen extends BaseComponent {
             // let arr = []
             // if (response.data.data.length > 0) {
             const tasks = response.data.data.pdf;
-
-            this.props.navigation.navigate('PrintPdfScreen', {pdfUrl: tasks});
+            Linking.openURL(response.data.data.pdf)
+            // this.props.navigation.navigate('PrintPdfScreen', {pdfUrl: tasks});
             // this.setState({ arrTasks: arr })
             // }
           } else {
@@ -295,7 +296,7 @@ export default class ScheduleScreen extends BaseComponent {
   }
 
   setModal() {
-    console.log('CLOSEEEEEEEEEEEE')
+    console.log('CLOSEEEEEEEEEEEE');
     this.setState({showTaskList: false});
     this.getChildId();
     Helper.getChildRewardPoints(this.props.navigation);
@@ -307,8 +308,12 @@ export default class ScheduleScreen extends BaseComponent {
     const endTime = moment(dictCreateTask?.time.split('-')[1], 'hh:mm A');
 
     if (currentTime.isBetween(startTime, endTime)) {
-      Helper.showErrorMessage(
-        'You can not delete the task because you are already in this time block.',
+      Helper.showConfirmationMessageActions(
+        Constants.MESSAGE_CURRENTTIME_DELETE_SCHEDULE,
+        'No',
+        'Yes',
+        () => {},
+        () => this.onDeleteScheduleActionYes(),
       );
     } else {
       dictCreateTask = dictCreateTask.tasks[0];
@@ -341,7 +346,7 @@ export default class ScheduleScreen extends BaseComponent {
         } else if (resJSON.status == 500) {
           this.setState({isLoading: false});
           Helper.showErrorMessage(resJSON.data.message);
-         } else {
+        } else {
           this.setState({isLoading: false});
           Helper.showErrorMessage(Constants.SERVER_ERROR);
         }
@@ -354,8 +359,12 @@ export default class ScheduleScreen extends BaseComponent {
     const endTime = moment(item?.time.split('-')[1], 'hh:mm A');
 
     if (currentTime.isBetween(startTime, endTime)) {
-      Helper.showErrorMessage(
-        'You can not update the task because you are already in this time block.',
+      Helper.showConfirmationMessageActions(
+        Constants.MESSAGE_CURRENTTIME_EDIT_SCHEDULE,
+        'No',
+        'Yes',
+        () => {},
+        () => this.onEditScheduleActionYes(item),
       );
     } else {
       this.props.navigation.navigate('EditScheduleScreen', {
@@ -363,6 +372,23 @@ export default class ScheduleScreen extends BaseComponent {
       });
     }
   }
+
+  onEditScheduleActionYes(item) {
+    this.props.navigation.navigate('EditScheduleScreen', {
+      scheduleDetails: item.tasks[0],
+    });
+  }
+
+  onDeleteScheduleActionYes() {
+    Helper.showConfirmationMessageActions(
+      'Are you sure you want to delete this block of time?  It will also remove all the tasks saved in this time block.',
+      'No',
+      'Yes',
+      () => {},
+      () => this.onActionYes(dictCreateTask),
+    );
+  }
+
   onTimeBlockAddPress(item) {
     item = item?.tasks[0];
     var dictCreateTask = {
@@ -397,6 +423,7 @@ export default class ScheduleScreen extends BaseComponent {
   }
 
   renderTaskRow = (item, index) => {
+    console.log('ITEMMMMMM', item);
     return (
       <TouchableOpacity
         style={[
@@ -413,9 +440,28 @@ export default class ScheduleScreen extends BaseComponent {
           <View style={{flex: 1, flexDirection: 'row'}}>
             {/*MP*/}
             <Text style={styles.timer}>{item.time}</Text>
-
+            {item?.tasks[0]?.is_school_clock == true ? (
+              <View
+                style={{
+                  // backgroundColor: Colors.gray,
+                  borderRadius: Metrics.screenWidth / 20,
+                  height: Metrics.screenWidth / 16,
+                  width: Metrics.screenWidth / 16,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                }}>
+                <Image
+                  source={Images.bell}
+                  style={{
+                    width: Metrics.screenWidth / 22,
+                    height: Metrics.screenWidth / 22,
+                    resizeMode: 'contain',
+                  }}
+                />
+              </View>
+            ) : null}
             {/* <Text style={styles.timer}>{item.task_name}</Text> */}
-            {item.status == Constants.TASK_STATUS_COMPLETED ? (
+            {/* {item.status == Constants.TASK_STATUS_COMPLETED ? (
               <TouchableOpacity
                 style={[styles.taskRecover, {width: '30%'}]}
                 onPress={() => this.callRecoverTask(item)}>
@@ -423,7 +469,7 @@ export default class ScheduleScreen extends BaseComponent {
                   {'Recover'.toUpperCase()}
                 </Text>
               </TouchableOpacity>
-            ) : null}
+            ) : null} */}
           </View>
           {/*MP*/}
           <ScrollView
@@ -458,7 +504,7 @@ export default class ScheduleScreen extends BaseComponent {
                             {alignSelf: 'center', resizeMode: 'contain'},
                           ]}
                         />
-                        {data?.is_school_clock == true ? (
+                        {/* {data?.is_school_clock == true ? (
                           <View
                             style={{
                               // backgroundColor: Colors.gray,
@@ -477,7 +523,7 @@ export default class ScheduleScreen extends BaseComponent {
                               }}
                             />
                           </View>
-                        ) : null}
+                        ) : null} */}
                       </View>
                       <Text
                         numberOfLines={1}
@@ -488,7 +534,11 @@ export default class ScheduleScreen extends BaseComponent {
                             marginBottom: 0,
                             marginTop: 8,
                             textAlign: 'center',
-                            width: 70,
+                            width: 80,
+                            opacity:
+                              data.status == Constants.TASK_STATUS_COMPLETED
+                                ? 0.5
+                                : 1,
                           },
                         ]}>
                         {data?.task_name}
@@ -658,8 +708,8 @@ export default class ScheduleScreen extends BaseComponent {
 
         <TaskModal
           visible={this.state.taskComplete}
-          objSelectedChild={this.state.objSelectedChild}
-          objFooterSelectedTask={this.state.objFooterSelectedTask}
+          objSelectedChild={this.state?.objSelectedChild}
+          objFooterSelectedTask={this.state?.objFooterSelectedTask}
           onStateChange={state => this.setState({taskComplete: state})}
           navigation={this.props.navigation}
           onClose={() => this.setModal()}
@@ -676,6 +726,7 @@ export default class ScheduleScreen extends BaseComponent {
           objSelectedTaskList={this.state.arrTasks}
           onStateChange={state => this.setState({showTaskList: state})}
           onClose={() => this.setModal()}
+          navigation={this.props?.navigation}
         />
       </View>
     );

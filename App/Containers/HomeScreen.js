@@ -282,10 +282,10 @@ export default class HomeScreen extends BaseComponent {
       } else if (this.state.school) {
         var date, TimeType, hour;
         date = new Date();
-  
+
         // Getting current hour from Date object.
         hour = date.getHours();
-  
+
         if (
           stateData?.pieDataAMPM?.length == 1 &&
           stateData.pieDataAMPM[0].isEmpty
@@ -298,7 +298,10 @@ export default class HomeScreen extends BaseComponent {
               for (let i = 0; i < tasks?.length; i++) {
                 const task = tasks[i];
                 if (!task.taskId) continue;
-                const startTime = moment(task.taskId.split(' - ')[0], 'hh:mm A');
+                const startTime = moment(
+                  task.taskId.split(' - ')[0],
+                  'hh:mm A',
+                );
                 const endTime = moment(task.taskId.split(' - ')[1], 'hh:mm A');
                 const sixPM = moment('06:00 PM', 'hh:mm A');
                 if (startTime.isAfter(sixPM)) {
@@ -315,7 +318,7 @@ export default class HomeScreen extends BaseComponent {
                 return tasks;
               }
             }
-  
+
             // Filter tasks
             const filteredTasks = filterTasks(stateData?.pieDataAMPM);
             if (
@@ -330,27 +333,27 @@ export default class HomeScreen extends BaseComponent {
               let endTimeMeridiem =
                 stateData.pieDataAMPM[stateData?.pieDataAMPM?.length - 2]
                   .endTimeMeridiem;
-  
+
               // Create moment objects for end time and 6:00 PM
               let endTaskTime = moment(
                 secondLastTaskEndTime + ' ' + endTimeMeridiem,
                 'hh:mm A',
               );
               let sixPMTime = moment('06:00 PM', 'hh:mm A');
-  
+
               // Calculate the difference between end time and 6:00 PM
               let timeDifference = sixPMTime.diff(endTaskTime, 'minutes');
-  
+
               // Update the value property of the last task
               stateData.pieDataAMPM[stateData?.pieDataAMPM?.length - 1].value =
                 timeDifference;
             }
             // Extract the end time from the taskId
-  
+
             const startTime = parseInt(
               stateData?.pieDataAMSchool[1]?.taskId.split(' ')[0].split(':')[0],
             );
-  
+
             // Check if the start time is greater than or equal to 6:00 AM
             if (startTime <= 6) {
               // Update the value property of the first element to 0
@@ -360,7 +363,7 @@ export default class HomeScreen extends BaseComponent {
               const differenceInMinutes = (6 - startTime) * 60;
               // Update the value property of the first element with the calculated difference
               stateData.pieDataAMSchool[0].value = Math.abs(
-                isNaN(differenceInMinutes) ? 360 : differenceInMinutes,
+                isNaN(differenceInMinutes) ? 360 : differenceInMinutes - stateData?.pieDataAMSchool[1]?.taskId.split(' ')[0].split(':')[1],
               );
             }
             pieData = stateData?.pieDataAMPM.concat(stateData.pieDataAMSchool);
@@ -368,15 +371,19 @@ export default class HomeScreen extends BaseComponent {
             pieData = stateData?.pieDataAMSchool;
           }
         }
-  
+
         //MP
       } else if (this.state.meridiam == 'AM') {
         var date, TimeType, hour;
         date = new Date();
-  
+
         // Getting current hour from Date object.
         hour = date.getHours();
-  
+        console.log(
+          'STATEDATAAMPM',
+          stateData?.pieDataAMPM,
+          stateData?.pieDataAM,
+        );
         if (
           stateData?.pieDataAMPM?.length == 1 &&
           stateData.pieDataAMPM[0].isEmpty
@@ -389,7 +396,10 @@ export default class HomeScreen extends BaseComponent {
               for (let i = 0; i < tasks.length; i++) {
                 const task = tasks[i];
                 if (!task.taskId) continue;
-                const startTime = moment(task.taskId.split(' - ')[0], 'hh:mm A');
+                const startTime = moment(
+                  task.taskId.split(' - ')[0],
+                  'hh:mm A',
+                );
                 const endTime = moment(task.taskId.split(' - ')[1], 'hh:mm A');
                 const sixPM = moment('06:00 PM', 'hh:mm A');
                 if (startTime.isAfter(sixPM)) {
@@ -406,7 +416,7 @@ export default class HomeScreen extends BaseComponent {
                 return tasks;
               }
             }
-  
+
             // Filter tasks
             const filteredTasks = filterTasks(stateData.pieDataAMPM);
             stateData.pieDataAMPM = filteredTasks;
@@ -421,27 +431,27 @@ export default class HomeScreen extends BaseComponent {
               let endTimeMeridiem =
                 stateData.pieDataAMPM[stateData?.pieDataAMPM?.length - 2]
                   .endTimeMeridiem;
-  
+
               // Create moment objects for end time and 6:00 PM
               let endTaskTime = moment(
                 secondLastTaskEndTime + ' ' + endTimeMeridiem,
                 'hh:mm A',
               );
               let sixPMTime = moment('06:00 PM', 'hh:mm A');
-  
+
               // Calculate the difference between end time and 6:00 PM
               let timeDifference = sixPMTime.diff(endTaskTime, 'minutes');
-  
+
               // Update the value property of the last task
               stateData.pieDataAMPM[stateData?.pieDataAMPM?.length - 1].value =
                 timeDifference;
             }
             // Extract the end time from the taskId
-  
+
             const startTime = parseInt(
               stateData.pieDataAM[1]?.taskId.split(' ')[0].split(':')[0],
             );
-  
+
             // Check if the start time is greater than or equal to 6:00 AM
             if (startTime <= 6) {
               // Update the value property of the first element to 0
@@ -451,7 +461,12 @@ export default class HomeScreen extends BaseComponent {
               const differenceInMinutes = (6 - startTime) * 60;
               // Update the value property of the first element with the calculated difference
               stateData.pieDataAM[0].value = Math.abs(
-                isNaN(differenceInMinutes) ? 360 : differenceInMinutes,
+                isNaN(differenceInMinutes)
+                  ? 360
+                  : differenceInMinutes -
+                      stateData.pieDataAM[1]?.taskId
+                        .split(' ')[0]
+                        .split(':')[1],
               );
             }
             pieData = stateData?.pieDataAMPM.concat(stateData.pieDataAM);
@@ -459,13 +474,13 @@ export default class HomeScreen extends BaseComponent {
             pieData = stateData?.pieDataAM;
           }
         }
-  
+
         //MP
       } else if (this.state.meridiam == 'PM') {
         //MP
         pieData = stateData?.pieDataPM;
       }
-  
+
       if (this.state.currentTaskSlot) {
         Helper.getPaginatedArray(
           this.state.currentTaskSlot[0].tasks,
@@ -831,6 +846,8 @@ export default class HomeScreen extends BaseComponent {
   renderClockView() {
     data = this.state.pieData;
 
+    console.log('PIEDATA', data);
+
     date = new Date();
 
     // Getting current hour from Date object.
@@ -1022,6 +1039,7 @@ export default class HomeScreen extends BaseComponent {
               alignSelf: 'center',
               marginLeft: 10,
               width: '50%',
+              opacity: data.status == Constants.TASK_STATUS_COMPLETED ? 0.5 : 1,
             },
           ]}>
           {data?.task_name}
@@ -1450,11 +1468,11 @@ export default class HomeScreen extends BaseComponent {
         style={styles.mainContainer}
         pointerEvents={this.state.isLoading ? 'none' : 'auto'}>
         <Tips
-          contentStyle={styles.contentStyle}
+          contentStyle={{flex: 1}}
           tooltipContainerStyle={[
             styles.tooltipContainerStyle,
             {
-              left: 10, //MP
+              left: 10, // Adjust this value as needed
               top: Helper.isIPhoneX() ? 190 : 170,
             },
           ]}
@@ -1462,7 +1480,7 @@ export default class HomeScreen extends BaseComponent {
           tooltipArrowStyle={styles.tooltipArrowStyle}
           visible={this.state.tipsVisible === 'colorWedge'}
           onRequestClose={this.handleNextTips}
-          text="Tap on a colour wedge to access your tasks"
+          text={'Tap on a colour wedge\n to access your tasks'}
           textStyle={styles.tipstextStyle}
         />
 
@@ -1745,6 +1763,7 @@ export default class HomeScreen extends BaseComponent {
           objFooterSelectedTask={this.state.objFooterSelectedTask}
           onStateChange={state => this.setState({taskComplete: state})}
           closeParentModal={() => this.setModal()}
+          navigation={this.props.navigation}
         />
         {/* <TaskListModel
           visible={this.state.showRecoverModel}

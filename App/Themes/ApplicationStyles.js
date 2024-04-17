@@ -1399,7 +1399,7 @@ const ApplicationStyles = {
     },
     tooltipArrowStyle:{ backgroundColor: "transparent", borderColor: 'transparent', borderTopColor: 'transparent' },
     tipstextStyle:{ fontSize: 11, fontWeight: '700', paddingLeft: 6, paddingRight: 6 },
-    contentStyle:{ maxWidth: 180}
+    contentStyle:{ maxWidth: 200,backgroundColor:'red'}
   },
 }
 

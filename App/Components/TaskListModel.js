@@ -220,6 +220,7 @@ export default class TaskListModel extends Component {
                                 alignSelf: 'center',
                                 marginLeft: 10,
                                 width: '50%',
+                                opacity:data.status == Constants.TASK_STATUS_COMPLETED ? 0.5 : 1
                               },
                             ]}>
                             {data?.task_name}

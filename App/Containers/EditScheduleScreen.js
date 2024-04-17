@@ -174,7 +174,7 @@ export default class EditScheduleScreen extends BaseComponent {
           'scheduleDetails',
           {},
         );
-        console.log('SCHEDULEDETAILS',scheduleDetails)
+        console.log('SCHEDULEDETAILS', scheduleDetails);
         if (scheduleDetails) {
           const taskName = this.state.taskNameList.includes(
             scheduleDetails?.name,
@@ -470,32 +470,70 @@ export default class EditScheduleScreen extends BaseComponent {
     // this.state.timePicker = true ;
   }
   onTimeSelected(event, value) {
-    if (this.state.is_school_clock) {
-      const selectedTime = new Date(value);
-      const minTime = new Date();
-      minTime.setHours(6, 0, 0, 0); // 6:00 AM
+    if (event.type === 'dismissed') {
+      this.setState({timePicker: false});
+    } else {
+      if (this.state.is_school_clock) {
+        const selectedTime = new Date(value);
+        const minTime = new Date();
+        minTime.setHours(6, 0, 0, 0); // 6:00 AM
 
-      const maxTime = new Date();
-      maxTime.setHours(18, 0, 0, 0);
-      if (selectedTime < minTime) {
-        // If selected time is before the minimum time, set it to the minimum time
-        Alert.alert(
-          Constants.APP_NAME,
-          Constants.MESSAGE_SCHOOL_DAY_VALIDATION,
-        );
-      } else if (selectedTime > maxTime) {
-        // If selected time is after the maximum time, set it to the maximum time
-        Alert.alert(
-          Constants.APP_NAME,
-          Constants.MESSAGE_SCHOOL_DAY_VALIDATION,
-        );
-      }
-      else{
+        const maxTime = new Date();
+        maxTime.setHours(18, 0, 0, 0);
+        if (selectedTime < minTime) {
+          // If selected time is before the minimum time, set it to the minimum time
+          Alert.alert(
+            Constants.APP_NAME,
+            Constants.MESSAGE_SCHOOL_DAY_VALIDATION,
+          );
+        } else if (selectedTime > maxTime) {
+          // If selected time is after the maximum time, set it to the maximum time
+          Alert.alert(
+            Constants.APP_NAME,
+            Constants.MESSAGE_SCHOOL_DAY_VALIDATION,
+          );
+        } else {
+          if (value instanceof Date) {
+            // If value is already a Date object, use it directly
+            this.setState({
+              time: value,
+              fromTime: Helper.dateFormater(
+                value,
+                'hh:mm A',
+                'hh:mm A',
+              ).toString(),
+              fromTimeFormate: Helper.dateFormater(value, 'hh:mm a', 'A'),
+            });
+          } else {
+            // If value is not a Date object, try converting it to a Date
+            const dateValue = new Date(value);
+            if (!isNaN(dateValue.getTime())) {
+              // Check if the conversion was successful
+              this.setState({
+                time: dateValue,
+                fromTime: Helper.dateFormater(
+                  dateValue,
+                  'hh:mm A',
+                  'hh:mm A',
+                ).toString(),
+                fromTimeFormate: Helper.dateFormater(dateValue, 'hh:mm a', 'A'),
+              });
+            } else {
+              // Handle the case where the conversion fails
+              console.error('Invalid date format for toTime:', value);
+            }
+          }
+        }
+      } else {
         if (value instanceof Date) {
           // If value is already a Date object, use it directly
           this.setState({
             time: value,
-            fromTime: Helper.dateFormater(value, 'hh:mm A', 'hh:mm A').toString(),
+            fromTime: Helper.dateFormater(
+              value,
+              'hh:mm A',
+              'hh:mm A',
+            ).toString(),
             fromTimeFormate: Helper.dateFormater(value, 'hh:mm a', 'A'),
           });
         } else {
@@ -519,34 +557,6 @@ export default class EditScheduleScreen extends BaseComponent {
         }
       }
     }
-    else{
-      if (value instanceof Date) {
-        // If value is already a Date object, use it directly
-        this.setState({
-          time: value,
-          fromTime: Helper.dateFormater(value, 'hh:mm A', 'hh:mm A').toString(),
-          fromTimeFormate: Helper.dateFormater(value, 'hh:mm a', 'A'),
-        });
-      } else {
-        // If value is not a Date object, try converting it to a Date
-        const dateValue = new Date(value);
-        if (!isNaN(dateValue.getTime())) {
-          // Check if the conversion was successful
-          this.setState({
-            time: dateValue,
-            fromTime: Helper.dateFormater(
-              dateValue,
-              'hh:mm A',
-              'hh:mm A',
-            ).toString(),
-            fromTimeFormate: Helper.dateFormater(dateValue, 'hh:mm a', 'A'),
-          });
-        } else {
-          // Handle the case where the conversion fails
-          console.error('Invalid date format for toTime:', value);
-        }
-      }
-    }
     if (Platform.OS === 'android') {
       if (event.type === 'set') {
         this.setState({timePicker: false});
@@ -562,27 +572,61 @@ export default class EditScheduleScreen extends BaseComponent {
     this.setState({toTimePicker: true, timePicker: false});
   }
   onToTimeSelected(event, value) {
-    if (this.state.is_school_clock) {
-      const selectedTime = new Date(value);
-      const minTime = new Date();
-      minTime.setHours(6, 0, 0, 0); // 6:00 AM
+    if (event.type === 'dismissed') {
+      this.setState({toTimePicker: false});
+    } else {
+      if (this.state.is_school_clock) {
+        const selectedTime = new Date(value);
+        const minTime = new Date();
+        minTime.setHours(6, 0, 0, 0); // 6:00 AM
 
-      const maxTime = new Date();
-      maxTime.setHours(18, 0, 0, 0);
-      if (selectedTime < minTime) {
-        // If selected time is before the minimum time, set it to the minimum time
-        Alert.alert(
-          Constants.APP_NAME,
-          Constants.MESSAGE_SCHOOL_DAY_VALIDATION,
-        );
-      } else if (selectedTime > maxTime) {
-        // If selected time is after the maximum time, set it to the maximum time
-        Alert.alert(
-          Constants.APP_NAME,
-          Constants.MESSAGE_SCHOOL_DAY_VALIDATION,
-        );
-      }
-      else{
+        const maxTime = new Date();
+        maxTime.setHours(18, 0, 0, 0);
+        if (selectedTime < minTime) {
+          // If selected time is before the minimum time, set it to the minimum time
+          Alert.alert(
+            Constants.APP_NAME,
+            Constants.MESSAGE_SCHOOL_DAY_VALIDATION,
+          );
+        } else if (selectedTime > maxTime) {
+          // If selected time is after the maximum time, set it to the maximum time
+          Alert.alert(
+            Constants.APP_NAME,
+            Constants.MESSAGE_SCHOOL_DAY_VALIDATION,
+          );
+        } else {
+          if (value instanceof Date) {
+            // If value is already a Date object, use it directly
+            this.setState({
+              toTimeDate: value,
+              toTime: Helper.dateFormater(
+                value,
+                'hh:mm A',
+                'hh:mm A',
+              ).toString(),
+              toTimeFormate: Helper.dateFormater(value, 'hh:mm a', 'A'),
+            });
+          } else {
+            // If value is not a Date object, try converting it to a Date
+            const dateValue = new Date(value);
+            if (!isNaN(dateValue.getTime())) {
+              // Check if the conversion was successful
+              this.setState({
+                toTimeDate: dateValue,
+                toTime: Helper.dateFormater(
+                  dateValue,
+                  'hh:mm A',
+                  'hh:mm A',
+                ).toString(),
+                toTimeFormate: Helper.dateFormater(dateValue, 'hh:mm a', 'A'),
+              });
+            } else {
+              // Handle the case where the conversion fails
+              console.error('Invalid date format for toTime:', value);
+            }
+          }
+        }
+      } else {
         if (value instanceof Date) {
           // If value is already a Date object, use it directly
           this.setState({
@@ -608,34 +652,6 @@ export default class EditScheduleScreen extends BaseComponent {
             // Handle the case where the conversion fails
             console.error('Invalid date format for toTime:', value);
           }
-        }
-      }
-    }
-    else{
-      if (value instanceof Date) {
-        // If value is already a Date object, use it directly
-        this.setState({
-          toTimeDate: value,
-          toTime: Helper.dateFormater(value, 'hh:mm A', 'hh:mm A').toString(),
-          toTimeFormate: Helper.dateFormater(value, 'hh:mm a', 'A'),
-        });
-      } else {
-        // If value is not a Date object, try converting it to a Date
-        const dateValue = new Date(value);
-        if (!isNaN(dateValue.getTime())) {
-          // Check if the conversion was successful
-          this.setState({
-            toTimeDate: dateValue,
-            toTime: Helper.dateFormater(
-              dateValue,
-              'hh:mm A',
-              'hh:mm A',
-            ).toString(),
-            toTimeFormate: Helper.dateFormater(dateValue, 'hh:mm a', 'A'),
-          });
-        } else {
-          // Handle the case where the conversion fails
-          console.error('Invalid date format for toTime:', value);
         }
       }
     }

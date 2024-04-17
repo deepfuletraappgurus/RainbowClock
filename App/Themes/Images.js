@@ -112,7 +112,7 @@ const images = {
   checked: require('../Images/checked.png'),
   add: require('../Images/Add.png'),
   delete: require('../Images/bin.png'),
-  edit: require('../Images/Edit.png'),
+  // edit: require('../Images/Edit.png'),
   success_animation: require('../Images/sucess_animation.gif'),
   cross: require('../Images/cross.png')
 }

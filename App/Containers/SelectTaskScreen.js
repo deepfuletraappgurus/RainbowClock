@@ -94,6 +94,7 @@ export default class SelectTaskScreen extends BaseComponent {
       isSavedSelected: false,
       isSaveForFuture: 0,
       savedTaskList: [],
+      createdTaskCount: 0,
     };
   }
 
@@ -111,6 +112,12 @@ export default class SelectTaskScreen extends BaseComponent {
     ];
     this.getTaskCategories();
     this.getChildDetail();
+    this.navFocusListener = this.props.navigation.addListener(
+      'didFocus',
+      () => {
+        Helper.getChildRewardPoints(this.props.navigation);
+      },
+    );
   }
   //#endregion
 
@@ -239,6 +246,7 @@ export default class SelectTaskScreen extends BaseComponent {
             name: 'All Categories',
             parent_id: 0,
           };
+          console.log('RESSSSSSS', resJSON.data.data);
           var arrAllCategoriesData = resJSON.data.data;
           this.state.arrAllCategories = arrAllCategoriesData.filter(item => {
             return item.parent_id == 0;
@@ -313,8 +321,7 @@ export default class SelectTaskScreen extends BaseComponent {
     var taskToTime = this.state.dictCreateTask['toTime'];
     var taskTime = this.state.taskTime;
     var taskColor = this.state.dictCreateTask['taskColor'];
-    var taskTokenType =
-      this.state.taskTokenType || '';
+    var taskTokenType = this.state.taskTokenType || '';
     var taskNumberOfTokens = this.state.taskNumberOfToken;
     var taskDates = this.state.dictCreateTask['task_date'].join();
     var frequency = this.state.dictCreateTask['frequency'];
@@ -363,6 +370,9 @@ export default class SelectTaskScreen extends BaseComponent {
                 JSON.stringify(resJSON.data.data[0]),
               );
               this.getChildDetail();
+              this.setState({
+                createdTaskCount: this.state.createdTaskCount + 1,
+              });
               Helper.showConfirmationMessagesignleAction(
                 resJSON.data.message,
                 'Ok',
@@ -641,7 +651,26 @@ export default class SelectTaskScreen extends BaseComponent {
   }
 
   moveToParentHomeScreen() {
+    Helper.showConfirmationMessageActions(
+      'Have you finished adding tasks to this block of time?',
+      'No',
+      'Yes',
+      () => {},
+      () => this.onFinishAddingYes(),
+    );
     // this.props.navigation.push('ParentHomeScreen')
+  }
+
+  onFinishAddingYes() {
+    Helper.showConfirmationMessageSingleAction(
+      'If you wish to add, edit or delete tasks or blocks of time you can do so from the Schedule in the menu bar',
+      'OK',
+      () => this.onActionOK(),
+    );
+  }
+
+  onActionOK() {
+    this.setState({createdTaskCount:0})
     Helper.resetNavigationToScreenWithStack(
       this.props.navigation,
       'ParentHomeScreen',
@@ -965,7 +994,15 @@ export default class SelectTaskScreen extends BaseComponent {
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={[styles.nextButton, {marginLeft: 15}]}
-                  onPress={() => this.moveToParentHomeScreen()}>
+                  onPress={() => {
+                    if (this.state.createdTaskCount) {
+                      
+                      this.moveToParentHomeScreen();
+                    }
+                    else{
+                      Helper.showErrorMessage(Constants.MESSAGE_NO_CREATE_TASK_ERROR)
+                    }
+                  }}>
                   <Image
                     source={Images.circleArrowRight}
                     style={styles.circleArrow}

@@ -12,12 +12,13 @@ import {
   FlatList,
   Dimensions,
   BackHandler,
+  StyleSheet,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import EventEmitter from '../Lib/EventEmitter';
 import Constants from './Constants';
 import * as Helper from '../Lib/Helper';
-import {Images, Colors} from '../Themes';
+import {Images, Colors, Fonts} from '../Themes';
 import {PieChart} from 'react-native-svg-charts';
 import Api from '../Services/Api';
 import {CountdownCircleTimer} from 'react-native-countdown-circle-timer';
@@ -29,6 +30,7 @@ const objSecureAPI = Api.createSecure();
 import styles from '../Containers/Styles/HomeScreenStyles';
 import moment from 'moment';
 import BaseComponent from './BaseComponent';
+import colors from '../Themes/Colors';
 
 export default class TaskModal extends BaseComponent {
   constructor(props) {
@@ -51,6 +53,7 @@ export default class TaskModal extends BaseComponent {
       task_id: this.props.objFooterSelectedTask?.sub_task_id,
       is_new: this.props.objFooterSelectedTask?.is_new,
       showSuccess: false,
+      showSuccessModal: false,
     };
     this.handleBackButtonClick = this.handleBackButtonClick.bind(this);
   }
@@ -79,16 +82,17 @@ export default class TaskModal extends BaseComponent {
   }
 
   componentWillReceiveProps(props) {
+    console.log('===================OBJ--', props.objFooterSelectedTask);
     this.setState({
       visible: props.visible,
       objFooterSelectedTask: props.objFooterSelectedTask,
-      objSelectedChild: props.objSelectedChild,
-      task_id: props.objFooterSelectedTask.sub_task_id,
-      is_new: props.objFooterSelectedTask.is_new,
+      objSelectedChild: props?.objSelectedChild,
+      task_id: props.objFooterSelectedTask?.sub_task_id,
+      is_new: props.objFooterSelectedTask?.is_new,
       buttonText:
-        props.objFooterSelectedTask.task_time == null
+        props.objFooterSelectedTask?.task_time == null
           ? 'START TIME'
-          : props.objFooterSelectedTask.start_time
+          : props.objFooterSelectedTask?.start_time
           ? 'START TIME'
           : 'PAUSE TIME',
     });
@@ -158,6 +162,7 @@ export default class TaskModal extends BaseComponent {
   onActionOK = () => {
     clearInterval(this._timer);
     this.setState({visible: false});
+    this.setState({showSuccessModal: false});
     // this?.props?.closeParentModal();
     this.setModal(false);
     this.props.onStateChange(false);
@@ -196,27 +201,7 @@ export default class TaskModal extends BaseComponent {
                   this.setState({showSuccess: true});
                   let timer = setTimeout(() => {
                     this.setState({showSuccess: false});
-                    Helper.showConfirmationMessageSingleAction(
-                      `Super Job!! \nYou have completed this task. ${
-                        this.state.objFooterSelectedTask.no_of_token == null ||
-                        this.state.objFooterSelectedTask.no_of_token ==
-                          undefined ||
-                        this.state.objFooterSelectedTask.no_of_token == ''
-                          ? ''
-                          : '\nCongratulations you have earned ' +
-                            (this.state.objFooterSelectedTask.no_of_token +
-                              ' ' +
-                              (this.state.objFooterSelectedTask.token_type ==
-                                null ||
-                              this.state.objFooterSelectedTask.token_type ==
-                                undefined
-                                ? ''
-                                : this.state.objFooterSelectedTask.token_type) +
-                              ' token')
-                      }`,
-                      'OK',
-                      this.onActionOK,
-                    );
+                    this.setState({showSuccessModal: true});
                   }, 3000);
                 }
                 // this.setModal(false)
@@ -307,6 +292,7 @@ export default class TaskModal extends BaseComponent {
           animationType="slide"
           transparent={true}
           visible={this.state.visible}
+          style={{justifyContent: 'center', alignItems: 'center', flex: 1}}
           onRequestClose={() => {
             // this.state.objFooterSelectedTask.start_time = null
             this.state.objFooterSelectedTask.start_time = null;
@@ -330,9 +316,9 @@ export default class TaskModal extends BaseComponent {
               </TouchableOpacity>
               <View style={styles.modalBody}>
                 <View style={styles.modalBodyTop}>
-                  {this.state.objFooterSelectedTask.tasks &&
-                  this.state.objFooterSelectedTask.tasks.length > 0
-                    ? this.state.objFooterSelectedTask.tasks.map((data, i) => {
+                  {this.state.objFooterSelectedTask?.tasks &&
+                  this.state.objFooterSelectedTask?.tasks.length > 0
+                    ? this.state.objFooterSelectedTask?.tasks.map((data, i) => {
                         return (
                           <TouchableOpacity>
                             <Image
@@ -372,13 +358,13 @@ export default class TaskModal extends BaseComponent {
                     </>
                   )}
 
-                  {this.state.objFooterSelectedTask.start_time &&
-                  this.state.objFooterSelectedTask.task_time ? (
+                  {this.state.objFooterSelectedTask?.start_time &&
+                  this.state.objFooterSelectedTask?.task_time ? (
                     <View
                       style={{justifyContent: 'center', alignItems: 'center'}}>
                       {this.renderMiniClockView()}
                     </View>
-                  ) : this.state.objFooterSelectedTask.task_time ? (
+                  ) : this.state.objFooterSelectedTask?.task_time ? (
                     <TouchableOpacity
                       style={[styles.button, styles.smallButton]}
                       onPress={() =>
@@ -389,7 +375,7 @@ export default class TaskModal extends BaseComponent {
                       </Text>
                     </TouchableOpacity>
                   ) : null}
-                  {this.state.objFooterSelectedTask.task_time && (
+                  {this.state.objFooterSelectedTask?.task_time && (
                     <TouchableOpacity
                       style={[styles.button, styles.smallButton]}
                       onPress={() => this.pauseTask()}>
@@ -415,13 +401,17 @@ export default class TaskModal extends BaseComponent {
                   style={[
                     styles.button,
                     styles.buttonCarrot,
-                    {marginLeft:20}
+                    {marginLeft: 20},
                     // {marginTop: 0, marginBottom: 0},
                   ]}
                   onPress={() =>
                     this.completeTask(Constants.TASK_STATUS_COMPLETED)
                   }>
-                  <Text style={[styles.buttonText, {alignSelf:'center',textAlign:'center'}]}>
+                  <Text
+                    style={[
+                      styles.buttonText,
+                      {alignSelf: 'center', textAlign: 'center'},
+                    ]}>
                     {'TASK COMPLETE'}
                   </Text>
                 </TouchableOpacity>
@@ -429,7 +419,13 @@ export default class TaskModal extends BaseComponent {
                   source={Images.rewardClaim}
                   style={[
                     styles.taskRewardImage,
-                    {position:'absolute', width: 120, height: 120,right:0,bottom:30, },
+                    {
+                      position: 'absolute',
+                      width: 120,
+                      height: 120,
+                      right: 0,
+                      bottom: 30,
+                    },
                   ]}
                 />
                 <Image
@@ -445,8 +441,127 @@ export default class TaskModal extends BaseComponent {
               </View>
             </SafeAreaView>
           </View>
+          <Modal
+            animationType="slide"
+            transparent={true}
+            visible={this.state.showSuccessModal}
+            onRequestClose={() => {
+              // Handle second modal close
+            }}>
+            <SafeAreaView style={Cutomstyles.centeredModal}>
+              <View
+                style={{
+                  padding: 20,
+                  backgroundColor: colors.snow,
+                  borderRadius: 20,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  width: '70%',
+                }}>
+                <Text
+                  style={[
+                    styles.label,
+                    styles.textCenter,
+                    styles.marginBottom,
+                    {
+                      color: colors.black,
+                    },
+                  ]}>
+                  MyRainbowClock
+                </Text>
+                <Text
+                  style={[
+                    styles.textCenter,
+                    {
+                      color: colors.black,
+                      fontWeight: '100',
+                      // fontFamily: Fonts.type.base,
+                      fontSize: 12,
+                      fontWeight: '300',
+                      marginBottom: 15,
+                    },
+                  ]}>
+                  {`Super Job!! \nYou have completed this task. ${
+                    this.state?.objFooterSelectedTask?.no_of_token == null ||
+                    this.state?.objFooterSelectedTask?.no_of_token ==
+                      undefined ||
+                    this.state?.objFooterSelectedTask?.no_of_token == ''
+                      ? ''
+                      : '\nCongratulations you have earned '
+                  }`}
+                  {this.state?.objFooterSelectedTask?.no_of_token &&
+                    `${this.state?.objFooterSelectedTask?.no_of_token} ${
+                      this.state?.objFooterSelectedTask?.token_type == null ||
+                      this.state?.objFooterSelectedTask?.token_type == undefined
+                        ? ''
+                        : this.state?.objFooterSelectedTask?.token_type
+                    }  `}
+                  {this.state?.objFooterSelectedTask?.no_of_token &&
+                    (this.state?.objFooterSelectedTask?.token_type ==
+                    'Standard' ? (
+                      <Image
+                        source={this.props?.navigation?.getParam(
+                          'standardRewardIcon',
+                          Images.reward_star,
+                        )}
+                        style={{
+                          width: 16,
+                          height: 16,
+                          alignSelf: 'center',
+                          resizeMode: 'contain',
+                          marginTop: -4,
+                        }}
+                      />
+                    ) : (
+                      <Image
+                        source={Images.reward}
+                        style={{
+                          width: 16,
+                          height: 16,
+                          alignSelf: 'center',
+                          resizeMode: 'contain',
+                          marginTop: -4,
+                        }}
+                      />
+                    ))}
+                  {this.state?.objFooterSelectedTask?.no_of_token ? 'token' : ''}
+                </Text>
+                <TouchableOpacity
+                  onPress={this.onActionOK}
+                  style={{
+                    borderTopColor: colors.gray,
+                    paddingTop: 5,
+                    borderTopWidth: 1,
+                    width: '100%',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                  }}>
+                  <Text
+                    style={[
+                      styles.label,
+                      styles.textCenter,
+                      {
+                        color: colors.black,
+                        marginBottom: 0,
+                      },
+                    ]}>
+                    ok
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </SafeAreaView>
+          </Modal>
         </Modal>
       </View>
     );
   }
 }
+
+const Cutomstyles = StyleSheet.create({
+  centeredModal: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.5)', // semi-transparent background
+  },
+});

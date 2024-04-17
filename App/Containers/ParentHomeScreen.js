@@ -77,7 +77,7 @@ export default class ParentHomeScreen extends BaseComponent {
       arrFooterTasks: [],
       isLoading: false,
       isRewardClaimed: false,
-      tipsVisible: null,
+      tipsVisible: false,
       pauseUserInteraction: true,
       pieDataAMPM: [],
       pieDataAMSchool: [],
@@ -89,6 +89,12 @@ export default class ParentHomeScreen extends BaseComponent {
   //show next tips
   handleNextTips() {
     const tipsVisible = this.homeTips.next();
+    console.log('TIP VISIBLEEEEEEEEEE',tipsVisible)
+    if (tipsVisible == 'bell') {
+      // this.toggleSchool();
+    } else if (tipsVisible == 'rewards') {
+      // this.toggleSchool();
+    }
     this.setState({tipsVisible});
   }
 
@@ -303,7 +309,7 @@ export default class ParentHomeScreen extends BaseComponent {
             const differenceInMinutes = (6 - startTime) * 60;
             // Update the value property of the first element with the calculated difference
             this.state.pieDataAMSchool[0].value = Math.abs(
-              isNaN(differenceInMinutes) ? 360 : differenceInMinutes,
+              isNaN(differenceInMinutes) ? 360 : differenceInMinutes - this.state.pieDataAMSchool[1]?.taskId.split(' ')[0].split(':')[1],
             );
           }
           pieData = this.state?.pieDataAMPM.concat(this.state.pieDataAMSchool);
@@ -390,7 +396,7 @@ export default class ParentHomeScreen extends BaseComponent {
             const differenceInMinutes = (6 - startTime) * 60;
             // Update the value property of the first element with the calculated difference
             this.state.pieDataAM[0].value = Math.abs(
-              isNaN(differenceInMinutes) ? 360 : differenceInMinutes,
+              isNaN(differenceInMinutes) ? 360 : differenceInMinutes - this.state.pieDataAMSchool[1]?.taskId.split(' ')[0].split(':')[1],
             );
           }
           pieData = this.state?.pieDataAMPM.concat(this.state.pieDataAM);
@@ -475,7 +481,9 @@ export default class ParentHomeScreen extends BaseComponent {
         svg: {
           fill: clearColor,
           onPress: () => {
-            is_school_clock ? {} : this.onPressMoveToSetUpTimeBlock();
+            is_school_clock || this.state.is_24HrsClock
+              ? {}
+              : this.onPressMoveToSetUpTimeBlock();
           },
         },
         key: `pie-${index}`,
@@ -504,8 +512,12 @@ export default class ParentHomeScreen extends BaseComponent {
     return (
       <TouchableOpacity
         style={styles.clock}
+        activeOpacity={this.state.is_24HrsClock ? 1 : 0}
         onPress={() => {
-          this.onPressMoveToSetUpTimeBlock();
+          if (this.state.is_24HrsClock) {
+          } else {
+            this.onPressMoveToSetUpTimeBlock();
+          }
         }}>
         <Image
           source={this.state.school ? Images.clockPurpleLight : Images.clock}
@@ -828,22 +840,25 @@ export default class ParentHomeScreen extends BaseComponent {
       <View
         style={styles.mainContainer}
         pointerEvents={this.state.isLoading ? 'none' : 'auto'}>
-        {/* <Tips
-          contentStyle={styles.contentStyle}
+          {
+            console.log('this.state.tipsVisible',this.state.tipsVisible)
+          }
+        <Tips
+          contentStyle={{flex: 1}}
           tooltipContainerStyle={[
             styles.tooltipContainerStyle,
             {
-              left: '50%',
+              left: 10,
               top: Helper.isIPhoneX() ? 190 : 170,
             },
           ]}
           style={styles.Tips}
           tooltipArrowStyle={styles.tooltipArrowStyle}
-          visible={this.state.tipsVisible === 'colorWedge'}
+          visible={this.state.tipsVisible == 'colorWedge'}
           onRequestClose={this.handleNextTips}
-          text="Press the coloured wedge to show tasks"
+          text="Tap on the clock to start  creating your schedule"
           textStyle={styles.tipstextStyle}
-        /> */}
+        />
 
         <Tips
           contentStyle={[

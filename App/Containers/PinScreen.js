@@ -241,6 +241,7 @@ export default class PinScreen extends BaseComponent {
                               this.manageAllInputs(e, txtInputType);
                             }
                           }}
+                          value={this.state.pin1}
                         />
                       </View>
                       <View style={styles.pinBox}>
@@ -273,6 +274,7 @@ export default class PinScreen extends BaseComponent {
                               this.manageAllInputs(e, txtInputType);
                             }
                           }}
+                          value={this.state.pin2}
                         />
                       </View>
                       <View style={styles.pinBox}>
@@ -305,6 +307,7 @@ export default class PinScreen extends BaseComponent {
                               this.manageAllInputs(e, txtInputType);
                             }
                           }}
+                          value={this.state.pin3}
                         />
                       </View>
                       <View style={styles.pinBox}>
@@ -337,6 +340,7 @@ export default class PinScreen extends BaseComponent {
                               this.manageAllInputs(e, txtInputType);
                             }
                           }}
+                          value={this.state.pin4}
                         />
                       </View>
                     </View>
@@ -372,6 +376,7 @@ export default class PinScreen extends BaseComponent {
                               this.manageAllInputs(e, '');
                             }
                           }}
+                          value={this.state.cpin1}
                         />
                       </View>
                       <View style={styles.pinBox}>
@@ -400,6 +405,7 @@ export default class PinScreen extends BaseComponent {
                               this.manageAllInputs(e, '');
                             }
                           }}
+                          value={this.state.cpin2}
                         />
                       </View>
                       <View style={styles.pinBox}>
@@ -428,6 +434,7 @@ export default class PinScreen extends BaseComponent {
                               this.manageAllInputs(e, '');
                             }
                           }}
+                          value={this.state.cpin3}
                         />
                       </View>
                       <View style={styles.pinBox}>
@@ -456,6 +463,7 @@ export default class PinScreen extends BaseComponent {
                               this.manageAllInputs(e, '');
                             }
                           }}
+                          value={this.state.cpin4}
                         />
                       </View>
                     </View>

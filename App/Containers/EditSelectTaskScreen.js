@@ -84,6 +84,7 @@ export default class EditSelectTaskScreen extends BaseComponent {
       isUpLoading: false,
       isDeletesubTaskLoading: false,
       isSavedForFuture: 0,
+      taskStatus: '',
     };
   }
 
@@ -108,7 +109,7 @@ export default class EditSelectTaskScreen extends BaseComponent {
     const scheduleDetails =
       this.props.navigation.state.params.dictCreateTask.scheduleDetails;
 
-      console.log('SCHEDULEEEEKKNKN',scheduleDetails)
+    console.log('SCHEDULEEEEKKNKN', scheduleDetails);
 
     const getCurrentCat = this.state.arrAllCategories?.filter(
       cat => cat.id === scheduleDetails?.mcid,
@@ -123,11 +124,12 @@ export default class EditSelectTaskScreen extends BaseComponent {
         selectTaskModel: true,
         taskName: scheduleDetails?.task_name,
         taskNumberOfToken:
-          scheduleDetails?.no_of_token == 'null'
+          scheduleDetails?.no_of_token == null
             ? ''
             : scheduleDetails?.no_of_token,
-        taskType: scheduleDetails?.type == 'null' ? '' : scheduleDetails?.type,
+        taskType: scheduleDetails?.type == null ? '' : scheduleDetails?.type,
         isSavedForFuture: scheduleDetails?.is_saved_for_future,
+        taskStatus: scheduleDetails?.status,
       });
       this.tokenTypeSelected(scheduleDetails?.token_type);
       this.taskTimeSelected(scheduleDetails?.task_time);
@@ -186,7 +188,7 @@ export default class EditSelectTaskScreen extends BaseComponent {
 
   deleteTask = () => {
     Helper.showConfirmationMessageActions(
-      'Are you sure you want to delete this task ?',
+      'Are you sure you want to delete this task?',
       'No',
       'Yes',
       () => {},
@@ -244,6 +246,13 @@ export default class EditSelectTaskScreen extends BaseComponent {
       ).trim() == ''
     ) {
       Helper.showErrorMessage(Constants.MESSAGE_NO_TASK_NAME);
+      return false;
+    }
+    if (
+      this.state.taskStatus == 'Start' ||
+      this.state.taskStatus == 'Completed'
+    ) {
+      Helper.showErrorMessage(Constants.MESSAGE_RECOVER_TASK_ERROR);
       return false;
     }
     //  else if (this.state?.taskTime?.trim() == '') {
@@ -484,7 +493,7 @@ export default class EditSelectTaskScreen extends BaseComponent {
 
   taskTimeSelected = time => {
     this.setState({
-      taskTime: time == 'null' ? '' : time,
+      taskTime: time == null ? '' : time,
       timeForTaskDropdown: false,
     });
     this.RBSheetTimer.close();
@@ -543,7 +552,7 @@ export default class EditSelectTaskScreen extends BaseComponent {
   }
 
   setTaskModelVisible(item) {
-    console.log('IIIIIIIITTTTTTTTEEEEEEEMMMMMM',item)
+    console.log('IIIIIIIITTTTTTTTEEEEEEEMMMMMM', item);
     if (
       this.state.selectedCategory == '' &&
       item &&

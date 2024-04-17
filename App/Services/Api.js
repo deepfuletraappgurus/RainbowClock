@@ -412,6 +412,7 @@ const createSecure = (baseURL = base_url) => {
     //     name: timestamp + '.' + strExtension,
     //   });
     // }
+    console.log('UPDATE TASK ______',data)
     return api.post('/subTaskUpdate', data);
   };
 

@@ -30,7 +30,7 @@ const Constants = {
         "information"
     ],
     PARENT_HOME_SCREEN_TIPS: [
-        // "colorWedge",
+        "colorWedge",
         "bell",
         "rewards",
     ],
@@ -129,7 +129,7 @@ const Constants = {
     MESSAGE_NO_NAME: "Please enter name.",
     MESSAGE_NO_BIRTHDATE: "Please enter birthdate.",
     MESSAGE_NO_BESTPICTURE: "Please add your best picture.",
-    MESSAGE_ACCOUNT_DELETE: "Are you sure you want to delete account?",
+    MESSAGE_ACCOUNT_DELETE: "Just checking, Were you wanting to Delete your account?",
     MESSAGE_USER_LOGOUT: "Are you sure you want to logout?",
     MESSAGE_ONE_IMAGE_REQUIRE: "We need at least your one picture",
     MESSAGE_NO_CONTACT_NUMBER: 'Please enter contact number.',
@@ -146,12 +146,16 @@ const Constants = {
     MESSAGE_SCHOOL_DAY_VALIDATION:'School Task Must be 6 AM to 6PM',
     MESSAGE_CREATE_TASK_TIME_VALIDATION:'Start and End times cannot be more than 24 hours or less than 15min.  Please select a time frame between this.',
     MESSAGE_CREATE_TASK_NO_IMAGE:'Please Add task Icon First.',
+    MESSAGE_CURRENTTIME_EDIT_SCHEDULE:'You are currently in this block of time, would you still like to edit this block of time?',
+    MESSAGE_CURRENTTIME_DELETE_SCHEDULE:'You are currently in this block of time, would you still like to delete this block of time?',
+    MESSAGE_RECOVER_TASK_ERROR:'Tasks need to be recovered before they can be updated',
+    MESSAGE_NO_CREATE_TASK_ERROR:'You have not selected any tasks, Please select any of one task first',
     //Other Messages 
     TEXT_FATCHING_CHILD: 'FETCHING YOUR USERS',
     TEXT_FATCHING_TASKS: 'FETCHING YOUR TASKS...',
     TEXT_NO_TASKS: "YOU DON'T HAVE ANY TASK",
     TEXT_NO_CHILD_ADDED_YET: "YOU HAVEN'T ADDED ANY CHILD YET. LET'S EXPERIENCE THE MY RAINBOW CLOCK BY ADDING YOUR CHILD",
-    ADD_CHILD_CONFIRMATION_NO:'If you wish to add another child later you can do so in the Admin Profile which you can access from the menu bar.', //MP
+    ADD_CHILD_CONFIRMATION_NO:'If you wish to add another child later you can do so in the Admin Portal which you can access from the menu bar.', //MP
     ADD_CHILD_SUCCESS:'Child has been added successfully!',//MP
     //Planet Messages
     MONDAY_MESSAGE: `It's MONDAY.\nI was named after the moon. I am a natural satellite that orbits the earth.`,
