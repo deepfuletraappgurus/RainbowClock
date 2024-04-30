@@ -189,7 +189,7 @@ const drawerStack = createStackNavigator(
     },
     EditScheduleScreen: {
       screen: EditScheduleScreen,
-      navigationOptions: {title: 'My Rainbow Clock'.toUpperCase()},
+      navigationOptions: {title: 'My Rainbow Clock'.toUpperCase(),headerLeft: () => <></>},
     },
     ParentHomeScreen: {
       screen: ParentHomeScreen,

@@ -27,14 +27,12 @@ const create = (baseURL = base_url) => {
     timeout: 10000,
   });
 
-
   // api.addResponseTransform(response => {
   //   console.log('RESPONSE  API RESPONSE--------------',response)
   //   if (response.data && response.data.error === "no user found") {
   //     // Call logout function here
   //   }
   // });
-
 
   // const apiMonitor = (response) => {
   // }
@@ -359,13 +357,20 @@ const createSecure = (baseURL = base_url) => {
     return api.post('/addtask', data);
   };
 
-  const checkTaskAvaibalilty = (fromTime, toTime, task_date, child_id) => {
+  const checkTaskAvaibalilty = (
+    fromTime,
+    toTime,
+    task_date,
+    child_id,
+    is_date,
+  ) => {
     const data = new FormData();
     //Parms
     data.append('child_id', child_id);
     data.append('time_from', fromTime);
     data.append('time_to', toTime);
     data.append('task_date', task_date);
+    data.append('is_date', is_date);
 
     return api.post('/check_time_exist', data);
   };
@@ -412,7 +417,7 @@ const createSecure = (baseURL = base_url) => {
     //     name: timestamp + '.' + strExtension,
     //   });
     // }
-    console.log('UPDATE TASK ______',data)
+    console.log('UPDATE TASK ______', data);
     return api.post('/subTaskUpdate', data);
   };
 
@@ -426,6 +431,7 @@ const createSecure = (baseURL = base_url) => {
     task_date,
     is_date,
     is_new,
+    is_school_clock,
   ) => {
     const data = new FormData();
     //Parms
@@ -439,6 +445,9 @@ const createSecure = (baseURL = base_url) => {
     data.append('is_date', is_date);
     data.append('is_new', is_new);
     data.append('description', '');
+    data.append('is_school_clock', is_school_clock);
+
+    console.log('UPDATE SCHEDULE',data)
 
     return api.post('/updatetask', data);
   };

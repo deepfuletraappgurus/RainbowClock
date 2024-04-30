@@ -26,6 +26,7 @@ import {CountdownCircleTimer} from 'react-native-countdown-circle-timer';
 // Global Variables
 const objSecureAPI = Api.createSecure();
 
+
 // Styles
 import styles from '../Containers/Styles/HomeScreenStyles';
 import moment from 'moment';
@@ -141,6 +142,7 @@ export default class TaskModal extends BaseComponent {
   };
 
   completeTask = taskStatus => {
+    console.log('AAAAAAAAAAAAAAAAAAA')
     if (Helper.checkTaskTimeAndDate(this.state.objFooterSelectedTask)) {
       Helper.showErrorMessage(Constants.MESSAGE_NO_FUTURE_TASK);
       // this.navFocusListener =  this.props.navigation.addListener('didFocus', () => {
@@ -199,7 +201,7 @@ export default class TaskModal extends BaseComponent {
                 clearInterval(this._timer);
                 if (showAnimation) {
                   this.setState({showSuccess: true});
-                  let timer = setTimeout(() => {
+                   this.timer = setTimeout(() => {
                     this.setState({showSuccess: false});
                     this.setState({showSuccessModal: true});
                   }, 3000);
@@ -307,6 +309,9 @@ export default class TaskModal extends BaseComponent {
                 style={styles.modalCloseTouch}
                 onPress={() => {
                   this.state.objFooterSelectedTask.start_time = null;
+                  this.setState({showSuccess: false});
+                  clearInterval(this.timer)
+                  this.setState({showSuccessModal: false});
                   this.setModal(false);
                   setTimeout(() => {
                     Helper.getChildRewardPoints(this.props.navigation);

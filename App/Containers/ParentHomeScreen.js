@@ -732,7 +732,7 @@ export default class ParentHomeScreen extends BaseComponent {
       const pieDataAM24Hour = Helper.generateClockTaskArray(
         arrAM,
         'am',
-        2,
+        1,
         true,
       );
       const pieDataPM24Hour = Helper.generateClockTaskArray(

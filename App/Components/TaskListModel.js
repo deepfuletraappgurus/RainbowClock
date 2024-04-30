@@ -102,9 +102,17 @@ export default class TaskListModel extends Component {
         console.log('   RECOVER RESPONSE', response);
         if (response.ok) {
           if (response.data.success) {
-            this.setState({
-              objFooterSelectedTask: response.data.data,
-            });
+            this.setState(
+              {
+                objFooterSelectedTask: {},
+              },
+              () => {
+                // Then set objFooterSelectedTask with new data
+                this.setState({
+                  objFooterSelectedTask: response.data.data,
+                });
+              },
+            );
             // this?.props?.onClose()
           } else {
             Helper.showErrorMessage(response.data.message);
@@ -176,7 +184,7 @@ export default class TaskListModel extends Component {
                   paddingRight: 30,
                   paddingTop: 20,
                   // paddingBottom: 15,
-                  flex:1,
+                  flex: 1,
                 },
               ]}>
               {console.log(
@@ -189,6 +197,7 @@ export default class TaskListModel extends Component {
                   ? this.state.objFooterSelectedTask.tasks.map((data, i) => {
                       return (
                         <TouchableOpacity
+                          disabled={data.status == Constants.TASK_STATUS_COMPLETED}
                           style={{
                             paddingVertical: 10,
                             alignItems: 'center',
@@ -220,7 +229,10 @@ export default class TaskListModel extends Component {
                                 alignSelf: 'center',
                                 marginLeft: 10,
                                 width: '50%',
-                                opacity:data.status == Constants.TASK_STATUS_COMPLETED ? 0.5 : 1
+                                opacity:
+                                  data.status == Constants.TASK_STATUS_COMPLETED
+                                    ? 0.5
+                                    : 1,
                               },
                             ]}>
                             {data?.task_name}

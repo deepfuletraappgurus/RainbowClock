@@ -148,7 +148,7 @@ export default class RewardScreen extends BaseComponent {
                     <View style={[styles.container]}>
                         <View style={styles.clockHeader}>
                             <Text style={[styles.h1, styles.textCenter]}>{'Reward'.toUpperCase()}</Text>
-                        </View>
+                        </View> 
                         <FlatList
                                 contentContainerStyle={styles.rewardGridContainer}
                                 numColumns={2}

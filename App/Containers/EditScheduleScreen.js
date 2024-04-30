@@ -262,7 +262,7 @@ export default class EditScheduleScreen extends BaseComponent {
           scheduleDetails,
         };
         Helper.showConfirmationMessageActions(
-          'Are You Sure, You want to update this schedule?',
+          'Are you sure, you want to update this schedule?',
           'No',
           'Yes',
           this.onActionNo,
@@ -314,6 +314,7 @@ export default class EditScheduleScreen extends BaseComponent {
     var task_date = dictCreateTask['task_date'];
     var is_date = dictCreateTask['is_date'];
     var is_new = dictCreateTask['is_new'];
+    var is_school_clock = this.state.is_school_clock
 
     const res = objSecureAPI
       .updateSchedule(
@@ -326,6 +327,7 @@ export default class EditScheduleScreen extends BaseComponent {
         task_date,
         is_date,
         is_new,
+        is_school_clock
       )
       .then(resJSON => {
         if (resJSON.ok && resJSON.status == 200) {
@@ -771,7 +773,7 @@ export default class EditScheduleScreen extends BaseComponent {
                       style={styles.nextButton}
                       onPress={() => {
                         Helper.showConfirmationMessageActions(
-                          "Are You Sure, You don't want to update this schedule?",
+                          "Are you sure, you don't want to update this schedule?",
                           'No',
                           'Yes',
                           this.onActionNo,

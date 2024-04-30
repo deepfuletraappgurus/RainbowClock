@@ -478,7 +478,7 @@ export default class SelectTaskScreen extends BaseComponent {
       taskTime: time,
       timeForTaskDropdown: false,
     });
-    this.RBSheetTimer.close();
+    this.RBSheetTimer?.close();
   };
 
   defaultTaskTimeSelected = time => {
@@ -1125,7 +1125,7 @@ export default class SelectTaskScreen extends BaseComponent {
                               Set a Timer
                             </Text>
                             <TouchableOpacity
-                              onPress={() => this.RBSheetTimer.open()}
+                              onPress={() => this.RBSheetTimer?.open()}
                               style={{
                                 flex: 1,
                                 padding: 14,
@@ -1492,7 +1492,7 @@ export default class SelectTaskScreen extends BaseComponent {
                             Set a Timer
                           </Text>
                           <TouchableOpacity
-                            onPress={() => this.RBSheetTimer.open()}
+                            onPress={() => this.RBSheetTimer?.open()}
                             style={{
                               flex: 1,
                               padding: 14,

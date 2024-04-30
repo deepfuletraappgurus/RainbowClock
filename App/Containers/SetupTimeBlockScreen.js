@@ -225,6 +225,7 @@ export default class SetupTimeBlockScreen extends BaseComponent {
             this.state.toTime,
             task_dates?.length === 0 ? resultArray.join() : task_dates.join(),
             this.state.childData?.id,
+            this.state.is_date
           )
           .then(resJSON => {
             if (resJSON.ok && resJSON.status == 200) {

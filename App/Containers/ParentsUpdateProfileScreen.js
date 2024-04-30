@@ -158,7 +158,7 @@ export default class ParentsUpdateProfileScreen extends BaseComponent {
   btnDeleteProfile = () => {
     Keyboard.dismiss();
     Helper.showConfirmationMessageActions(
-      'Are You Sure, You want to delete account?',
+      'Just checking, Were you wanting to Delete your account?',
       'No',
       'Yes',
       () => {},

@@ -316,7 +316,6 @@ export default class ScheduleScreen extends BaseComponent {
         () => this.onDeleteScheduleActionYes(dictCreateTask.tasks[0]),
       );
     } else {
-      dictCreateTask = dictCreateTask.tasks[0];
       Helper.showConfirmationMessageActions(
         'Are you sure you want to delete this block of time?  It will also remove all the tasks saved in this time block.',
         'No',
@@ -328,6 +327,7 @@ export default class ScheduleScreen extends BaseComponent {
   }
 
   onActionYes = dictCreateTask => {
+    console.log('dddddd',dictCreateTask)
     const res = mApi
       .deleteSchedule(
         dictCreateTask?.id,
@@ -662,7 +662,7 @@ export default class ScheduleScreen extends BaseComponent {
                   {'SCHEDULE' + ' (' + this.state.username + ')'}
                 </Text>
               </View>
-              {this.state.showDropdown ? (
+              {this.state.showDropdown ? (      
                 <TouchableOpacity
                   style={styles.bodyClose}
                   onPress={() => this.toggleDropdown()}></TouchableOpacity>

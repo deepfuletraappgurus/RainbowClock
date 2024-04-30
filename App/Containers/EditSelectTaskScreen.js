@@ -187,13 +187,21 @@ export default class EditSelectTaskScreen extends BaseComponent {
   };
 
   deleteTask = () => {
-    Helper.showConfirmationMessageActions(
-      'Are you sure you want to delete this task?',
-      'No',
-      'Yes',
-      () => {},
-      () => this.onActionYes(),
-    );
+    if (
+      this.state.taskStatus == 'Start' ||
+      this.state.taskStatus == 'Completed'
+    ) {
+      Helper.showErrorMessage(Constants.MESSAGE_RECOVER_TASK_ERROR);
+      return false;
+    } else {
+      Helper.showConfirmationMessageActions(
+        'Are you sure you want to delete this task?',
+        'No',
+        'Yes',
+        () => {},
+        () => this.onActionYes(),
+      );
+    }
   };
 
   onActionYes = () => {
@@ -239,12 +247,7 @@ export default class EditSelectTaskScreen extends BaseComponent {
   };
 
   isValidator = () => {
-    if (
-      (this.state?.taskType === Constants.TASK_TYPE_DEFAULT
-        ? this.state?.taskName
-        : this.state?.customTaskName
-      ).trim() == ''
-    ) {
+    if ((this.state?.taskName).trim() == '') {
       Helper.showErrorMessage(Constants.MESSAGE_NO_TASK_NAME);
       return false;
     }
@@ -369,10 +372,7 @@ export default class EditSelectTaskScreen extends BaseComponent {
     var subCatId = this.state.selectedSubCategory;
     var taskType = this.state.taskType;
     var timeSloteName = this.state.dictCreateTask['taskName'];
-    var taskName =
-      taskType === Constants.TASK_TYPE_DEFAULT
-        ? this.state.taskName
-        : this.state.customTaskName;
+    var taskName = this.state.taskName;
     var taskDescription = this.state.customTaskDescription;
     var taskFromTime = this.state.dictCreateTask['fromTime'];
     var taskToTime = this.state.dictCreateTask['toTime'];
@@ -385,7 +385,7 @@ export default class EditSelectTaskScreen extends BaseComponent {
     var taskCustomIcon = this.state.taskCustomImage;
     var is_date = this.state.dictCreateTask['is_date'];
     var is_new = this.state.dictCreateTask['is_new'];
-    var is_saved_for_future = this.state.isSavedForFuture;
+    var is_saved_for_future = this.state.isSavedForFuture == false ? 0 : 1;
     // var taskId =
 
     const res = objSecureAPI
@@ -418,14 +418,11 @@ export default class EditSelectTaskScreen extends BaseComponent {
                 'Ok',
               ).then(action => {
                 if (action) {
-                  if (this.state.taskType === Constants.TASK_TYPE_DEFAULT) {
+               
                     this.setState({isLoading: false});
                     this.setTaskModelVisible();
                     this.props.navigation.goBack();
-                  } else {
-                    this.setCreateTask();
-                    this.getTaskCategories();
-                  }
+                  
                 }
               });
             } catch (error) {}
@@ -496,7 +493,7 @@ export default class EditSelectTaskScreen extends BaseComponent {
       taskTime: time == null ? '' : time,
       timeForTaskDropdown: false,
     });
-    this.RBSheetTimer.close();
+    this.RBSheetTimer?.close();
   };
 
   defaultTaskTimeSelected = time => {
