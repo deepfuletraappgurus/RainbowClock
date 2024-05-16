@@ -22,10 +22,10 @@ import {Images, Colors, Fonts} from '../Themes';
 import {PieChart} from 'react-native-svg-charts';
 import Api from '../Services/Api';
 import {CountdownCircleTimer} from 'react-native-countdown-circle-timer';
+import FastImage from 'react-native-fast-image';
 
 // Global Variables
 const objSecureAPI = Api.createSecure();
-
 
 // Styles
 import styles from '../Containers/Styles/HomeScreenStyles';
@@ -142,7 +142,7 @@ export default class TaskModal extends BaseComponent {
   };
 
   completeTask = taskStatus => {
-    console.log('AAAAAAAAAAAAAAAAAAA')
+    console.log('AAAAAAAAAAAAAAAAAAA');
     if (Helper.checkTaskTimeAndDate(this.state.objFooterSelectedTask)) {
       Helper.showErrorMessage(Constants.MESSAGE_NO_FUTURE_TASK);
       // this.navFocusListener =  this.props.navigation.addListener('didFocus', () => {
@@ -201,7 +201,7 @@ export default class TaskModal extends BaseComponent {
                 clearInterval(this._timer);
                 if (showAnimation) {
                   this.setState({showSuccess: true});
-                   this.timer = setTimeout(() => {
+                  this.timer = setTimeout(() => {
                     this.setState({showSuccess: false});
                     this.setState({showSuccessModal: true});
                   }, 3000);
@@ -310,7 +310,7 @@ export default class TaskModal extends BaseComponent {
                 onPress={() => {
                   this.state.objFooterSelectedTask.start_time = null;
                   this.setState({showSuccess: false});
-                  clearInterval(this.timer)
+                  clearInterval(this.timer);
                   this.setState({showSuccessModal: false});
                   this.setModal(false);
                   setTimeout(() => {
@@ -433,8 +433,7 @@ export default class TaskModal extends BaseComponent {
                     },
                   ]}
                 />
-                <Image
-                  source={Images.success_animation}
+                <FastImage
                   style={{
                     width: Dimensions.get('window').width / 1.5,
                     height: Dimensions.get('window').height / 1.2,
@@ -442,6 +441,8 @@ export default class TaskModal extends BaseComponent {
                     bottom: 20,
                     display: this.state.showSuccess ? 'flex' : 'none',
                   }}
+                  source={Images.success_animation}
+                  resizeMode={FastImage.resizeMode.cover}
                 />
               </View>
             </SafeAreaView>
@@ -492,15 +493,10 @@ export default class TaskModal extends BaseComponent {
                       undefined ||
                     this.state?.objFooterSelectedTask?.no_of_token == ''
                       ? ''
-                      : '\nyou have earned '
+                      : '\nYou have earned '
                   }`}
                   {this.state?.objFooterSelectedTask?.no_of_token &&
-                    `${this.state?.objFooterSelectedTask?.no_of_token} ${
-                      this.state?.objFooterSelectedTask?.token_type == null ||
-                      this.state?.objFooterSelectedTask?.token_type == undefined
-                        ? ''
-                        : this.state?.objFooterSelectedTask?.token_type.toLowerCase()
-                    }  `}
+                    `${this.state?.objFooterSelectedTask?.no_of_token} `}
                   {this.state?.objFooterSelectedTask?.no_of_token &&
                     (this.state?.objFooterSelectedTask?.token_type ==
                     'Standard' ? (
@@ -529,7 +525,9 @@ export default class TaskModal extends BaseComponent {
                         }}
                       />
                     ))}
-                  {this.state?.objFooterSelectedTask?.no_of_token ? 'tokens' : ''}
+                  {this.state?.objFooterSelectedTask?.no_of_token
+                    ? 'token/s'
+                    : ''}
                 </Text>
                 <TouchableOpacity
                   onPress={this.onActionOK}

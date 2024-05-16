@@ -1069,7 +1069,7 @@ export default class EditSelectTaskScreen extends BaseComponent {
                               placeholder={'Number Of Tokens'.toUpperCase()}
                               maxLength={20}
                               value={this.state.taskNumberOfToken}
-                              keyboardType={'number-pad'}
+                              keyboardType={'numeric'}
                               onChangeText={token =>
                                 this.setState({taskNumberOfToken: token})
                               }
@@ -1239,7 +1239,7 @@ export default class EditSelectTaskScreen extends BaseComponent {
                                       ]}
                                       underlineColorAndroid={'transparent'}
                                       returnKeyType={'next'}
-                                      keyboardType={'number-pad'}
+                                      keyboardType={'numeric'}
                                       onChangeText={token =>
                                         this.setState({
                                           taskNumberOfToken: token,

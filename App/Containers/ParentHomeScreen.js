@@ -388,7 +388,7 @@ export default class ParentHomeScreen extends BaseComponent {
           );
 
           // Check if the start time is greater than or equal to 6:00 AM
-          if (startTime <= 6) {
+          if (startTime <= 6 || startTime == 12) {
             // Update the value property of the first element to 0
             this.state.pieDataAM[0].value = 0;
           } else {

@@ -289,6 +289,7 @@ export default class SelectTaskScreen extends BaseComponent {
       .then(resJSON => {
         if (resJSON.ok && resJSON.status == 200) {
           this.setState({isLoading: false});
+          console.log('resJSON.data.data',resJSON.data.data)
           if (resJSON.data.success) {
             this.state.savedTaskList = resJSON.data.data;
             this.setState({});
@@ -372,6 +373,16 @@ export default class SelectTaskScreen extends BaseComponent {
               this.getChildDetail();
               this.setState({
                 createdTaskCount: this.state.createdTaskCount + 1,
+              });
+              this.setState({
+                taskName: '',
+                taskTokenType: '',
+                taskNumberOfToken: '',
+                taskImage: '',
+                taskTime: '',
+                taskCustomImage: '',
+                taskCustomImagePath: '',
+                isSaveForFuture: 0
               });
               Helper.showConfirmationMessagesignleAction(
                 resJSON.data.message,
@@ -987,7 +998,10 @@ export default class SelectTaskScreen extends BaseComponent {
               <View style={{flexDirection: 'row', alignItems: 'center'}}>
                 <TouchableOpacity
                   disabled={this.state.createdTaskCount == 0 ? false : true}
-                  style={[styles.nextButton,{opacity:this.state.createdTaskCount == 0 ? 1 : 0.4}]}
+                  style={[
+                    styles.nextButton,
+                    {opacity: this.state.createdTaskCount == 0 ? 1 : 0.4},
+                  ]}
                   onPress={() => this.props.navigation.goBack()}>
                   <Image
                     source={Images.circleArrowLeft}
@@ -1298,7 +1312,7 @@ export default class SelectTaskScreen extends BaseComponent {
                               placeholder={'Number of tokens'.toUpperCase()}
                               maxLength={20}
                               value={this.state.taskNumberOfToken}
-                              keyboardType={'number-pad'}
+                              keyboardType={'numeric'}
                               onChangeText={token =>
                                 this.setState({taskNumberOfToken: token})
                               }
@@ -1665,13 +1679,37 @@ export default class SelectTaskScreen extends BaseComponent {
                             placeholder={'Number of tokens'.toUpperCase()}
                             maxLength={20}
                             value={this.state.taskNumberOfToken}
-                            keyboardType={'number-pad'}
+                            keyboardType={'numeric'}
                             onChangeText={token =>
                               this.setState({taskNumberOfToken: token})
                             }
                             onSubmitEditing={event => {}}
                           />
                         </View>
+                        <TouchableOpacity
+                            style={{
+                              marginVertical: 10,
+                              flexDirection: 'row',
+                              alignItems: 'center',
+                            }}
+                            onPress={() => {
+                              this.setState({
+                                isSaveForFuture:
+                                  this.state.isSaveForFuture == 0 ? 1 : 0,
+                              });
+                            }}>
+                            <Image
+                              source={
+                                this.state.isSaveForFuture
+                                  ? Images.checked
+                                  : Images.unchecked
+                              }
+                              style={{width: 18, height: 18, marginRight: 5}}
+                            />
+                            <Text style={[styles.dropdownButtonText]}>
+                              Save This Task For Future Reference.
+                            </Text>
+                          </TouchableOpacity>
                       </View>
                     </View>
                   </View>

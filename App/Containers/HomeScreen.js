@@ -105,17 +105,19 @@ export default class HomeScreen extends BaseComponent {
 
   //show next tips
   handleNextTips() {
-    if (this.state.modalVisible) {
-      const taskTips = this.tasksTips.next();
-      this.setState({taskTips});
-    } else {
-      const tipsVisible = this.homeTips.next();
-      if (tipsVisible == 'house') {
-        this.toggleSchool();
-      } else if (tipsVisible == 'rewards') {
-        this.toggleSchool();
+    if (!this.state.isLoading) {
+      if (this.state.modalVisible) {
+        const taskTips = this.tasksTips.next();
+        this.setState({taskTips});
+      } else {
+        const tipsVisible = this.homeTips.next();
+        if (tipsVisible == 'house') {
+          this.toggleSchool();
+        } else if (tipsVisible == 'rewards') {
+          this.toggleSchool();
+        }
+        this.setState({tipsVisible});
       }
-      this.setState({tipsVisible});
     }
   }
 
@@ -322,8 +324,8 @@ export default class HomeScreen extends BaseComponent {
             // Filter tasks
             const filteredTasks = filterTasks(stateData?.pieDataAMPM);
             if (
-              typeof filteredTasks !== 'undefined' ||
-              filteredTasks !== undefined
+              (typeof filteredTasks !== 'undefined' ||
+              filteredTasks !== undefined) && !this.state.isLoading
             ) {
               stateData.pieDataAMPM = filteredTasks;
               let secondLastTaskEndTime =
@@ -349,23 +351,30 @@ export default class HomeScreen extends BaseComponent {
                 timeDifference;
             }
             // Extract the end time from the taskId
-
-            const startTime = parseInt(
-              stateData?.pieDataAMSchool[1]?.taskId.split(' ')[0].split(':')[0],
-            );
-
-            // Check if the start time is greater than or equal to 6:00 AM
-            if (startTime <= 6) {
-              // Update the value property of the first element to 0
-              stateData.pieDataAMSchool[0].value = 0;
-            } else {
-              // Calculate the difference between 6:00 AM and the start time of the second element in minutes
-              const differenceInMinutes = (6 - startTime) * 60;
-              // Update the value property of the first element with the calculated difference
-              stateData.pieDataAMSchool[0].value = Math.abs(
-                isNaN(differenceInMinutes) ? 360 : differenceInMinutes - stateData?.pieDataAMSchool[1]?.taskId.split(' ')[0].split(':')[1],
+            if (!this.state.isLoading && stateData?.pieDataAMSchool !== undefined) {
+              const startTime = parseInt(
+                stateData?.pieDataAMSchool[1]?.taskId.split(' ')[0].split(':')[0],
               );
+  
+              // Check if the start time is greater than or equal to 6:00 AM
+              if (startTime <= 6) {
+                // Update the value property of the first element to 0
+                stateData.pieDataAMSchool[0].value = 0;
+              } else {
+                // Calculate the difference between 6:00 AM and the start time of the second element in minutes
+                const differenceInMinutes = (6 - startTime) * 60;
+                // Update the value property of the first element with the calculated difference
+                stateData.pieDataAMSchool[0].value = Math.abs(
+                  isNaN(differenceInMinutes)
+                    ? 360
+                    : differenceInMinutes -
+                        stateData?.pieDataAMSchool[1]?.taskId
+                          .split(' ')[0]
+                          .split(':')[1],
+                );
+              }
             }
+            
             pieData = stateData?.pieDataAMPM.concat(stateData.pieDataAMSchool);
           } else {
             pieData = stateData?.pieDataAMSchool;
@@ -453,7 +462,7 @@ export default class HomeScreen extends BaseComponent {
             );
 
             // Check if the start time is greater than or equal to 6:00 AM
-            if (startTime <= 6) {
+            if (startTime <= 6 || startTime == 12) {
               // Update the value property of the first element to 0
               stateData.pieDataAM[0].value = 0;
             } else {
@@ -493,14 +502,13 @@ export default class HomeScreen extends BaseComponent {
       this.state.pieData = pieData;
       this.state.swiperData[currentIndex] = this.renderSwiperView();
       this.setState({pieData});
-      this.setState({isLoading: false});
     }
   }
 
   setPlanetIcon = () => {
     // this.state.isPlanetIconVisible ? "" : this.startCounter();
     this.state.isPlanetIconVisible = true;
-    this.state.swiperData[this.state.currentIndex] = this.renderSwiperView();
+    // this.state.swiperData[this.state.currentIndex] = this.renderSwiperView();
     this.setState({});
   };
 
@@ -515,8 +523,8 @@ export default class HomeScreen extends BaseComponent {
     this._timer = setTimeout(
       function () {
         this.state.isPlanetIconVisible = false;
-        this.state.swiperData[this.state.currentIndex] =
-          this.renderSwiperView();
+        // this.state.swiperData[this.state.currentIndex] =
+        //   this.renderSwiperView();
         this.setState({});
       }.bind(this),
       10000,
@@ -551,7 +559,12 @@ export default class HomeScreen extends BaseComponent {
       },
       () => {
         // this.createSwiperDataForWeek();
-        this.setWatchData(this.state.currentIndex);
+        if (!this.state.isLoading) {
+          setTimeout(() => {
+            this.setWatchData(this.state.currentIndex);
+          }, 1000);
+        }
+        
       },
     );
   }
@@ -622,7 +635,7 @@ export default class HomeScreen extends BaseComponent {
 
     const currentIndex = this.state.currentIndex;
     const swiperData = [...this.state.swiperData];
-    swiperData[currentIndex] = this.renderSwiperView();
+    // swiperData[currentIndex] = this.renderSwiperView();
 
     if (!isQAVisible) {
       // Handle state updates or any other logic
@@ -660,7 +673,7 @@ export default class HomeScreen extends BaseComponent {
   hideAwnswer() {
     this.state.isAnswerOfJokeVisible = false;
     this.state.isQAVisible = false;
-    this.state.swiperData[this.state.currentIndex] = this.renderSwiperView();
+    // this.state.swiperData[this.state.currentIndex] = this.renderSwiperView();
     this.createSwiperDataForWeek();
     this.setState({
       isQAVisible: false,
@@ -803,6 +816,7 @@ export default class HomeScreen extends BaseComponent {
                               {tintColor: Colors.darkPink},
                             ]}
                           />
+                          {console.log('RENDER JOKE', this.state.jokeData)}
                           {this.state.tickCount == 2 ? null : (
                             <View style={styles.shapeJoke}>
                               <Text style={styles.shapeText}>
@@ -862,6 +876,7 @@ export default class HomeScreen extends BaseComponent {
     }
 
     const clearColor = Colors.clear;
+    console.log('PPPPPPPPPPPPPPP',data)
     const pieData = data?.map(
       ({taskId, value, isEmpty, color, is_school_clock}, index) => ({
         value,
@@ -885,17 +900,23 @@ export default class HomeScreen extends BaseComponent {
     );
 
     const pieDataTrans = data?.map(
-      ({taskId, value, isEmpty, is_school_clock}, index) => ({
+      ({taskId, value, isEmpty, is_school_clock,color}, index) => ({
         value,
         svg: {
-          fill: clearColor,
-          onPress: () => (isEmpty ? {} : this.setModalVisible(true, taskId)),
+          fill: isEmpty && !color
+          ? this.state.school
+            ? Colors.gray
+            : clearColor
+          : clearColor,
+          onPress: () => (this.state.is_school_clock === is_school_clock ? console.log(taskId, value, isEmpty, is_school_clock,color,index) : this.setModalVisible(true, taskId)),
         },
         key: `pie-${index}`,
         index: index,
         is_school_clock: is_school_clock,
       }),
     );
+
+    console.log('!!!!!!!',pieData,pieDataTrans)
 
     if (this.state.is_24HrsClock) {
       this.state.clockFormateImage = Images.clockFaceDigit24HRS;
@@ -912,7 +933,7 @@ export default class HomeScreen extends BaseComponent {
     }
 
     return (
-      <TouchableOpacity style={styles.clock} disabled>
+      <TouchableOpacity style={[styles.clock]} disabled>
         <Image
           source={this.state.school ? Images.clockPurpleLight : Images.clock}
           style={styles.clockImage}
@@ -954,16 +975,16 @@ export default class HomeScreen extends BaseComponent {
           />
           <AnalogClock hourFormate={this.state.is_24HrsClock ? 24 : 12} />
 
-          <PieChart
+          {/* <PieChart
             style={styles.clockChartView}
             data={pieDataTrans}
-            outerRadius="100%"
-            innerRadius="1%"
+            innerRadius={0}
+            outerRadius={0}
             padAngle={0}
             sort={(a, b) => {
               return a.index > b.index;
             }}
-          />
+          /> */}
         </View>
       </TouchableOpacity>
     );
@@ -1111,8 +1132,9 @@ export default class HomeScreen extends BaseComponent {
       .then(response => {
         if (response.ok) {
           if (response.data.success) {
-            this.state.jokeData = response.data.data.jokes;
+            console.log('joke ', response.data.data.jokes);
             this.setState({
+              jokeData: response.data.data.jokes,
               isLoading: false,
             });
           } else {
@@ -1133,14 +1155,15 @@ export default class HomeScreen extends BaseComponent {
   }
   //#region -> API Call
   getTaskList = index => {
+    this.setState({piedata:{}})
     Helper.getChildRewardPoints(this.props.navigation);
-    if (this.state.isLoading) {
-      return;
-    }
+    // if (this.state.isLoading) {
+    //   return;
+    // }
     const currentIndex = index;
-    this.setState({
-      isLoading: true,
-    });
+    // this.setState({
+    //   isLoading: true,
+    // });
     // this.state.isLoading = true;
     // __DEV__ ? '2019-07-03' :
     const aDate = Helper.dateFormater(
@@ -1152,6 +1175,7 @@ export default class HomeScreen extends BaseComponent {
       .childTasksList(this.state.objSelectedChild.id, '', aDate)
       .then(response => {
         if (response.ok) {
+          this.setState({isLoading: false});
           if (response.data.success) {
             let arr = [];
             if (response.data.data.length > 0) {
@@ -1203,7 +1227,6 @@ export default class HomeScreen extends BaseComponent {
               );
             }
           } else {
-            this.setState({isLoading: false});
             Helper.showErrorMessage(response.data.message);
           }
         } else {
@@ -1233,7 +1256,6 @@ export default class HomeScreen extends BaseComponent {
     is_school_clock,
   ) {
     {
-      this.state.isLoading = false;
       const pieDataAM = Helper.generateClockTaskArray(
         arrAM,
         'am',
@@ -1362,13 +1384,13 @@ export default class HomeScreen extends BaseComponent {
   }
 
   indexChange = index => {
-    // alert(1)
     this._timer ? clearInterval(this._timer) : null;
     this._timer_task ? clearTimeout(this._timer_task) : null;
     this.state.isPlanetIconVisible = false;
     this.state.swiperData[index] = this.renderSwiperView(index);
     this.setState({currentIndex: index}, () => {
       // this,_timer_task = setTimeout(() => {
+      // this.getJokeOfTheDay(index);
       this.getTaskList(index);
       // }, 10000);
     });
@@ -1423,8 +1445,6 @@ export default class HomeScreen extends BaseComponent {
     }
     this.getJokeOfTheDay(this.state.currentIndex);
 
-    //this.getJokeOfTheDay(this.state.currentIndex)
-
     // the 'start' method will set the first Tips key into your state.
 
     this.state.arrWeekDays = Helper.getUpcominSevenDays();
@@ -1433,7 +1453,6 @@ export default class HomeScreen extends BaseComponent {
     // this.state.meridiam = Helper.getCurrentTimeMeridian() //MP
     this.state.meridiam = TimeType; //MP
     this.getImageBg();
-    //this.getJokeOfTheDay(this.state.currentIndex)
     this.getClockDetail();
     this.getChildDetail();
     setTimeout(() => {
@@ -1443,6 +1462,7 @@ export default class HomeScreen extends BaseComponent {
       'didFocus',
       () => {
         Helper.getChildRewardPoints(this.props.navigation);
+        this.getJokeOfTheDay(this.state.currentIndex);
       },
     );
     AsyncStorage.getItem(Constants.HOME_TIPS, (err, value) => {
@@ -1593,6 +1613,7 @@ export default class HomeScreen extends BaseComponent {
               index={this.state.currentIndex}
               renderPagination={renderPagination}
               onIndexChanged={index => this.indexChange(index)}
+              loadMinimal={Platform.OS === 'ios' ? false : true}
               scrollEnabled={!this.state.isLoading}>
               {this.renderSwiperData()}
             </Swiper>

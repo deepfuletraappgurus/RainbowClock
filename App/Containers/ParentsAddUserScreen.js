@@ -282,7 +282,7 @@ export default class ParentsAddUserScreen extends BaseComponent {
                     ]}
                     onPress={() => this.onPressSelectAvatar()}>
                     <Text style={styles.smallButtonText}>
-                      {'Change Profile Image'.toUpperCase()}
+                      {'Add Profile Image'.toUpperCase()}
                     </Text>
                   </TouchableOpacity>
                 </View>
