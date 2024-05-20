@@ -10,6 +10,7 @@ import {
   View,
   FlatList,
   Platform,
+  Dimensions,
 } from 'react-native';
 import Constants from '../Components/Constants';
 import * as Helper from '../Lib/Helper';
@@ -23,6 +24,7 @@ import {CachedImage, ImageCacheProvider} from 'react-native-cached-image';
 import AnalogClock from '../Components/AnalogClock';
 import Tips from 'react-native-tips';
 import * as Animatable from 'react-native-animatable';
+import Svg, {G, Path} from 'react-native-svg';
 
 // Styles
 import styles from './Styles/HomeScreenStyles';
@@ -33,6 +35,7 @@ import TaskListModel from '../Components/TaskListModel';
 const constDigitColor = 'blue';
 // Global Variables
 const objSecureAPI = Api.createSecure();
+const {width, height} = Dimensions.get('window');
 
 export default class HomeScreen extends BaseComponent {
   handleViewRef = ref => (this.view = ref);
@@ -325,7 +328,8 @@ export default class HomeScreen extends BaseComponent {
             const filteredTasks = filterTasks(stateData?.pieDataAMPM);
             if (
               (typeof filteredTasks !== 'undefined' ||
-              filteredTasks !== undefined) && !this.state.isLoading
+                filteredTasks !== undefined) &&
+              !this.state.isLoading
             ) {
               stateData.pieDataAMPM = filteredTasks;
               let secondLastTaskEndTime =
@@ -351,11 +355,16 @@ export default class HomeScreen extends BaseComponent {
                 timeDifference;
             }
             // Extract the end time from the taskId
-            if (!this.state.isLoading && stateData?.pieDataAMSchool !== undefined) {
+            if (
+              !this.state.isLoading &&
+              stateData?.pieDataAMSchool !== undefined
+            ) {
               const startTime = parseInt(
-                stateData?.pieDataAMSchool[1]?.taskId.split(' ')[0].split(':')[0],
+                stateData?.pieDataAMSchool[1]?.taskId
+                  .split(' ')[0]
+                  .split(':')[0],
               );
-  
+
               // Check if the start time is greater than or equal to 6:00 AM
               if (startTime <= 6) {
                 // Update the value property of the first element to 0
@@ -374,7 +383,7 @@ export default class HomeScreen extends BaseComponent {
                 );
               }
             }
-            
+
             pieData = stateData?.pieDataAMPM.concat(stateData.pieDataAMSchool);
           } else {
             pieData = stateData?.pieDataAMSchool;
@@ -564,7 +573,6 @@ export default class HomeScreen extends BaseComponent {
             this.setWatchData(this.state.currentIndex);
           }, 1000);
         }
-        
       },
     );
   }
@@ -721,7 +729,7 @@ export default class HomeScreen extends BaseComponent {
           <View style={styles.clockBottomLeft}>
             <TouchableOpacity
               disabled={this.state.isLoading}
-              style={styles.bellTouch}
+              style={[styles.bellTouch, {zIndex: 10000}]}
               onPress={() => this.toggleSchool()}>
               {!this.state.school ? (
                 <Image source={Images.bell} style={styles.bell} />
@@ -730,7 +738,9 @@ export default class HomeScreen extends BaseComponent {
               )}
             </TouchableOpacity>
             {/* MP Added Schedule Icon */}
-            <TouchableOpacity onPress={() => this.onPressMoveToSchedule()}>
+            <TouchableOpacity
+              onPress={() => this.onPressMoveToSchedule()}
+              style={{zIndex: 1000}}>
               <Image source={Images.navIcon3} style={styles.calendarIcon} />
             </TouchableOpacity>
             {/* MP Added Schedule Icon */}
@@ -857,136 +867,138 @@ export default class HomeScreen extends BaseComponent {
     return swiperData;
   };
 
+  handlePress = taskId => {
+    this.setModalVisible(true, taskId);
+  };
+  
+  transformPieData(data) {
+    const { is_24HrsClock, school } = this.state;
+  
+    return data.map(obj => {
+      if (is_24HrsClock) {
+        return obj;
+      } else if (school) {
+        return obj.is_school_clock
+          ? obj
+          : {...obj, svg: {...obj.svg, fill: '#ffffff'}};
+      } else {
+        return !obj.is_school_clock
+          ? obj
+          : {...obj, svg: {...obj.svg, fill: '#ffffff'}};
+      }
+    });
+  }
+  
   renderClockView() {
-    data = this.state.pieData;
-
-    console.log('PIEDATA', data);
-
-    date = new Date();
-
-    // Getting current hour from Date object.
-    hour = date.getHours();
-
-    // Checking if the Hour is less than equals to 11 then Set the Time format as AM.
-    if (hour <= 11) {
-      TimeType = 'AM';
-    } else {
-      // If the Hour is Not less than equals to 11 then Set the Time format as PM.
-      TimeType = 'PM';
-    }
-
+    const { pieData: data, is_24HrsClock, school } = this.state;
+    const date = new Date();
+    const hour = date.getHours();
     const clearColor = Colors.clear;
-    console.log('PPPPPPPPPPPPPPP',data)
-    const pieData = data?.map(
-      ({taskId, value, isEmpty, color, is_school_clock}, index) => ({
-        value,
+  
+    // Set clock format image based on the time and state
+    this.state.clockFormateImage = is_24HrsClock ? Images.clockFaceDigit24HRS :
+      school ? images.am_pm :
+      hour >= 0 && hour < 6 ? images.am :
+      hour >= 6 && hour < 12 ? images.am_pm :
+      hour >= 12 && hour < 18 ? images.pm :
+      images.pm_am;
+  
+    const radius = Platform.OS === 'ios' ? Math.min(width, height) / 2.7 : Math.min(width, height) / 3.1;
+    const cx = width / 2;
+    const cy = height / 2;
+    const totalValue = data.reduce((acc, entry) => acc + entry.value, 0);
+    let cumulativeAngle = 0;
+  
+    const transformedPieData = data.map((entry, index) => {
+      const startAngle = cumulativeAngle;
+      const endAngle = cumulativeAngle + (entry.value / totalValue) * 360;
+      cumulativeAngle = endAngle;
+  
+      const d = createPieSlicePath(cx, cy, radius, startAngle, endAngle);
+  
+      return {
+        ...entry,
         svg: {
-          fill:
-            isEmpty && !color
-              ? this.state.school
-                ? Colors.gray
-                : clearColor
-              : color,
-          // fill: this.state.school ?!color ? Colors.black:Colors.blue:Colors.bloodOrange,
-          // fill:color,
-
-          onPress: () => (isEmpty ? {} : this.setModalVisible(true, taskId)),
+          ...entry.svg,
+          fill: entry.isEmpty && !entry.color ? (entry.is_school_clock ? Colors.gray : clearColor) : entry.color,
+          onPress: () => this.handlePress(entry.taskId),
         },
+        d,
         key: `pie-${index}`,
-        // key: `pie-5`,
-        index: index,
-        is_school_clock: is_school_clock,
-      }),
-    );
-
-    const pieDataTrans = data?.map(
-      ({taskId, value, isEmpty, is_school_clock,color}, index) => ({
-        value,
+      };
+    });
+  
+    const finalPieData = this.transformPieData(transformedPieData);
+  
+    cumulativeAngle = 0; // Reset cumulative angle for the second pie chart
+    const pieDataTrans = data.map((entry, index) => {
+      const startAngle = cumulativeAngle;
+      const endAngle = cumulativeAngle + (entry.value / totalValue) * 360;
+      cumulativeAngle = endAngle;
+  
+      const d = createPieSlicePath(cx, cy, radius, startAngle, endAngle);
+  
+      return {
+        value: entry.value,
         svg: {
-          fill: isEmpty && !color
-          ? this.state.school
-            ? Colors.gray
-            : clearColor
-          : clearColor,
-          onPress: () => (this.state.is_school_clock === is_school_clock ? console.log(taskId, value, isEmpty, is_school_clock,color,index) : this.setModalVisible(true, taskId)),
+          fill: clearColor,
+          onPress: () => this.handlePress(entry.taskId),
         },
+        d,
         key: `pie-${index}`,
-        index: index,
-        is_school_clock: is_school_clock,
-      }),
-    );
-
-    console.log('!!!!!!!',pieData,pieDataTrans)
-
-    if (this.state.is_24HrsClock) {
-      this.state.clockFormateImage = Images.clockFaceDigit24HRS;
-    } else if (this.state.school) {
-      this.state.clockFormateImage = images.am_pm;
-    } else if (hour >= 0 && hour < 6) {
-      this.state.clockFormateImage = images.am;
-    } else if (hour >= 6 && hour < 12) {
-      this.state.clockFormateImage = images.am_pm;
-    } else if (hour >= 12 && hour < 18) {
-      this.state.clockFormateImage = images.pm;
-    } else if (hour >= 18 && hour < 24) {
-      this.state.clockFormateImage = images.pm_am;
-    }
-
+      };
+    });
+  
     return (
-      <TouchableOpacity style={[styles.clock]} disabled>
+      <View style={[styles.clock]}>
         <Image
-          source={this.state.school ? Images.clockPurpleLight : Images.clock}
+          source={school ? Images.clockPurpleLight : Images.clock}
           style={styles.clockImage}
         />
-
-        <View style={styles.clockTimerView}>
-          <PieChart
-            style={styles.clockChartView}
-            data={
-              this.state.is_24HrsClock
-                ? pieData
-                : this.state.school
-                ? pieData.map(obj => {
-                    if (obj.is_school_clock === true) {
-                      return obj; // If is_school_clock is already 1, leave value unchanged
-                    } else {
-                      return {...obj, svg: {...obj.svg, fill: '#ffffff'}}; // Otherwise, update value to 0
-                    }
-                  })
-                : pieData.map(obj => {
-                    if (obj.is_school_clock !== true) {
-                      return obj; // If is_school_clock is already 1, leave value unchanged
-                    } else {
-                      return {...obj, svg: {...obj.svg, fill: '#ffffff'}}; // Otherwise, update value to 0
-                    }
-                  })
-            }
-            innerRadius={0}
-            outerRadius={0}
-            padAngle={0}
-            sort={(a, b) => {
-              return a.index > b.index;
-            }}
-          />
+  
+        <View
+          style={{
+            position: 'absolute',
+            left: 0,
+            top: 0,
+            bottom: 0,
+            right: 0,
+            zIndex: 1,
+            justifyContent: 'center',
+            alignItems: 'center',
+          }}>
+          <Svg width={width} height={height} style={{ position: 'absolute' }}>
+            <G>
+              {finalPieData.map(slice => (
+                <Path
+                  key={slice.key}
+                  d={slice.d}
+                  fill={slice.svg.fill}
+                  onPress={slice.svg.onPress}
+                />
+              ))}
+            </G>
+          </Svg>
           <Image
             source={this.state.clockFormateImage}
             resizeMode={'contain'}
             style={styles.clockChartView}
           />
-          <AnalogClock hourFormate={this.state.is_24HrsClock ? 24 : 12} />
-
-          {/* <PieChart
-            style={styles.clockChartView}
-            data={pieDataTrans}
-            innerRadius={0}
-            outerRadius={0}
-            padAngle={0}
-            sort={(a, b) => {
-              return a.index > b.index;
-            }}
-          /> */}
+          <AnalogClock hourFormate={is_24HrsClock ? 24 : 12} />
+          <Svg width={width} height={height} style={{ position: 'absolute', zIndex: 1 }}>
+            <G>
+              {pieDataTrans.map(slice => (
+                <Path
+                  key={slice.key}
+                  d={slice.d}
+                  fill={slice.svg.fill}
+                  onPress={slice.svg.onPress}
+                />
+              ))}
+            </G>
+          </Svg>
         </View>
-      </TouchableOpacity>
+      </View>
     );
   }
 
@@ -1155,7 +1167,7 @@ export default class HomeScreen extends BaseComponent {
   }
   //#region -> API Call
   getTaskList = index => {
-    this.setState({piedata:{}})
+    this.setState({piedata: {}});
     Helper.getChildRewardPoints(this.props.navigation);
     // if (this.state.isLoading) {
     //   return;
@@ -1384,6 +1396,7 @@ export default class HomeScreen extends BaseComponent {
   }
 
   indexChange = index => {
+    this.setState({isLoading: true});
     this._timer ? clearInterval(this._timer) : null;
     this._timer_task ? clearTimeout(this._timer_task) : null;
     this.state.isPlanetIconVisible = false;
@@ -1796,5 +1809,42 @@ export default class HomeScreen extends BaseComponent {
       </View>
     );
   }
+
   //#endregion
 }
+
+const createPieSlicePath = (cx, cy, radius, startAngle, endAngle) => {
+  const start = polarToCartesian(cx, cy, radius, endAngle);
+  const end = polarToCartesian(cx, cy, radius, startAngle);
+
+  const largeArcFlag = endAngle - startAngle <= 180 ? '0' : '1';
+
+  const d = [
+    'M',
+    start.x,
+    start.y,
+    'A',
+    radius,
+    radius,
+    0,
+    largeArcFlag,
+    0,
+    end.x,
+    end.y,
+    'L',
+    cx,
+    cy,
+    'Z',
+  ].join(' ');
+
+  return d;
+};
+
+const polarToCartesian = (cx, cy, radius, angleInDegrees) => {
+  const angleInRadians = ((angleInDegrees - 90) * Math.PI) / 180.0;
+
+  return {
+    x: cx + radius * Math.cos(angleInRadians),
+    y: cy + radius * Math.sin(angleInRadians),
+  };
+};

@@ -13,6 +13,7 @@ import {
   Dimensions,
   BackHandler,
   StyleSheet,
+  Platform,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import EventEmitter from '../Lib/EventEmitter';
@@ -364,12 +365,14 @@ export default class TaskModal extends BaseComponent {
                   )}
 
                   {this.state.objFooterSelectedTask?.start_time &&
-                  this.state.objFooterSelectedTask?.task_time ? (
+                  this.state.objFooterSelectedTask?.task_time !== '' &&
+                  this.stateobjFooterSelectedTask?.task_time !== null ? (
                     <View
                       style={{justifyContent: 'center', alignItems: 'center'}}>
                       {this.renderMiniClockView()}
                     </View>
-                  ) : this.state.objFooterSelectedTask?.task_time ? (
+                  ) : this.state.objFooterSelectedTask?.task_time !== '' &&
+                    this.state.objFooterSelectedTask?.task_time !== null ? (
                     <TouchableOpacity
                       style={[styles.button, styles.smallButton]}
                       onPress={() =>
@@ -380,15 +383,16 @@ export default class TaskModal extends BaseComponent {
                       </Text>
                     </TouchableOpacity>
                   ) : null}
-                  {this.state.objFooterSelectedTask?.task_time && (
-                    <TouchableOpacity
-                      style={[styles.button, styles.smallButton]}
-                      onPress={() => this.pauseTask()}>
-                      <Text style={styles.mediumButtonText}>
-                        {this.state.buttonText}
-                      </Text>
-                    </TouchableOpacity>
-                  )}
+                  {this.state.objFooterSelectedTask?.task_time !== '' &&
+                    this.state.objFooterSelectedTask?.task_time !== null && (
+                      <TouchableOpacity
+                        style={[styles.button, styles.smallButton]}
+                        onPress={() => this.pauseTask()}>
+                        <Text style={styles.mediumButtonText}>
+                          {this.state.buttonText}
+                        </Text>
+                      </TouchableOpacity>
+                    )}
                 </View>
               </View>
               <View
@@ -433,17 +437,30 @@ export default class TaskModal extends BaseComponent {
                     },
                   ]}
                 />
-                <FastImage
-                  style={{
-                    width: Dimensions.get('window').width / 1.5,
-                    height: Dimensions.get('window').height / 1.2,
-                    position: 'absolute',
-                    bottom: 20,
-                    display: this.state.showSuccess ? 'flex' : 'none',
-                  }}
-                  source={Images.success_animation}
-                  resizeMode={FastImage.resizeMode.cover}
-                />
+                {Platform.OS === 'ios' ? (
+                  <Image
+                    source={Images.success_animation}
+                    style={{
+                      width: Dimensions.get('window').width / 1.5,
+                      height: Dimensions.get('window').height / 1.2,
+                      position: 'absolute',
+                      bottom: 20,
+                      display: this.state.showSuccess ? 'flex' : 'none',
+                    }}
+                  />
+                ) : (
+                  <FastImage
+                    style={{
+                      width: Dimensions.get('window').width / 1.5,
+                      height: Dimensions.get('window').height / 1.2,
+                      position: 'absolute',
+                      bottom: 20,
+                      display: this.state.showSuccess ? 'flex' : 'none',
+                    }}
+                    source={Images.success_animation}
+                    resizeMode={FastImage.resizeMode.cover}
+                  />
+                )}
               </View>
             </SafeAreaView>
           </View>
