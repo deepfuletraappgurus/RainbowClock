@@ -130,6 +130,7 @@ export default class SelectTaskScreen extends BaseComponent {
   getChildDetail = () => {
     AsyncStorage.getItem(Constants.KEY_SELECTED_CHILD, (err, child) => {
       if (child != '') {
+        console.log('========',JSON.parse(child))
         this.setState({objSelectedChild: JSON.parse(child)}, () => {
           const tasks = this.state.objSelectedChild.tasks;
           let arr = [];

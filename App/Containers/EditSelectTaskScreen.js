@@ -194,13 +194,67 @@ export default class EditSelectTaskScreen extends BaseComponent {
       Helper.showErrorMessage(Constants.MESSAGE_RECOVER_TASK_ERROR);
       return false;
     } else {
+      let delete_message = '';
+      if (this.state.dictCreateTask['is_multiple_task']) {
+        delete_message = 'Are you sure you want to delete this task?';
+      } else {
+        delete_message =
+          'Are you sure you want to delete this task? It will also remove the schedule attached to this task.';
+      }
       Helper.showConfirmationMessageActions(
-        'Are you sure you want to delete this task?',
+        delete_message,
         'No',
         'Yes',
         () => {},
         () => this.onActionYes(),
       );
+    }
+  };
+
+  handleDelete = async subTaskId => {
+    const key = Constants.KEY_SELECTED_CHILD; // replace with your actual key
+    const data = await this.getObjectFromStorage(key);
+    if (data) {
+      const updatedData = this.deleteSubTask(data, subTaskId);
+      await this.saveObjectToStorage(key, updatedData);
+    }
+  };
+
+  getObjectFromStorage = async key => {
+    try {
+      const jsonValue = await AsyncStorage.getItem(key);
+      return jsonValue != null ? JSON.parse(jsonValue) : null;
+    } catch (e) {
+      console.error('Error retrieving data from local storage:', e);
+    }
+  };
+
+  deleteSubTask = (data, subTaskId) => {
+    const updatedData = {...data};
+
+    if (updatedData.tasks) {
+      for (const timeSlot in updatedData.tasks) {
+        // Filter out the sub-task with the given subTaskId
+        updatedData.tasks[timeSlot] = updatedData.tasks[timeSlot].filter(
+          task => task.sub_task_id !== subTaskId,
+        );
+
+        // If the resulting array is empty, you can decide to delete the time slot or handle it accordingly
+        if (updatedData.tasks[timeSlot].length === 0) {
+          delete updatedData.tasks[timeSlot];
+        }
+      }
+    }
+
+    return updatedData;
+  };
+
+  saveObjectToStorage = async (key, value) => {
+    try {
+      const jsonValue = JSON.stringify(value);
+      await AsyncStorage.setItem(key, jsonValue);
+    } catch (e) {
+      console.error('Error saving data to local storage:', e);
     }
   };
 
@@ -216,6 +270,8 @@ export default class EditSelectTaskScreen extends BaseComponent {
       if (resJSON.ok && resJSON.status == 200) {
         this.setState({isDeletesubTaskLoading: false});
         if (resJSON.data.success) {
+          console.log('11111111111111111111111');
+          this.handleDelete(taskId);
           try {
             Helper.showConfirmationMessagesignleAction(
               resJSON.data.message,
@@ -418,11 +474,9 @@ export default class EditSelectTaskScreen extends BaseComponent {
                 'Ok',
               ).then(action => {
                 if (action) {
-               
-                    this.setState({isLoading: false});
-                    this.setTaskModelVisible();
-                    this.props.navigation.goBack();
-                  
+                  this.setState({isLoading: false});
+                  this.setTaskModelVisible();
+                  this.props.navigation.goBack();
                 }
               });
             } catch (error) {}

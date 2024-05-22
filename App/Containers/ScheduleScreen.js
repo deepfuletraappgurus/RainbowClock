@@ -212,7 +212,7 @@ export default class ScheduleScreen extends BaseComponent {
     }
   };
 
-  parentViewEditTask = item => {
+  parentViewEditTask = (item,schedule_details) => {
     var dictCreateTask = {
       taskName: item.task_name,
       fromTime: item.time_from,
@@ -227,6 +227,8 @@ export default class ScheduleScreen extends BaseComponent {
       sub_task_id: item?.sub_task_id,
       show_delete: true,
       is_saved_for_future: item?.is_saved_for_future,
+      is_multiple_task: schedule_details?.tasks.length !== 1 ? true : false,
+      time_frame: schedule_details?.time
     };
     this.props.navigation.navigate('EditSelectTaskScreen', {
       dictCreateTask: dictCreateTask,
@@ -239,8 +241,9 @@ export default class ScheduleScreen extends BaseComponent {
   };
 
   onPressTask(objTask, item) {
+    console.log('-----------',objTask,item)
     if (this.state.isMenuAsParentPortal) {
-      this.parentViewEditTask(objTask);
+      this.parentViewEditTask(objTask,item);
     } else {
       console.log('-----------',objTask,item)
       if (
@@ -302,7 +305,7 @@ export default class ScheduleScreen extends BaseComponent {
     Helper.getChildRewardPoints(this.props.navigation);
   }
 
-  onTimeBlockDeletePress(dictCreateTask) {
+  onTimeBlockDeletePress = async(dictCreateTask) => {
     const currentTime = moment();
     const startTime = moment(dictCreateTask?.time.split('-')[0], 'hh:mm A');
     const endTime = moment(dictCreateTask?.time.split('-')[1], 'hh:mm A');
@@ -313,20 +316,75 @@ export default class ScheduleScreen extends BaseComponent {
         'No',
         'Yes',
         () => {},
-        () => this.onDeleteScheduleActionYes(dictCreateTask.tasks[0]),
+        () => this.onDeleteScheduleActionYes(dictCreateTask),
       );
     } else {
+      
+      console.log('Schedule......',dictCreateTask)
+      let delete_message = ''
+      if (dictCreateTask?.tasks[0].is_date) {
+        if (dictCreateTask?.tasks.length == 1) {
+          delete_message = 'Are you sure you want to remove this schedule?'
+        }
+        else{
+          delete_message = 'Are you sure you want to remove this schedule? It will also remove all the tasks of this schedule.'
+        }
+      }
+      else{
+        if (dictCreateTask?.tasks.length == 1) {
+          delete_message = 'Are you sure you want to remove this recurring schedule?'
+        }
+        else{
+          delete_message = 'Are you sure you want to remove this recurring schedule? It will also remove all the tasks of this schedule.'
+        }
+      }
       Helper.showConfirmationMessageActions(
-        'Are you sure you want to delete this block of time?  It will also remove all the tasks saved in this time block.',
+        delete_message,
         'No',
         'Yes',
         () => {},
-        () => this.onActionYes(dictCreateTask.tasks[0]),
+        () => this.onActionYes(dictCreateTask.tasks[0],dictCreateTask?.time),
       );
     }
   }
 
-  onActionYes = dictCreateTask => {
+   getObjectFromStorage = async (key) => {
+    try {
+      const jsonValue = await AsyncStorage.getItem(key);
+      return jsonValue != null ? JSON.parse(jsonValue) : null;
+    } catch (e) {
+      console.error("Error retrieving data from local storage:", e);
+    }
+  };
+
+  handleDelete = async (timeSlot) => {
+    const key = Constants.KEY_SELECTED_CHILD;  // replace with your actual key
+    const data = await this.getObjectFromStorage(key);
+    if (data) {
+      const updatedData = this.deleteTaskTimeSlot(data, timeSlot);
+      await this.saveObjectToStorage(key, updatedData);
+      console.log('Updated data:', updatedData);
+    }
+  };
+
+  deleteTaskTimeSlot = (data, timeSlot) => {
+    const updatedData = { ...data };
+    if (updatedData.tasks && updatedData.tasks[timeSlot]) {
+      delete updatedData.tasks[timeSlot];
+    }
+    return updatedData;
+  };
+
+  saveObjectToStorage = async (key, value) => {
+    try {
+      const jsonValue = JSON.stringify(value);
+      await AsyncStorage.setItem(key, jsonValue);
+    } catch (e) {
+      console.error("Error saving data to local storage:", e);
+    }
+  };
+
+  onActionYes = (dictCreateTask,time) => {
     console.log('dddddd',dictCreateTask)
     const res = mApi
       .deleteSchedule(
@@ -340,6 +398,7 @@ export default class ScheduleScreen extends BaseComponent {
           if (resJSON.data.success) {
             Helper.showErrorMessage(resJSON.data.message);
             this.getTaskList();
+            this.handleDelete(time)
           } else {
             Helper.showErrorMessage(resJSON.data.message);
           }
@@ -380,13 +439,30 @@ export default class ScheduleScreen extends BaseComponent {
   }
 
   onDeleteScheduleActionYes(dictCreateTask) {
-    Helper.showConfirmationMessageActions(
-      'Are you sure you want to delete this block of time?  It will also remove all the tasks saved in this time block.',
-      'No',
-      'Yes',
-      () => {},
-      () => this.onActionYes(dictCreateTask),
-    );
+    let delete_message = ''
+      if (dictCreateTask?.tasks[0].is_date) {
+        if (dictCreateTask?.tasks.length == 1) {
+          delete_message = 'Are you sure you want to remove this schedule?'
+        }
+        else{
+          delete_message = 'Are you sure you want to remove this schedule? It will also remove all the tasks of this schedule.'
+        }
+      }
+      else{
+        if (dictCreateTask?.tasks.length == 1) {
+          delete_message = 'Are you sure you want to remove this recurring schedule?'
+        }
+        else{
+          delete_message = 'Are you sure you want to remove this recurring schedule? It will also remove all the tasks of this schedule.'
+        }
+      }
+      Helper.showConfirmationMessageActions(
+        delete_message,
+        'No',
+        'Yes',
+        () => {},
+        () => this.onActionYes(dictCreateTask.tasks[0],dictCreateTask?.time),
+      );
   }
 
   onTimeBlockAddPress(item) {
