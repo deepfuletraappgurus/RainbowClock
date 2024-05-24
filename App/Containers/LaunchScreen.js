@@ -83,6 +83,7 @@ export default class LaunchScreen extends BaseComponent {
 
   //#endregion -> API Calls
   callAPI_LogIn = async () => {
+    const fcm_token = await getFcmToken()
     try {
       this.setState({isLoading: true});
 
@@ -91,7 +92,7 @@ export default class LaunchScreen extends BaseComponent {
         this.state.password,
         Platform.OS.toUpperCase(), // Device Type
         await DeviceInfo.getUniqueId(), // Device Id
-        '', // Device Token
+        fcm_token ?? '', // Device Token
         DeviceInfo.getVersion(), // Version code
         DeviceInfo.getSystemVersion(), // OS version
         DeviceInfo.getBrand() + ' ' + DeviceInfo.getModel(), // Mobile Name

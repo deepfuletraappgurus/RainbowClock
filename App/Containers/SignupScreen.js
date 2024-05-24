@@ -22,6 +22,8 @@ import {Images, Colors} from '../Themes';
 import styles from './Styles/SignupScreenStyles';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import DeviceInfo from 'react-native-device-info';
+import { getFcmToken } from '../Lib/firebaseService';
 
 
 // Global Variables
@@ -90,56 +92,69 @@ export default class SignupScreen extends BaseComponent {
 
   //#region -> API Calls
   callAPI_SignUp = async () => {
-    this.setState({isLoading: true});
-    const res = objAPI
-      .doSignUp(
-        this.state.username,
-        this.state.email,
-        this.state.password,
-        '',
-        Platform.OS.toUpperCase(),
-        '',
-      )
-      .then(resJSON => {
-        if (resJSON.ok && resJSON.status == 200) {
-          this.setState({isLoading: false});
-          if (resJSON.data.success) {
-            Helper.storeItem(
-              Constants.KEY_USER,
-              JSON.stringify(resJSON.data.data),
-            );
-            try {
-              AsyncStorage.setItem(
-                Constants.KEY_USER_NAME,
-                resJSON.data.data.username,
-              );
-              AsyncStorage.setItem(
-                Constants.KEY_USER_TOKEN,
-                resJSON.data.data.token + '',
-              );
+    const fcm_token = await getFcmToken()
+    try {
+        this.setState({isLoading: true});
+        
+        const uniqueId = await DeviceInfo.getUniqueId();
+        const deviceType = Platform.OS.toUpperCase();
+        const versionCode = DeviceInfo.getVersion();
+        const osVersion = DeviceInfo.getSystemVersion();
+        const mobileName = DeviceInfo.getBrand() + ' ' + DeviceInfo.getModel();
 
-              //FOR SHOW TIPS
-              AsyncStorage.setItem(Constants.HOME_TIPS, JSON.stringify(true));
-              AsyncStorage.setItem(
-                Constants.PARENT_HOME_TIPS,
-                JSON.stringify(true),
-              );
-              AsyncStorage.setItem(Constants.TASK_TIPS, JSON.stringify(true));
-            } catch (error) {
+        const res = await objAPI.doSignUp(
+            this.state.username,
+            this.state.email,
+            this.state.password,
+            deviceType, // Device Type
+            uniqueId, // Device Id
+            fcm_token ?? '', // Device Token
+            versionCode, // Version code
+            osVersion, // OS version
+            mobileName, // Mobile Name
+        );
+
+        if (res.ok && res.status === 200) {
+            this.setState({isLoading: false});
+            if (res.data.success) {
+                Helper.storeItem(
+                    Constants.KEY_USER,
+                    JSON.stringify(res.data.data),
+                );
+                try {
+                    await AsyncStorage.setItem(
+                        Constants.KEY_USER_NAME,
+                        res.data.data.username,
+                    );
+                    await AsyncStorage.setItem(
+                        Constants.KEY_USER_TOKEN,
+                        res.data.data.token + '',
+                    );
+
+                    //FOR SHOW TIPS
+                    await AsyncStorage.setItem(Constants.HOME_TIPS, JSON.stringify(true));
+                    await AsyncStorage.setItem(Constants.PARENT_HOME_TIPS, JSON.stringify(true));
+                    await AsyncStorage.setItem(Constants.TASK_TIPS, JSON.stringify(true));
+                } catch (error) {
+                    // Handle the error if needed
+                }
+                this.props.navigation.navigate('PinScreen');
+            } else {
+                Helper.showErrorMessage(res.data.message);
             }
-            this.props.navigation.navigate('PinScreen');
-          } else {
-            Helper.showErrorMessage(resJSON.data.message);
-          }
-        } else if (resJSON.status == 500) {
-          this.setState({isLoading: false});
-          Helper.showErrorMessage(resJSON.data.message);
+        } else if (res.status === 500) {
+            this.setState({isLoading: false});
+            Helper.showErrorMessage(res.data.message);
         } else {
-          this.setState({isLoading: false});
-          Helper.showErrorMessage(Constants.SERVER_ERROR);
+            this.setState({isLoading: false});
+            Helper.showErrorMessage(Constants.SERVER_ERROR);
         }
-      });
-  };
+    } catch (error) {
+      console.log('eee',error)
+        this.setState({isLoading: false});
+        Helper.showErrorMessage(Constants.SERVER_ERROR);
+    }
+};
   //#endregion
 
   //#region -> View Render

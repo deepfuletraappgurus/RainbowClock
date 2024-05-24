@@ -22,6 +22,8 @@ import {Colors, Images, Metrics} from '../Themes';
 import styles from './Styles/LaunchScreenStyles';
 import BaseComponent from '../Components/BaseComponent';
 import {NavigationActions, StackActions} from 'react-navigation';
+import { getFcmToken } from '../Lib/firebaseService';
+import DeviceInfo from 'react-native-device-info';
 
 // Global Variables
 const objSecureAPI = Api.createSecure();
@@ -152,7 +154,7 @@ export default class ParentsUpdateProfileScreen extends BaseComponent {
   btnUpdateProfile = () => {
     Keyboard.dismiss();
     if (this.isValidate()) {
-      this.callUpdareParentProfile();
+      this.callUpdateParentProfile();
     }
   };
   btnDeleteProfile = () => {
@@ -239,61 +241,71 @@ export default class ParentsUpdateProfileScreen extends BaseComponent {
     });
   };
   //#region -> API Calls
-  callUpdareParentProfile = async () => {
-    this.setState({isLoading: true});
-    var strPin =
-      this.state.pin1 + this.state.pin2 + this.state.pin3 + this.state.pin4;
-    const res = objSecureAPI
-      .doUpdateParentProfile(
-        this.state.username,
-        this.state.email,
-        strPin,
-        '',
-        Platform.OS.toUpperCase(),
-        '',
-      )
-      .then(resJSON => {
-        if (resJSON.ok && resJSON.status == 200) {
-          if (resJSON.data.success) {
-            this.setState({isLoading: false});
-            Helper.storeItem(
-              Constants.KEY_USER,
-              JSON.stringify(resJSON.data.data),
-            );
-            try {
-              AsyncStorage.setItem(
-                Constants.KEY_USER_NAME,
-                resJSON.data.data.username,
-              );
-              AsyncStorage.setItem(
-                Constants.KEY_USER_TOKEN,
-                resJSON.data.data.token + '',
-              );
-              Helper.showErrorMessage(resJSON.data.message);
-              this.setState({
-                pin1:'',
-                pin2:'',
-                pin3:'',
-                pin4:'',
-                cpin1:'',
-                cpin2:'',
-                cpin3:'',
-                cpin4:''
-              })
-              this.props.navigation.goBack()
-            } catch (error) {}
-          } else {
-            Helper.showErrorMessage(resJSON.data.message);
-          }
-        } else if (resJSON.status == 500) {
-          this.setState({isLoading: false});
-          Helper.showErrorMessage(resJSON.data.message);
+  callUpdateParentProfile = async () => {
+    try {
+        const fcm_token = await getFcmToken();
+        this.setState({ isLoading: true });
+
+        const strPin = this.state.pin1 + this.state.pin2 + this.state.pin3 + this.state.pin4;
+        const deviceId = await DeviceInfo.getUniqueId();
+        const res = await objSecureAPI.doUpdateParentProfile(
+            this.state.username,
+            this.state.email,
+            strPin,
+            Platform.OS.toUpperCase(), // Device Type
+            deviceId, // Device Id
+            fcm_token ?? '', // Device Token
+            DeviceInfo.getVersion(), // Version code
+            DeviceInfo.getSystemVersion(), // OS version
+            DeviceInfo.getBrand() + ' ' + DeviceInfo.getModel(), // Mobile Name
+        );
+
+        if (res.ok && res.status === 200) {
+            if (res.data.success) {
+                this.setState({ isLoading: false });
+                Helper.storeItem(
+                    Constants.KEY_USER,
+                    JSON.stringify(res.data.data),
+                );
+                try {
+                    await AsyncStorage.setItem(
+                        Constants.KEY_USER_NAME,
+                        res.data.data.username,
+                    );
+                    await AsyncStorage.setItem(
+                        Constants.KEY_USER_TOKEN,
+                        res.data.data.token + '',
+                    );
+                    Helper.showErrorMessage(res.data.message);
+                    this.setState({
+                        pin1: '',
+                        pin2: '',
+                        pin3: '',
+                        pin4: '',
+                        cpin1: '',
+                        cpin2: '',
+                        cpin3: '',
+                        cpin4: ''
+                    });
+                    this.props.navigation.goBack();
+                } catch (error) {
+                    // Handle the error if needed
+                }
+            } else {
+                Helper.showErrorMessage(res.data.message);
+            }
+        } else if (res.status === 500) {
+            this.setState({ isLoading: false });
+            Helper.showErrorMessage(res.data.message);
         } else {
-          this.setState({isLoading: false});
-          Helper.showErrorMessage(Constants.SERVER_ERROR);
+            this.setState({ isLoading: false });
+            Helper.showErrorMessage(Constants.SERVER_ERROR);
         }
-      });
-  };
+    } catch (error) {
+        this.setState({ isLoading: false });
+        Helper.showErrorMessage(Constants.SERVER_ERROR);
+    }
+};
   //#endregion
 
   //#region -> View Render

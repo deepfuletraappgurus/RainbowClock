@@ -58,17 +58,23 @@ const create = (baseURL = base_url) => {
     username,
     email,
     password,
-    device_id,
     device_type,
+    device_id,
     device_token,
+    version_code,
+    os_version,
+    mobile_name,
   ) =>
     api.post('/signup', {
       username: username,
       email: email,
       password: password,
-      device_id: device_id,
       device_type: device_type,
+      device_id: device_id,
       device_token: device_token,
+      version_code: version_code,
+      os_version: os_version,
+      mobile_name: mobile_name,
     });
   const doLogIn = (
     username,
@@ -79,18 +85,7 @@ const create = (baseURL = base_url) => {
     version_code,
     os_version,
     mobile_name,
-  ) => {
-    console.log(
-      '11111--',
-      username,
-      password,
-      device_type,
-      device_id,
-      device_token,
-      version_code,
-      os_version,
-      mobile_name,
-    );
+  ) =>
     api.post('/login', {
       username: username,
       password: password,
@@ -101,10 +96,26 @@ const create = (baseURL = base_url) => {
       os_version: os_version,
       mobile_name: mobile_name,
     });
-  };
+
   const getRewardIcons = () => api.get('/icons');
-  const doForgotPassword = username =>
-    api.post('/forgot', {username: username});
+  const doForgotPassword = (
+    username,
+    device_type,
+    device_id,
+    device_token,
+    version_code,
+    os_version,
+    mobile_name,
+  ) =>
+    api.post('/forgot', {
+      username: username,
+      device_type: device_type,
+      device_id: device_id,
+      device_token: device_token,
+      version_code: version_code,
+      os_version: os_version,
+      mobile_name: mobile_name,
+    });
 
   // ------
   // STEP 3
@@ -294,9 +305,12 @@ const createSecure = (baseURL = base_url) => {
     username,
     email,
     pin,
-    device_id,
     device_type,
+    device_id,
     device_token,
+    version_code,
+    os_version,
+    mobile_name,
   ) => {
     const data = new FormData();
     //Parms
@@ -306,6 +320,9 @@ const createSecure = (baseURL = base_url) => {
     data.append('device_id', device_id);
     data.append('device_type', device_type);
     data.append('device_token', device_token);
+    data.append('version_code', version_code);
+    data.append('os_version', os_version);
+    data.append('mobile_name', mobile_name);
     return api.post('/updateprofile', data);
   };
 
