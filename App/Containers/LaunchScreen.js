@@ -25,6 +25,8 @@ import crashlytics from '@react-native-firebase/crashlytics';
 // Styles
 import styles from './Styles/LaunchScreenStyles';
 import BaseComponent from '../Components/BaseComponent';
+import {getFcmToken} from '../Lib/firebaseService';
+import DeviceInfo from 'react-native-device-info';
 
 // Global Variables
 const objAPI = Api.create();
@@ -81,74 +83,84 @@ export default class LaunchScreen extends BaseComponent {
 
   //#endregion -> API Calls
   callAPI_LogIn = async () => {
-    this.setState({isLoading: true});
-    const res = objAPI
-      .doLogIn(
+    try {
+      this.setState({isLoading: true});
+
+      const resJSON = await objAPI.doLogIn(
         this.state.username,
         this.state.password,
-        '',
-        Platform.OS.toUpperCase(),
-        '',
-      )
-      .then(resJSON => {
-        if (resJSON.ok && resJSON.status == 200) {
-          this.setState({isLoading: false});
-          if (resJSON.data.success) {
-            try {
-              AsyncStorage.setItem(
-                Constants.KEY_USER_IMAGE,
-                resJSON.data.data.profile_pic,
-              );
-              Helper.storeItem(
-                Constants.KEY_USER,
-                JSON.stringify(resJSON.data.data),
-              );
-              AsyncStorage.setItem(
-                Constants.KEY_USER_NAME,
-                resJSON.data.data.username,
-              );
-              AsyncStorage.setItem(
-                Constants.KEY_USER_TOKEN,
-                resJSON.data.data.token + '',
-              );
+        Platform.OS.toUpperCase(), // Device Type
+        await DeviceInfo.getUniqueId(), // Device Id
+        '', // Device Token
+        DeviceInfo.getVersion(), // Version code
+        DeviceInfo.getSystemVersion(), // OS version
+        DeviceInfo.getBrand() + ' ' + DeviceInfo.getModel(), // Mobile Name
+      );
 
-              if (resJSON.data.data.is_set) {
-                AsyncStorage.setItem(Constants.KEY_IS_LOGIN, '1');
-                if (resJSON.data.data.child_cnt > 0) {
-                  AsyncStorage.setItem(Constants.KEY_USER_HAVE_CHILDREN, '1');
-                  const resetAction = StackActions.reset({
-                    index: 0,
-                    key: null,
-                    actions: [
-                      NavigationActions.navigate({routeName: 'drawerStack'}),
-                    ],
-                  });
-                  this.props.navigation.dispatch(resetAction);
-                } else {
-                  this.props.navigation.navigate('GetStartedScreen');
-                }
+      console.log('eeee', resJSON);
+
+      if (resJSON.ok && resJSON.status === 200) {
+        this.setState({isLoading: false});
+
+        if (resJSON.data.success) {
+          try {
+            await AsyncStorage.setItem(
+              Constants.KEY_USER_IMAGE,
+              resJSON.data.data.profile_pic,
+            );
+            Helper.storeItem(
+              Constants.KEY_USER,
+              JSON.stringify(resJSON.data.data),
+            );
+            await AsyncStorage.setItem(
+              Constants.KEY_USER_NAME,
+              resJSON.data.data.username,
+            );
+            await AsyncStorage.setItem(
+              Constants.KEY_USER_TOKEN,
+              resJSON.data.data.token + '',
+            );
+
+            if (resJSON.data.data.is_set) {
+              await AsyncStorage.setItem(Constants.KEY_IS_LOGIN, '1');
+
+              if (resJSON.data.data.child_cnt > 0) {
+                await AsyncStorage.setItem(
+                  Constants.KEY_USER_HAVE_CHILDREN,
+                  '1',
+                );
+                const resetAction = StackActions.reset({
+                  index: 0,
+                  key: null,
+                  actions: [
+                    NavigationActions.navigate({routeName: 'drawerStack'}),
+                  ],
+                });
+                this.props.navigation.dispatch(resetAction);
               } else {
-                // if(resJSON.data.data.is_set == ''){
-                //   this.props.navigation.navigate('PinScreen')
-                // }
-                // else{
-                //   AsyncStorage.setItem(Constants.KEY_IS_LOGIN, resJSON.data.data.is_set)
-                // }
-                this.props.navigation.navigate('PinScreen');
+                this.props.navigation.navigate('GetStartedScreen');
               }
-            } catch (error) {
+            } else {
+              this.props.navigation.navigate('PinScreen');
             }
-          } else {
-            Helper.showErrorMessage(resJSON.data.message);
+          } catch (error) {
+            console.error('Error storing data:', error);
           }
-        } else if (resJSON.status == 500) {
-          this.setState({isLoading: false});
-          Helper.showErrorMessage(resJSON.data.message);
         } else {
-          this.setState({isLoading: false});
-          Helper.showErrorMessage(Constants.SERVER_ERROR);
+          Helper.showErrorMessage(resJSON.data.message);
         }
-      });
+      } else if (resJSON.status === 500) {
+        this.setState({isLoading: false});
+        Helper.showErrorMessage(resJSON.data.message);
+      } else {
+        this.setState({isLoading: false});
+        Helper.showErrorMessage(Constants.SERVER_ERROR);
+      }
+    } catch (error) {
+      console.error('API call error:', error);
+      this.setState({isLoading: false});
+      Helper.showErrorMessage(Constants.SERVER_ERROR);
+    }
   };
   //#endregion
 
@@ -195,7 +207,9 @@ export default class LaunchScreen extends BaseComponent {
                         ref="pass"
                         placeholderTextColor={Colors.placeHolderText}
                         returnKeyType={'done'}
-                        secureTextEntry={this.state.isPasswordSecure ? true : false}
+                        secureTextEntry={
+                          this.state.isPasswordSecure ? true : false
+                        }
                         onChangeText={password => this.setState({password})}
                         onSubmitEditing={event => {
                           Keyboard.dismiss();

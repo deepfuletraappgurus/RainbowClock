@@ -70,14 +70,38 @@ const create = (baseURL = base_url) => {
       device_type: device_type,
       device_token: device_token,
     });
-  const doLogIn = (username, password, device_id, device_type, device_token) =>
+  const doLogIn = (
+    username,
+    password,
+    device_type,
+    device_id,
+    device_token,
+    version_code,
+    os_version,
+    mobile_name,
+  ) => {
+    console.log(
+      '11111--',
+      username,
+      password,
+      device_type,
+      device_id,
+      device_token,
+      version_code,
+      os_version,
+      mobile_name,
+    );
     api.post('/login', {
       username: username,
       password: password,
-      device_id: device_id,
       device_type: device_type,
+      device_id: device_id,
       device_token: device_token,
+      version_code: version_code,
+      os_version: os_version,
+      mobile_name: mobile_name,
     });
+  };
   const getRewardIcons = () => api.get('/icons');
   const doForgotPassword = username =>
     api.post('/forgot', {username: username});
@@ -447,7 +471,7 @@ const createSecure = (baseURL = base_url) => {
     data.append('description', '');
     data.append('is_school_clock', is_school_clock);
 
-    console.log('UPDATE SCHEDULE',data)
+    console.log('UPDATE SCHEDULE', data);
 
     return api.post('/updatetask', data);
   };

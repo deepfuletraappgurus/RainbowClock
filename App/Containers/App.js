@@ -10,6 +10,7 @@ import {configureStore, Root} from '../Navigation/ReduxNavigation';
 import EventEmitter from '../Lib/EventEmitter';
 import * as Helper from '../Lib/Helper';
 import {GestureHandlerRootView} from 'react-native-gesture-handler';
+import { requestUserPermission } from '../Lib/firebaseService';
 
 // create our store
 const store = configureStore({});
@@ -34,6 +35,7 @@ class App extends Component {
   componentDidMount() {
     if (Platform.OS === 'android') {
     }
+    requestUserPermission()
     try {
       AsyncStorage.setItem(Constants.KEY_ACCESS_AS_PARENTS, '0');
       AsyncStorage.getItem(Constants.KEY_IS_LOGIN, (err, result) => {
