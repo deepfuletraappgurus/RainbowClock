@@ -187,13 +187,6 @@ export default class EditSelectTaskScreen extends BaseComponent {
   };
 
   deleteTask = () => {
-    if (
-      this.state.taskStatus == 'Start' ||
-      this.state.taskStatus == 'Completed'
-    ) {
-      Helper.showErrorMessage(Constants.MESSAGE_RECOVER_TASK_ERROR);
-      return false;
-    } else {
       let delete_message = '';
       if (this.state.dictCreateTask['is_multiple_task']) {
         delete_message = 'Are you sure you want to delete this task?';
@@ -208,7 +201,6 @@ export default class EditSelectTaskScreen extends BaseComponent {
         () => {},
         () => this.onActionYes(),
       );
-    }
   };
 
   handleDelete = async subTaskId => {
