@@ -375,22 +375,23 @@ export default class SelectTaskScreen extends BaseComponent {
               this.setState({
                 createdTaskCount: this.state.createdTaskCount + 1,
               });
-              this.setState({
-                taskName: '',
-                taskTokenType: '',
-                taskNumberOfToken: '',
-                taskImage: '',
-                taskTime: '',
-                taskCustomImage: '',
-                taskCustomImagePath: '',
-                isSaveForFuture: 0
-              });
+              
               Helper.showConfirmationMessagesignleAction(
                 resJSON.data.message,
                 'Ok',
               ).then(action => {
                 if (action) {
                   if (this.state.taskType === Constants.TASK_TYPE_DEFAULT) {
+                    this.setState({
+                      taskName: '',
+                      taskTokenType: '',
+                      taskNumberOfToken: '',
+                      taskImage: '',
+                      taskTime: '',
+                      taskCustomImage: '',
+                      taskCustomImagePath: '',
+                      isSaveForFuture: 0
+                    });
                     this.setTaskModelVisible();
                     // this.moveToParentHomeScreen();
                   } else {

@@ -290,70 +290,68 @@ export default class HomeScreen extends BaseComponent {
 
         // Getting current hour from Date object.
         hour = date.getHours();
-
+        console.log('22--222', stateData?.pieDataAMPM);
         if (
           stateData?.pieDataAMPM?.length == 1 &&
           stateData.pieDataAMPM[0].isEmpty
         ) {
           pieData = stateData?.pieDataAMSchool;
         } else {
-          if (hour >= 6) {
-            function filterTasks(tasks) {
-              let endIndex = -1;
-              for (let i = 0; i < tasks?.length; i++) {
-                const task = tasks[i];
-                if (!task.taskId) continue;
-                const startTime = moment(
-                  task.taskId.split(' - ')[0],
-                  'hh:mm A',
-                );
-                const endTime = moment(task.taskId.split(' - ')[1], 'hh:mm A');
-                const sixPM = moment('06:00 PM', 'hh:mm A');
-                if (startTime.isAfter(sixPM)) {
-                  endIndex = i;
-                  break;
-                }
-                if (endTime.isAfter(sixPM)) {
-                  task.value = sixPM.diff(startTime, 'minutes');
-                }
+          function filterTasks(tasks) {
+            let endIndex = -1;
+            for (let i = 0; i < tasks?.length; i++) {
+              const task = tasks[i];
+              if (!task.taskId) continue;
+              const startTime = moment(task.taskId.split(' - ')[0], 'hh:mm A');
+              const endTime = moment(task.taskId.split(' - ')[1], 'hh:mm A');
+              const sixPM = moment('06:00 PM', 'hh:mm A');
+              if (startTime.isAfter(sixPM)) {
+                endIndex = i;
+                break;
               }
-              if (endIndex !== -1) {
-                return tasks.slice(0, endIndex);
-              } else {
-                return tasks;
+              if (endTime.isAfter(sixPM)) {
+                task.value = sixPM.diff(startTime, 'minutes');
               }
             }
-
-            // Filter tasks
-            const filteredTasks = filterTasks(stateData?.pieDataAMPM);
-            if (
-              (typeof filteredTasks !== 'undefined' ||
-                filteredTasks !== undefined) &&
-              !this.state.isLoading
-            ) {
-              stateData.pieDataAMPM = filteredTasks;
-              let secondLastTaskEndTime =
-                stateData.pieDataAMPM[
-                  stateData?.pieDataAMPM?.length - 2
-                ]?.taskId?.split(' - ')[1];
-              let endTimeMeridiem =
-                stateData.pieDataAMPM[stateData?.pieDataAMPM?.length - 2]
-                  .endTimeMeridiem;
-
-              // Create moment objects for end time and 6:00 PM
-              let endTaskTime = moment(
-                secondLastTaskEndTime + ' ' + endTimeMeridiem,
-                'hh:mm A',
-              );
-              let sixPMTime = moment('06:00 PM', 'hh:mm A');
-
-              // Calculate the difference between end time and 6:00 PM
-              let timeDifference = sixPMTime.diff(endTaskTime, 'minutes');
-
-              // Update the value property of the last task
-              stateData.pieDataAMPM[stateData?.pieDataAMPM?.length - 1].value =
-                timeDifference;
+            if (endIndex !== -1) {
+              return tasks.slice(0, endIndex);
+            } else {
+              return tasks;
             }
+          }
+
+          // Filter tasks
+          const filteredTasks = filterTasks(stateData?.pieDataAMPM);
+          console.log('!!!!---!!!!!',filteredTasks)
+          if (
+            (typeof filteredTasks !== 'undefined' ||
+              filteredTasks !== undefined) &&
+            !this.state.isLoading &&
+            filteredTasks[0]?.isEmpty !== true
+          ) {
+            stateData.pieDataAMPM = filteredTasks;
+            let secondLastTaskEndTime =
+              stateData.pieDataAMPM[
+                stateData?.pieDataAMPM?.length - 2
+              ]?.taskId?.split(' - ')[1];
+            console.log('1---1', stateData.pieDataAMPM);
+            let endTimeMeridiem =
+              stateData.pieDataAMPM[stateData?.pieDataAMPM?.length - 2]
+                .endTimeMeridiem;
+
+            // Create moment objects for end time and 6:00 PM
+            let endTaskTime = moment(
+              secondLastTaskEndTime + ' ' + endTimeMeridiem,
+              'hh:mm A',
+            );
+            let sixPMTime = moment('06:00 PM', 'hh:mm A');
+
+            // Calculate the difference between end time and 6:00 PM
+            let timeDifference = sixPMTime.diff(endTaskTime, 'minutes');
+
+            // Update the value property of the last task
+            stateData.pieDataAMPM[stateData?.pieDataAMPM?.length - 1].value =
+              timeDifference;
             // Extract the end time from the taskId
             if (
               !this.state.isLoading &&
@@ -364,7 +362,7 @@ export default class HomeScreen extends BaseComponent {
                   .split(' ')[0]
                   .split(':')[0],
               );
-
+              console.log('--44---', stateData?.pieDataAMSchool, startTime);
               // Check if the start time is greater than or equal to 6:00 AM
               if (startTime <= 6) {
                 // Update the value property of the first element to 0
@@ -372,6 +370,7 @@ export default class HomeScreen extends BaseComponent {
               } else {
                 // Calculate the difference between 6:00 AM and the start time of the second element in minutes
                 const differenceInMinutes = (6 - startTime) * 60;
+                console.log('===11===', differenceInMinutes);
                 // Update the value property of the first element with the calculated difference
                 stateData.pieDataAMSchool[0].value = Math.abs(
                   isNaN(differenceInMinutes)
@@ -383,11 +382,15 @@ export default class HomeScreen extends BaseComponent {
                 );
               }
             }
-
-            pieData = stateData?.pieDataAMPM.concat(stateData.pieDataAMSchool);
           } else {
-            pieData = stateData?.pieDataAMSchool;
+            stateData.pieDataAMPM = [{"isEmpty": true, "taskId": "Blannk2", "value": 0}]
+            console.log('ERROR');
           }
+          console.log(
+            '555====5555',
+            stateData?.pieDataAMPM.concat(stateData.pieDataAMSchool),
+          );
+          pieData = stateData?.pieDataAMPM.concat(stateData.pieDataAMSchool);
         }
 
         //MP
@@ -515,14 +518,14 @@ export default class HomeScreen extends BaseComponent {
   }
 
   setPlanetIcon = () => {
-    // this.state.isPlanetIconVisible ? "" : this.startCounter();
+    this.state.isPlanetIconVisible ? '' : this.startCounter();
     this.state.isPlanetIconVisible = true;
-    // this.state.swiperData[this.state.currentIndex] = this.renderSwiperView();
+    this.state.swiperData[this.state.currentIndex] = this.renderSwiperView();
     this.setState({});
   };
 
   handlePlanetIcon = () => {
-    // alert('helllo')
+    // alert('helllo');
     this.state.isPlanetIconVisible = false;
     this.state.swiperData[this.state.currentIndex] = this.renderSwiperView();
     this.setState({isPlanetIconVisible: false});
@@ -569,9 +572,9 @@ export default class HomeScreen extends BaseComponent {
       () => {
         // this.createSwiperDataForWeek();
         if (!this.state.isLoading) {
-          setTimeout(() => {
-            this.setWatchData(this.state.currentIndex);
-          }, 1000);
+          // setTimeout(() => {
+          // }, 1000);
+          this.setWatchData(this.state.currentIndex);
         }
       },
     );
@@ -643,7 +646,7 @@ export default class HomeScreen extends BaseComponent {
 
     const currentIndex = this.state.currentIndex;
     const swiperData = [...this.state.swiperData];
-    // swiperData[currentIndex] = this.renderSwiperView();
+    swiperData[currentIndex] = this.renderSwiperView();
 
     if (!isQAVisible) {
       // Handle state updates or any other logic
@@ -711,7 +714,9 @@ export default class HomeScreen extends BaseComponent {
               : this.state.objSelectedChild.name.toUpperCase() +
                 '’S SCHOOL CLOCK'}
           </Text>
-          <TouchableOpacity onPress={() => this.setPlanetIcon()}>
+          <TouchableOpacity
+            onPress={() => this.setPlanetIcon()}
+            style={{zIndex: 1000}}>
             {/* <Text > */}
             <Animatable.Text
               ref={this.handleViewRef} //MP
@@ -724,7 +729,14 @@ export default class HomeScreen extends BaseComponent {
             {/* </Text> */}
           </TouchableOpacity>
         </View>
-        <View style={styles.clockBody}>{this.renderClockView()}</View>
+        <View
+          style={{
+            justifyContent: 'center',
+            alignItems: 'center',
+            backgroundColor: 'transparent',
+          }}>
+          {this.renderClockView()}
+        </View>
         <View style={styles.clockBottom}>
           <View style={styles.clockBottomLeft}>
             <TouchableOpacity
@@ -774,7 +786,7 @@ export default class HomeScreen extends BaseComponent {
             }
           </View>
           <View style={styles.clockBottomRight}>
-            <TouchableOpacity activeOpacity={1}>
+            <TouchableOpacity activeOpacity={0.7}>
               {!this.state.school ? (
                 this.state.isPlanetIconVisible ? (
                   <View style={styles.shapeContainer}>
@@ -794,7 +806,9 @@ export default class HomeScreen extends BaseComponent {
                         </Text>
                       </View>
                     </View>
-                    <TouchableOpacity onPress={() => this.handlePlanetIcon()}>
+                    <TouchableOpacity
+                      onPress={() => this.handlePlanetIcon()}
+                      style={{zIndex: 100000}}>
                       <Image
                         source={
                           Helper.getPlanetImageForTheDay(
@@ -847,7 +861,10 @@ export default class HomeScreen extends BaseComponent {
                         <Text style={styles.shapeText}>{this.state.isAnswerOfJokeVisible ? this.state.jokeData.answer : this.state.jokeData.question}</Text>
                       </TouchableOpacity>
                     </View> */}
-                    <TouchableOpacity onPress={() => this.seeAnswerOfJoke()}>
+                    <TouchableOpacity
+                      hitSlop={{left: 10, right: 10, top: 10, bottom: 10}}
+                      onPress={() => this.seeAnswerOfJoke()}
+                      style={{zIndex: 1000000}}>
                       <Image
                         source={Images.alarmClock}
                         style={styles.alarmClock}
@@ -870,10 +887,10 @@ export default class HomeScreen extends BaseComponent {
   handlePress = taskId => {
     this.setModalVisible(true, taskId);
   };
-  
+
   transformPieData(data) {
-    const { is_24HrsClock, school } = this.state;
-  
+    const {is_24HrsClock, school} = this.state;
+
     return data.map(obj => {
       if (is_24HrsClock) {
         return obj;
@@ -888,56 +905,77 @@ export default class HomeScreen extends BaseComponent {
       }
     });
   }
-  
+
   renderClockView() {
-    const { pieData: data, is_24HrsClock, school } = this.state;
+    const {pieData: data, is_24HrsClock, school} = this.state;
     const date = new Date();
     const hour = date.getHours();
     const clearColor = Colors.clear;
-  
+
     // Set clock format image based on the time and state
-    this.state.clockFormateImage = is_24HrsClock ? Images.clockFaceDigit24HRS :
-      school ? images.am_pm :
-      hour >= 0 && hour < 6 ? images.am :
-      hour >= 6 && hour < 12 ? images.am_pm :
-      hour >= 12 && hour < 18 ? images.pm :
-      images.pm_am;
-  
-    const radius = Platform.OS === 'ios' ? Math.min(width, height) / 2.7 : Math.min(width, height) / 3.1;
+    this.state.clockFormateImage = is_24HrsClock
+      ? Images.clockFaceDigit24HRS
+      : school
+      ? images.am_pm
+      : hour >= 0 && hour < 6
+      ? images.am
+      : hour >= 6 && hour < 12
+      ? images.am_pm
+      : hour >= 12 && hour < 18
+      ? images.pm
+      : images.pm_am;
+
+    const sanitizedData = data.map(entry => ({
+      ...entry,
+      value: entry.value < 0 ? 0 : entry.value, // Convert negative values to 0
+    }));
+
+    const radius =
+      Platform.OS === 'ios'
+        ? Math.min(width, height) / 2.7
+        : Math.min(width, height) / 3.1;
     const cx = width / 2;
     const cy = height / 2;
-    const totalValue = data.reduce((acc, entry) => acc + entry.value, 0);
+    const totalValue = sanitizedData.reduce(
+      (acc, entry) => acc + entry.value,
+      0,
+    );
     let cumulativeAngle = 0;
-  
-    const transformedPieData = data.map((entry, index) => {
+
+    const transformedPieData = sanitizedData.map((entry, index) => {
       const startAngle = cumulativeAngle;
       const endAngle = cumulativeAngle + (entry.value / totalValue) * 360;
       cumulativeAngle = endAngle;
-  
+
       const d = createPieSlicePath(cx, cy, radius, startAngle, endAngle);
-  
+
       return {
         ...entry,
         svg: {
           ...entry.svg,
-          fill: entry.isEmpty && !entry.color ? (entry.is_school_clock ? Colors.gray : clearColor) : entry.color,
+          fill:
+            entry.isEmpty && !entry.color
+              ? entry.is_school_clock
+                ? Colors.gray
+                : clearColor
+              : entry.color,
           onPress: () => this.handlePress(entry.taskId),
         },
         d,
         key: `pie-${index}`,
       };
     });
-  
+
     const finalPieData = this.transformPieData(transformedPieData);
-  
+
     cumulativeAngle = 0; // Reset cumulative angle for the second pie chart
     const pieDataTrans = data.map((entry, index) => {
       const startAngle = cumulativeAngle;
       const endAngle = cumulativeAngle + (entry.value / totalValue) * 360;
       cumulativeAngle = endAngle;
-  
+
       const d = createPieSlicePath(cx, cy, radius, startAngle, endAngle);
-  
+
       return {
         value: entry.value,
         svg: {
@@ -948,14 +986,15 @@ export default class HomeScreen extends BaseComponent {
         key: `pie-${index}`,
       };
     });
-  
+
+
     return (
       <View style={[styles.clock]}>
         <Image
           source={school ? Images.clockPurpleLight : Images.clock}
           style={styles.clockImage}
         />
-  
+
         <View
           style={{
             position: 'absolute',
@@ -967,7 +1006,7 @@ export default class HomeScreen extends BaseComponent {
             justifyContent: 'center',
             alignItems: 'center',
           }}>
-          <Svg width={width} height={height} style={{ position: 'absolute' }}>
+          <Svg width={width} height={height} style={{position: 'absolute'}}>
             <G>
               {finalPieData.map(slice => (
                 <Path
@@ -985,7 +1024,10 @@ export default class HomeScreen extends BaseComponent {
             style={styles.clockChartView}
           />
           <AnalogClock hourFormate={is_24HrsClock ? 24 : 12} />
-          <Svg width={width} height={height} style={{ position: 'absolute', zIndex: 1 }}>
+          <Svg
+            width={width}
+            height={height}
+            style={{position: 'absolute', zIndex: 1}}>
             <G>
               {pieDataTrans.map(slice => (
                 <Path
