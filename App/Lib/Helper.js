@@ -686,7 +686,6 @@ export function generateClockTaskArray(
     var color = task.tasks[0].color;
     var duration = null;
 
-
     if (isTaskValueToCompare) {
       duration = TimeEnd.diff(
         Moment(task.tasks[0].time_from, 'hh:mm A'),
@@ -755,7 +754,7 @@ export function generateClockTaskArray(
         task.tasks[0].end_time_meridiem == 'PM'
       ) {
         if (currentTimeSlot > 3) {
-          if (moment(startTime, 'hh:mm A').hours() > 18) {
+          if (moment(startTime, 'hh:mm A').hours() >= 18) {
             duration = endTime.diff(
               Moment(task.tasks[0].time_from, 'hh:mm A'),
               'minutes',

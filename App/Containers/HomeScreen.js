@@ -490,6 +490,7 @@ export default class HomeScreen extends BaseComponent {
                         .split(':')[1],
               );
             }
+            console.log('===11===',stateData?.pieDataAMPM.concat(stateData.pieDataAM))
             pieData = stateData?.pieDataAMPM.concat(stateData.pieDataAM);
           } else {
             pieData = stateData?.pieDataAM;
@@ -499,6 +500,7 @@ export default class HomeScreen extends BaseComponent {
         //MP
       } else if (this.state.meridiam == 'PM') {
         //MP
+        console.log('PIEDATAPM----',stateData?.pieDataPM)
         pieData = stateData?.pieDataPM;
       }
 
@@ -693,6 +695,7 @@ export default class HomeScreen extends BaseComponent {
     });
   }
   renderSwiperView = (currentIndex = this.state.currentIndex) => {
+    console.log('CURRENT',currentIndex)
     const date = Helper.dateFormater(
       this.state.arrWeekDays[currentIndex],
       'dddd DD MMMM YYYY',
@@ -1441,14 +1444,14 @@ export default class HomeScreen extends BaseComponent {
     this.setState({isLoading: true});
     this._timer ? clearInterval(this._timer) : null;
     this._timer_task ? clearTimeout(this._timer_task) : null;
-    this.state.isPlanetIconVisible = false;
-    this.state.swiperData[index] = this.renderSwiperView(index);
     this.setState({currentIndex: index}, () => {
       // this,_timer_task = setTimeout(() => {
       // this.getJokeOfTheDay(index);
       this.getTaskList(index);
+      // this.state.swiperData[index] = this.renderSwiperView(index);
       // }, 10000);
     });
+    this.state.isPlanetIconVisible = false;
   };
 
   //#endregion
@@ -1558,23 +1561,6 @@ export default class HomeScreen extends BaseComponent {
           text={'Tap on a colour wedge\n to access your tasks'}
           textStyle={styles.tipstextStyle}
         />
-
-        {/* <Tips
-          contentStyle={[styles.contentStyle, {
-            maxWidth: 200
-          }]}
-          tooltipContainerStyle={[styles.tooltipContainerStyle, {
-            left: 100,
-            top: Metrics.screenHeight / 1.3,
-          }]}
-          style={[styles.Tips]}
-          tooltipArrowStyle={styles.tooltipArrowStyle}
-          textStyle={styles.tipstextStyle}
-          visible={this.state.tipsVisible === "hourSwitch"}
-          onRequestClose={this.handleNextTips}
-          text="Switch to the 24 hour clock to see your whole day"
-        /> */}
-
         <Tips
           contentStyle={styles.contentStyle}
           visible={this.state.tipsVisible === 'bell'}
@@ -1593,7 +1579,6 @@ export default class HomeScreen extends BaseComponent {
             },
           ]}
         />
-
         <Tips
           contentStyle={[
             styles.contentStyle,
@@ -1623,7 +1608,6 @@ export default class HomeScreen extends BaseComponent {
             },
           ]}
         />
-
         <Tips
           contentStyle={[
             styles.contentStyle,

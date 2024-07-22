@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import React from 'react';
 import {
+  Alert,
   Image,
   ImageBackground,
   Keyboard,
@@ -22,7 +23,6 @@ import {Colors, Images} from '../Themes';
 // Styles
 import styles from './Styles/AddUserScreenStyles';
 import Spinner from '../Components/Spinner';
-import {log} from 'react-native-reanimated';
 import moment from 'moment';
 
 const objAPISecure = Api.createSecure();
@@ -106,7 +106,7 @@ export default class AddUserScreen extends BaseComponent {
               }
             } else {
               Helper.showMessageWithOpenSetting(
-                'Can we  oto library? \n' +
+                'Can we access your photo library? \n' +
                   Constants.APP_NAME +
                   ' uses your photo library to upload image.',
               );
@@ -165,66 +165,66 @@ export default class AddUserScreen extends BaseComponent {
   //#region -> API Calls
   callAPI_AddUser = async () => {
     this.setState({isLoading: true});
-    const res = objAPISecure
-      .addchild(
+    try {
+      const resJSON = await objAPISecure.addchild(
         this.state.username,
         this.state.image,
         this.state.startDate,
         this.state.endDate,
         Platform.OS.toUpperCase(),
         '',
-      )
-      .then(resJSON => {
-        if (resJSON.ok && resJSON.status == 200) {
-          this.setState({isLoading: false});
-          if (resJSON.data.success) {
-            this.setState({
-              username: '',
-              profilePic: '',
-              image: '',
-              data: resJSON.data.data,
-            });
-            try {
-              AsyncStorage.setItem(Constants.KEY_USER_HAVE_CHILDREN, '1');
-              Helper.showConfirmationMessageActions(
-                resJSON.data.message,
-                'No',
-                'Yes',
-                this.onActionNo,
-                this.onActionYes,
-              );
-            } catch (error) {
-              Helper.showErrorMessage("Alert!\nYour Storage is Full\nPlease try again latter!");
-              this.setState({isLoading: false});
-            }
-            AsyncStorage.getItem(Constants.KEY_SELECTED_CHILD, (err, child) => {
-              if (child == null) {
-                try {
-                  AsyncStorage.setItem(
-                    Constants.KEY_SELECTED_CHILD,
-                    JSON.stringify(resJSON.data.data[0]),
-                  );
-                } catch (error) {
-                  Helper.showErrorMessage("Alert!\nYour Storage is Full\nPlease try again latter!");
-                  this.setState({isLoading: false});
-                }
-              }
-              setTimeout(() => {
-                EventEmitter.emit(Constants.EVENT_CHILD_UPDATE);
-              }, 100);
-            });
-          } else {
-            this.setState({isLoading: false});
-            Helper.showErrorMessage(resJSON.data.message);
+      );
+      if (resJSON.ok && resJSON.status == 200) {
+        this.setState({isLoading: false});
+        if (resJSON.data.success) {
+          this.setState({
+            username: '',
+            profilePic: '',
+            image: '',
+            data: resJSON.data.data,
+          });
+          try {
+            AsyncStorage.setItem(Constants.KEY_USER_HAVE_CHILDREN, '1');
+            Helper.showConfirmationMessageActions(
+              resJSON.data.message,
+              'No',
+              'Yes',
+              this.onActionNo,
+              this.onActionYes,
+            );
+          } catch (error) {
+            Alert.alert('Error setting AsyncStorage', error.message);
           }
-        } else if (resJSON.status == 500) {
-          this.setState({isLoading: false});
-          Helper.showErrorMessage(resJSON.data.message);
+          AsyncStorage.getItem(Constants.KEY_SELECTED_CHILD, (err, child) => {
+            if (child == null) {
+              try {
+                AsyncStorage.setItem(
+                  Constants.KEY_SELECTED_CHILD,
+                  JSON.stringify(resJSON.data.data[0]),
+                );
+              } catch (error) {
+                Alert.alert('Error setting AsyncStorage', error.message);
+              }
+            }
+            setTimeout(() => {
+              EventEmitter.emit(Constants.EVENT_CHILD_UPDATE);
+            }, 100);
+          });
         } else {
           this.setState({isLoading: false});
-          Helper.showErrorMessage(Constants.SERVER_ERROR);
+          Helper.showErrorMessage(resJSON.data.message);
         }
-      });
+      } else if (resJSON.status == 500) {
+        this.setState({isLoading: false});
+        Helper.showErrorMessage(resJSON.data.message);
+      } else {
+        this.setState({isLoading: false});
+        Helper.showErrorMessage(Constants.SERVER_ERROR);
+      }
+    } catch (error) {
+      this.setState({isLoading: false});
+      Alert.alert('Error in callAPI_AddUser', error.message);
+    }
   };
 
   onActionYes = () => {};
@@ -253,7 +253,9 @@ export default class AddUserScreen extends BaseComponent {
         this.props.navigation.navigate('HomeScreen');
         EventEmitter.emit(Constants.EVENT_CHILD_UPDATE);
       }, 100);
-    } catch (error) {}
+    } catch (error) {
+      Alert.alert('Error in moveToHomeScreen', error.message);
+    }
   };
   //#endregion
 
