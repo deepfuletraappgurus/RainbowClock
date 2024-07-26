@@ -144,6 +144,7 @@ export default class ScheduleScreen extends BaseComponent {
               Object.keys(tasks).map(item => {
                 arr.push({time: item, tasks: tasks[item], key: item.id});
               });
+              console.log('111111',JSON.stringify(arr))
               this.setState({arrTasks: arr});
             }
           } else {
@@ -499,7 +500,6 @@ export default class ScheduleScreen extends BaseComponent {
   }
 
   renderTaskRow = (item, index) => {
-    console.log('ITEMMMMMM', item);
     return (
       <TouchableOpacity
         style={[

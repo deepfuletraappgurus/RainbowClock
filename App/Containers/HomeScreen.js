@@ -322,7 +322,7 @@ export default class HomeScreen extends BaseComponent {
 
           // Filter tasks
           const filteredTasks = filterTasks(stateData?.pieDataAMPM);
-          console.log('!!!!---!!!!!',filteredTasks)
+          console.log('!!!!---!!!!!', filteredTasks);
           if (
             (typeof filteredTasks !== 'undefined' ||
               filteredTasks !== undefined) &&
@@ -383,7 +383,9 @@ export default class HomeScreen extends BaseComponent {
               }
             }
           } else {
-            stateData.pieDataAMPM = [{"isEmpty": true, "taskId": "Blannk2", "value": 0}]
+            stateData.pieDataAMPM = [
+              {isEmpty: true, taskId: 'Blannk2', value: 0},
+            ];
             console.log('ERROR');
           }
           console.log(
@@ -490,7 +492,10 @@ export default class HomeScreen extends BaseComponent {
                         .split(':')[1],
               );
             }
-            console.log('===11===',stateData?.pieDataAMPM.concat(stateData.pieDataAM))
+            console.log(
+              '===11===',
+              stateData?.pieDataAMPM.concat(stateData.pieDataAM),
+            );
             pieData = stateData?.pieDataAMPM.concat(stateData.pieDataAM);
           } else {
             pieData = stateData?.pieDataAM;
@@ -500,7 +505,7 @@ export default class HomeScreen extends BaseComponent {
         //MP
       } else if (this.state.meridiam == 'PM') {
         //MP
-        console.log('PIEDATAPM----',stateData?.pieDataPM)
+        console.log('PIEDATAPM----', stateData?.pieDataPM);
         pieData = stateData?.pieDataPM;
       }
 
@@ -695,7 +700,7 @@ export default class HomeScreen extends BaseComponent {
     });
   }
   renderSwiperView = (currentIndex = this.state.currentIndex) => {
-    console.log('CURRENT',currentIndex)
+    console.log('CURRENT', currentIndex);
     const date = Helper.dateFormater(
       this.state.arrWeekDays[currentIndex],
       'dddd DD MMMM YYYY',
@@ -990,7 +995,6 @@ export default class HomeScreen extends BaseComponent {
       };
     });
 
-
     return (
       <View style={[styles.clock]}>
         <Image
@@ -1050,7 +1054,9 @@ export default class HomeScreen extends BaseComponent {
   renderFooterView() {
     const pagesCount = this.state.arrFooterTasks.length;
     const pages = [...new Array(pagesCount)].map((item, index) => {
-      return this.renderPage(index);
+      if (!this.state.isLoading) {
+        return this.renderPage(index);
+      }
     });
     return pages;
   }
@@ -1212,7 +1218,7 @@ export default class HomeScreen extends BaseComponent {
   }
   //#region -> API Call
   getTaskList = index => {
-    this.setState({piedata: {}});
+    this.setState({piedata: {}, currentTaskSlot: ''});
     Helper.getChildRewardPoints(this.props.navigation);
     // if (this.state.isLoading) {
     //   return;
@@ -1667,7 +1673,7 @@ export default class HomeScreen extends BaseComponent {
                       this.state.currentTaskSlot[0].tasks[0].is_school_clock ==
                       this.state.school
                         ? this.state.currentTaskSlot[0].tasks[0].color
-                        : null,
+                        : 'transparent',
                   }
                 : null,
             ]}>
@@ -1682,7 +1688,7 @@ export default class HomeScreen extends BaseComponent {
                         this.state.currentTaskSlot[0].tasks[0]
                           .is_school_clock == this.state.school
                           ? this.state.currentTaskSlot[0].tasks[0].color
-                          : null,
+                          : 'transparent',
                     }
                   : null,
               ]}>

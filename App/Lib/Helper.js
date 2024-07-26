@@ -1346,22 +1346,33 @@ export function getPercentageArrForTask(objTask) {
 }
 
 export function checkTaskTimeAndDate(objTask) {
-  
-  var isFutureTask = false;
-  var taskStartTime = Moment(objTask.time_from, 'HH:mm a')
-    .format('HH:mm a')
-    .toUpperCase();
-  var taskEndTime = Moment(objTask.time_to, 'HH:mm a')
-    .format('HH:mm a')
-    .toUpperCase();
+  console.log('OOOOOOOOO',objTask)
+  var taskStartTime = Moment(objTask.time_from, 'HH:mm a').format('HH:mm a').toUpperCase();
+  var taskEndTime = Moment(objTask.time_to, 'HH:mm a').format('HH:mm a').toUpperCase();
 
-  if (
-    objTask.task_date !== this.getMinimumDateForCalender() ||
-    (this.getCurrentTime() < taskStartTime &&
-      this.getCurrentTime() < taskEndTime)
-  ) {
-    isFutureTask = true;
+  var isFutureTask = false;
+
+  if (objTask.is_date == 1) {
+    if (
+      objTask.task_date !== this.getMinimumDateForCalender() ||
+      (this.getCurrentTime() < taskStartTime &&
+        this.getCurrentTime() < taskEndTime)
+    ) {
+      isFutureTask = true;
+    }
+  } else {
+    var today = Moment().format('dddd');
+    var daysArray = objTask.days.split(',');
+
+    if (
+      daysArray.includes(today) &&
+      this.getCurrentTime() < taskStartTime &&
+      this.getCurrentTime() < taskEndTime
+    ) {
+      isFutureTask = true;
+    }
   }
+
   return isFutureTask;
 }
 
