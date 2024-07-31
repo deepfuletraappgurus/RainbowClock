@@ -27,7 +27,7 @@ const colors = {
   darkBlue:'#46a3de',
   skyBlue:'#63d2eb',
   yellow:'#fed057',
-  darkYellow:'#fdd056',
+  darkYellow:'#FBBD59',
   pink:'#b95ad7',
   restoreGreen:'#35d3b5',
   darkPink:'#993dc6',

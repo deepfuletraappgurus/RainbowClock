@@ -501,16 +501,16 @@ const createSecure = (baseURL = base_url) => {
     const data = new FormData();
     data.append('rid', id);
     data.append('name', name);
-    data.append('type', type);
+    data.append('type', type ? 'Special' : 'Standard');
     data.append('no_of_tokens', numberOfToken);
-    if (imageData != '') {
+    if (imageData && typeof imageData === 'object' && imageData.path && imageData.mime) {
       data.append('icon', {
         uri: imageData.path,
         type: imageData.mime,
         name: timestamp + '.' + imageData.mime.split('/').reverse()[0],
       });
     }
-
+    console.log('UPDATE REWARD DATA',data)
     return api.post('rewards/update', data);
   };
 
@@ -521,6 +521,8 @@ const createSecure = (baseURL = base_url) => {
     api.post('rewards/all', {status: status});
 
   const clearReward = rewardId => api.post('rewards/clear', {rid: rewardId});
+
+  const deleteReward = rewardId => api.post('rewards/delete', {rid: rewardId})
 
   const claimReward = (rewardId, childId) =>
     api.post('rewards/claim', {rid: rewardId, child_id: childId});
@@ -601,6 +603,7 @@ const createSecure = (baseURL = base_url) => {
     deleteSubTask,
     deleteSavedtask,
     logout,
+    deleteReward
   };
 };
 
