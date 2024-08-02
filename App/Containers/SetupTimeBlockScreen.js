@@ -22,6 +22,7 @@ import {Colors, Images, Metrics} from '../Themes';
 import BaseComponent from '../Components/BaseComponent';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import moment from 'moment';
+import Icon from 'react-native-vector-icons/FontAwesome';
 // Styles
 import styles from './Styles/SetupTimeBlockScreenStyles';
 import Api from '../Services/Api';
@@ -29,6 +30,10 @@ import Spinner from '../Components/Spinner';
 import colors from '../Themes/Colors';
 
 let days = [];
+const ScheduleType = [
+  {name: 'Fortnightly', isSelect: true},
+  {name: 'Monthly', isSelect: false},
+];
 
 let colours = [
   '#f2c745',
@@ -131,6 +136,7 @@ export default class SetupTimeBlockScreen extends BaseComponent {
       calenderSelectedDay: new Date(Date.now()),
       is_date: 1,
       is_school_clock: this.props.navigation.getParam('is_school_clock'),
+      ScheduleType: ScheduleType,
     };
   }
 
@@ -143,16 +149,7 @@ export default class SetupTimeBlockScreen extends BaseComponent {
       },
     );
     this.getChildDetail();
-    // Helper.checkChoosenTimeIsValidOrNot(this.state.fromTime, (aNewDay, isPastSelectedTime, todayIsSunday) => {
-    //     this.state.strMinimumDate = aNewDay
-    //     this.state.arrSelectedDates[aNewDay] = { selected: true, marked: true, selectedColor: 'white' }
-    //     this.state.arrSelectedTaskDates.push(Helper.dateFormater(aNewDay, 'YYYY-MM-DD', 'Y-M-D'))
-    //     // this.state.isPastSelectedTimeSlote = isPastSelectedTime
-    //     // this.state.isSunday = todayIsSunday
-    //     // this.setState({
-    //     //     current: aNewDay
-    //     // })
-    // })
+
     var startOfWeek = moment().add(0, 'days');
     var endOfWeek = moment().add(6, 'days');
     var day = startOfWeek;
@@ -352,6 +349,40 @@ export default class SetupTimeBlockScreen extends BaseComponent {
   clickRepeatTask = () => {
     this.setState({isRepeatEveryday: true});
   };
+
+  toggleSelect = index => {
+    this.setState(prevState => {
+      const updatedArray = prevState.ScheduleType.map((item, i) => {
+        if (i === index) {
+          return {...item, isSelect: !item.isSelect};
+        } else {
+          return {...item, isSelect: false};
+        }
+      });
+
+      return {ScheduleType: updatedArray};
+    });
+  };
+
+  renderScheduleTypes = ({item, index}) => {
+    return (
+      <View
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          marginBottom: 10,
+        }}>
+        <Icon
+          onPress={() => this.toggleSelect(index)}
+          name={item?.isSelect ? 'check-square' : 'square'}
+          size={25}
+          color={item?.isSelect ? Colors.darkPink : Colors.frost + 90}
+        />
+        <Text style={[styles.mediumButtonText,{marginLeft:12}]}>{item?.name.toUpperCase()}</Text>
+      </View>
+    );
+  };
+
   renderRow(item, index) {
     return (
       <TouchableOpacity
@@ -1090,6 +1121,22 @@ export default class SetupTimeBlockScreen extends BaseComponent {
 
                       <View
                         style={{
+                          flex:1
+                          // justifyContent: 'center',
+                        }}>
+                        <FlatList
+                          data={this.state.ScheduleType}
+                          renderItem={this.renderScheduleTypes}
+                          keyExtractor={(item, index) => index + ''}
+                          extraData={this.state}
+                          horizontal
+                          // style={{flex:1,width:'100%'}}
+                          contentContainerStyle={{width:'100%',justifyContent:'space-between',marginTop:12 }}
+                        />
+                      </View>
+
+                      <View
+                        style={{
                           alignSelf: 'flex-start',
                           // marginHorizontal: 15,
                           width: '100%',
@@ -1097,8 +1144,8 @@ export default class SetupTimeBlockScreen extends BaseComponent {
                           justifyContent: 'space-between',
                           borderTopColor: Colors.snow,
                           borderTopWidth: 0.5,
-                          paddingVertical: 15,
-                          marginVertical: 15,
+                          paddingTop: 15,
+                          marginTop: 15,
                           paddingTop: 25,
                         }}>
                         <Text style={[styles.label, {textAlign: 'left'}]}>

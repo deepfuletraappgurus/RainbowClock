@@ -7,7 +7,7 @@ export default StyleSheet.create({
     flexGrow: 1,
     backgroundColor: Colors.transparent,
     padding:20,
-    justifyContent:'space-between',    
+    justifyContent:'space-between',
     flexDirection: 'column-reverse',
   },
   containerPdf:{

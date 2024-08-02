@@ -250,8 +250,8 @@ export default class RewardScreen extends BaseComponent {
               />
               <Text style={styles1.tokenText}>{item.no_of_tokens}</Text>
             </View>
-            <Text style={styles1.rewardType}>
-              {item.type == 'Special' ? 'SPECIAL REWARD' : 'EVERYDAY REWARD'}
+            <Text style={[styles1.rewardType,{color:item.is_claimed ? Colors.fire : colors.pink}]}>
+              {item?.is_claimed ? 'CLAIMED REWARD' : item.type == 'Special' ? 'SPECIAL REWARD' : 'EVERYDAY REWARD'}
             </Text>
           </View>
         </View>

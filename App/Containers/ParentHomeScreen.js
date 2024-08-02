@@ -8,6 +8,7 @@ import {
   Text,
   TouchableOpacity,
   View,
+  TextInput,
 } from 'react-native';
 import Swiper from 'react-native-swiper';
 import Constants from '../Components/Constants';
@@ -15,7 +16,11 @@ import * as Helper from '../Lib/Helper';
 import {Colors, Images, Metrics} from '../Themes';
 import {PieChart} from 'react-native-svg-charts';
 import Api from '../Services/Api';
+import Icon from 'react-native-vector-icons/FontAwesome';
 import moment from 'moment';
+import CalendarStrip from 'react-native-calendar-strip';
+import RBSheet from 'react-native-raw-bottom-sheet';
+import {Calendar, LocaleConfig} from 'react-native-calendars';
 
 import Tips from 'react-native-tips';
 
@@ -27,6 +32,11 @@ import {value} from 'deprecated-react-native-prop-types/DeprecatedTextInputPropT
 import images from '../Themes/Images';
 // Global Variables
 const objSecureAPI = Api.createSecure();
+const ScheduleType = [
+  {name: 'Regular', isSelect: true},
+  {name: 'School Holidays', isSelect: false},
+  {name: 'Custom', isSelect: false},
+];
 
 export default class ParentHomeScreen extends BaseComponent {
   static navigationOptions = ({navigation}) => ({
@@ -65,7 +75,7 @@ export default class ParentHomeScreen extends BaseComponent {
       is_24HrsClock: false,
       showDropdown: false,
       arrWeekDays: [],
-      selectedDay: '',
+      selectedDay: new Date(),
       meridiam: '',
       pieData: [],
       pieDataPM: [],
@@ -77,10 +87,16 @@ export default class ParentHomeScreen extends BaseComponent {
       arrFooterTasks: [],
       isLoading: false,
       isRewardClaimed: false,
-      tipsVisible: false,
+      tipsVisible: null,
       pauseUserInteraction: true,
       pieDataAMPM: [],
       pieDataAMSchool: [],
+      scheduleType: ScheduleType,
+      customScheduleText: '',
+      showCustomTextInput: false,
+      editingIndex: null,
+      editingText: '',
+      showFullCalender: false,
     };
 
     this.handleNextTips = this.handleNextTips.bind(this);
@@ -188,7 +204,9 @@ export default class ParentHomeScreen extends BaseComponent {
         Constants.KEY_IS_24HRS_CLOCK,
         JSON.stringify(this.state.is_24HrsClock),
       );
-    } catch (error) {}
+    } catch (error) {
+      console.log('AsyncStorage Error: ', error);
+    }
     this.setState({pieData});
   }
 
@@ -219,7 +237,10 @@ export default class ParentHomeScreen extends BaseComponent {
   }
 
   selectDayForClock = day => {
-    this.setState({selectedDay: day}, () => this.getTaskList());
+    this.setState({selectedDay: day}, () => {
+      this.getTaskList();
+      // this.updateMarkedDates();
+    });
     this.toggleDropdown();
   };
 
@@ -453,6 +474,79 @@ export default class ParentHomeScreen extends BaseComponent {
     });
   }
 
+  onAddTaskPress(text) {
+    const newOption = {name: text, isSelect: false, isCustom: true};
+
+    // Update the array by adding the new object
+    this.setState(prevState => ({
+      scheduleType: [...prevState.scheduleType, newOption],
+      customScheduleText: '', // Clear the TextInput value after adding to the array
+      showCustomTextInput: false,
+    }));
+  }
+
+  onCloseTaskPress() {
+    this.setState(prevState => ({
+      customScheduleText: '',
+      showCustomTextInput: false,
+    }));
+  }
+
+  onCloseEditingTaskPress() {
+    this.setState(prevState => ({
+      editingIndex: null,
+    }));
+  }
+
+  onCloseCustomeTaskSheet() {
+    this.RBSheet.close();
+  }
+
+  toggleSelect = index => {
+    this.setState(prevState => {
+      const updatedArray = prevState.scheduleType.map((item, i) => {
+        if (i === index) {
+          return {...item, isSelect: !item.isSelect};
+        } else {
+          return {...item, isSelect: false};
+        }
+      });
+
+      return {scheduleType: updatedArray};
+    });
+  };
+
+  handleEdit = index => {
+    this.setState({
+      editingIndex: index,
+      editingText: this.state.scheduleType[index].name,
+    });
+  };
+
+  handleTextChange = text => {
+    this.setState({editingText: text});
+  };
+
+  handleTextSubmit = () => {
+    const {editingIndex, editingText, scheduleType} = this.state;
+
+    if (editingIndex !== null) {
+      const newData = [...scheduleType];
+      newData[editingIndex].name = editingText;
+
+      this.setState({
+        scheduleType: newData,
+        editingIndex: null,
+      });
+    }
+  };
+
+  showFullCalender = () => {
+    this.setState({
+      showFullCalender: !this.state.showFullCalender,
+    });
+  };
+
   renderClockView() {
     data = this.state.pieData;
     const clearColor = Colors.clear;
@@ -652,13 +746,48 @@ export default class ParentHomeScreen extends BaseComponent {
       </TouchableOpacity>
     );
   }
+
+  renderScheduleTypes = ({item, index}) => {
+    return (
+      <View
+        style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          marginBottom: 10,
+          justifyContent: 'flex-start',
+        }}>
+        <Icon
+          onPress={() => this.toggleSelect(index)}
+          name={item?.isSelect ? 'check-square' : 'square'}
+          size={25}
+          color={item?.isSelect ? Colors.restoreGreen : Colors.frost + 60}
+        />
+        <Text
+          style={[
+            styles.mediumButtonText,
+            {color: Colors.black, marginLeft: 15},
+          ]}>
+          {item?.name}
+        </Text>
+        {item?.isCustom ? (
+          <Icon
+            name="pencil"
+            size={20}
+            color={Colors.black + 60}
+            style={{position: 'absolute', right: 0}}
+            onPress={() => this.handleEdit(index)}
+          />
+        ) : null}
+      </View>
+    );
+  };
   //#endregion
 
   //#region -> API Call
   getTaskList = () => {
     this.setState({isLoading: true});
     const aDate = Helper.dateFormater(
-      this.state.selectedDay,
+      new Date(this.state.selectedDay),
       'dddd DD MMMM YYYY',
       'YYYY-MM-DD',
     );
@@ -874,7 +1003,6 @@ export default class ParentHomeScreen extends BaseComponent {
       <View
         style={styles.mainContainer}
         pointerEvents={this.state.isLoading ? 'none' : 'auto'}>
-        {console.log('this.state.tipsVisible', this.state.tipsVisible)}
         <Tips
           contentStyle={{flex: 1}}
           tooltipContainerStyle={[
@@ -938,9 +1066,10 @@ export default class ParentHomeScreen extends BaseComponent {
           }
           style={styles.backgroundImage}>
           <View style={[styles.container]}>
-            <View style={styles.containerBody}>
+            <View style={{}}>
               <View style={styles.clockHeader}>
-                <View style={styles.userName}>
+                <View
+                  style={[styles.userName, {marginBottom: 0, marginTop: 15}]}>
                   <Text style={styles.userNameText}>
                     {' '}
                     {this.state.objSelectedChild &&
@@ -953,18 +1082,6 @@ export default class ParentHomeScreen extends BaseComponent {
                       : ''}
                   </Text>
                 </View>
-                {!this.state.is_24HrsClock && (
-                  <Text
-                    style={[
-                      styles.title,
-                      styles.textCenter,
-                      styles.titleSmall,
-                      {marginBottom: 20},
-                    ]}>
-                    {/* {'TAP THE CALENDAR TO CREATE A BLOCK OF TIME/SCHEDULE'.toUpperCase()} */}
-                    {'TAP THE CLOCK TO SELECT A BLOCK OF TIME'.toUpperCase()}
-                  </Text>
-                )}
               </View>
               <View style={styles.clockBody}>{this.renderClockView()}</View>
               <View style={styles.clockBottom}>
@@ -1021,10 +1138,6 @@ export default class ParentHomeScreen extends BaseComponent {
                       ) : null}
                     </TouchableOpacity>
                   )}
-                  {/* <TouchableOpacity style={[styles.Switch, this.state.is_24HrsClock ? styles.switch24Hrs : styles.switch12Hrs]} onPress={() => this.toggleSwitch()}>
-                                        <Text style={styles.SwitchText}>{this.state.is_24HrsClock ? '24hr' : '12hr'}</Text>
-                                        <View style={styles.SwitchButton}></View>
-                                    </TouchableOpacity> */}
                 </View>
                 {!this.state.school && (
                   <View
@@ -1042,14 +1155,13 @@ export default class ParentHomeScreen extends BaseComponent {
                     </TouchableOpacity>
                   </View>
                 )}
-
                 <View
                   style={[
                     styles.clockBottomItem,
                     styles.clockBottomRight,
                     styles.center,
                   ]}>
-                  {/* {this.state.isRewardClaimed !== true ? (
+                  {/* {this.state.isRewardClaimed == true ? (
                     <View style={[styles.clockBottomRight]}>
                       <TouchableOpacity activeOpacity={1}>
                         <View style={[styles.shapeContainer]}>
@@ -1087,35 +1199,150 @@ export default class ParentHomeScreen extends BaseComponent {
                 </View>
               </View>
             </View>
-            {this.state.showDropdown ? (
-              <TouchableOpacity
-                style={styles.bodyClose}
-                onPress={() => this.toggleDropdown()}
-              />
-            ) : null}
-            <View style={styles.dropdownContainer}>
-              <TouchableOpacity
-                style={styles.dropdownButton}
-                onPress={() => this.toggleDropdown()}>
-                <Text style={styles.dropdownButtonText}>
-                  {this.state.selectedDay
-                    ? this.state.selectedDay
-                    : 'SELECT DAY'}
+
+            <View style={{flex: 1, width: '100%'}}>
+              <View
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  // flex:1
+                }}>
+                <Text style={[styles.h1]}>
+                  {'SCHEDULE' +
+                    ' - ' +
+                    this.state.scheduleType.find(item => item.isSelect).name}
                 </Text>
-                <Image source={Images.downarrow} style={styles.downarrow} />
+                <TouchableOpacity
+                  onPress={() => this.RBSheet.open()}
+                  hitSlop={{top: 20, bottom: 20, left: 50, right: 50}}>
+                  <Icon name="ellipsis-h" size={25} color={'#fff'} />
+                </TouchableOpacity>
+              </View>
+              <TouchableOpacity
+                onPress={this.showFullCalender}
+                activeOpacity={1}
+                style={{
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  borderTopWidth: 0.5,
+                  borderTopColor: Colors.frost + 70,
+                  paddingTop: 10,
+                  marginTop: 10,
+                  backgroundColor: this.state.showFullCalender
+                    ? Colors.snow
+                    : Colors.transparent,
+                  borderRadius: this.state.showFullCalender ? 10 : 0,
+                  borderBottomRightRadius: 0,
+                  borderBottomLeftRadius: 0,
+                  paddingLeft: this.state.showFullCalender ? 10 : 0,
+                }}>
+                <Text
+                  style={[
+                    styles.dropdownItemText,
+                    {
+                      color: this.state.showFullCalender
+                        ? Colors.pink
+                        : Colors.snow,
+                    },
+                  ]}>
+                  {moment(this.state.selectedDay).format('dddd DD MMMM YYYY')}
+                </Text>
+                <Icon
+                  name={this.state.showFullCalender ? 'sort-up' : 'sort-down'}
+                  size={25}
+                  color={
+                    this.state.showFullCalender ? Colors.pink : Colors.snow
+                  }
+                  style={{
+                    marginTop: this.state.showFullCalender ? 8 : -12,
+                    marginLeft: 5,
+                  }}
+                />
               </TouchableOpacity>
-              {this.state.showDropdown ? (
-                <View style={styles.dropdown}>
-                  <FlatList
-                    keyboardShouldPersistTaps={'always'}
-                    data={this.state.arrWeekDays}
-                    extraData={this.state}
-                    keyExtractor={(item, index) => index}
-                    renderItem={({item, index}) => this.renderRow(item, index)}
-                    contentContainerStyle={{padding: 15}}
+              {console.log('SELECTED DAY_______', this.state.selectedDay)}
+              {this.state.showFullCalender ? (
+                <View>
+                  <Calendar
+                    style={{
+                      backgroundColor: Colors.snow,
+                      borderRadius: 10,
+                      borderTopRightRadius: 0,
+                      borderTopLeftRadius: 0,
+                    }}
+                    theme={{
+                      backgroundColor: Colors.snow,
+                      calendarBackground: Colors.snow,
+                      textSectionTitleColor: '#b6c1cd',
+                      selectedDayBackgroundColor: 'red',
+                      selectedDayTextColor: '#ffffff',
+                      todayTextColor: Colors.snow,
+                      dayTextColor: '#2d4150',
+                      textDisabledColor: '#D5E2EB',
+                      todayBackgroundColor: Colors.blue,
+                      textSectionTitleColor: Colors.pink,
+                    }}
+                    headerStyle={{color: Colors.pink}}
+                    showSixWeeks={false}
+                    hideExtraDays={true}
+                    disableMonthChange={true}
+                    hideArrows={true}
+                    renderHeader={date => {
+                      return <></>;
+                    }}
+                    onDayPress={day => {
+                      console.log('==---', day);
+                      this.selectDayForClock(day.dateString);
+                      this.showFullCalender();
+                    }}
+                    markedDates={{
+                      [this.state.selectedDay]: {
+                        selected: true,
+                        marked: true,
+                        selectedColor: Colors.pink,
+                      },
+                    }}
                   />
                 </View>
-              ) : null}
+              ) : (
+                <View style={{flex: 1, marginBottom: 60}}>
+                  <CalendarStrip
+                    style={{height: 100, paddingTop: 0, paddingBottom: 20}}
+                    calendarColor={'transparent'}
+                    dateNumberStyle={{color: 'white'}}
+                    dateNameStyle={{color: 'white', marginBottom: 10}}
+                    iconContainer={{flex: 0.1, display: 'none'}}
+                    scrollerPaging={false}
+                    scrollable={false}
+                    selectedDate={this.state.selectedDay}
+                    onDateSelected={e => {
+                      console.log('!!!!!!!!!', e);
+                      // {this.setState({selectDay: new Date(e)})
+                      this.selectDayForClock(moment(e).format('YYYY-MM-DD'));
+                    }}
+                    calendarHeaderContainerStyle={{display: 'none'}}
+                    highlightDateContainerStyle={{
+                      backgroundColor: Colors.darkYellow,
+                      borderRadius: 10,
+                      paddingVertical: 5,
+                    }}
+                    highlightDateNameStyle={{marginBottom: 6}}
+                    upperCaseDays={true}
+                    iconStyle={{display: 'none'}}
+                    minDate={new Date()}
+                    useIsoWeekday={false}
+                  />
+                </View>
+              )}
+
+              <View
+                style={{
+                  width: '100%',
+                  height: 1,
+                  backgroundColor: Colors.frost,
+                  marginTop: 15,
+                }}
+              />
             </View>
           </View>
           <SafeAreaView
@@ -1155,10 +1382,7 @@ export default class ParentHomeScreen extends BaseComponent {
                   </Text>
                 </View>
               ) : this.state.currentTaskSlot &&
-                this.state.arrFooterTasks.length &&
-                (this.state.is_24HrsClock ||
-                  this.state.currentTaskSlot[0].tasks[0].is_school_clock ==
-                    this.state.school) ? (
+                this.state.arrFooterTasks.length > 0 ? (
                 <Swiper
                   showsButtons={true}
                   key={this.state.currentTaskSlot.length}
@@ -1181,6 +1405,150 @@ export default class ParentHomeScreen extends BaseComponent {
               )}
             </View>
           </SafeAreaView>
+          <RBSheet
+            ref={ref => {
+              this.RBSheet = ref;
+            }}
+            height={350}
+            openDuration={250}
+            customStyles={{
+              container: {
+                paddingVertical: 20,
+                paddingHorizontal: 15,
+              },
+            }}>
+            <View>
+              <Text
+                style={[styles.timer, {color: Colors.black, marginBottom: 20}]}>
+                {'All Schedules'.toUpperCase()}
+              </Text>
+              <FlatList
+                data={this.state.scheduleType}
+                renderItem={this.renderScheduleTypes}
+                keyExtractor={(item, index) => index + ''}
+                extraData={this.state}
+              />
+              {this.state.showCustomTextInput ? (
+                <View
+                  style={[
+                    styles.formControl,
+                    {
+                      borderWidth: 1,
+                      borderRadius: 5,
+                      borderColor: Colors.frost,
+                      paddingHorizontal: 5,
+                      marginTop: 20,
+                      marginBottom: 0,
+                    },
+                  ]}>
+                  <TextInput
+                    style={[styles.input, {color: Colors.black}]}
+                    placeholder={'Enter Schedule Name'}
+                    underlineColorAndroid={'transparent'}
+                    placeholderTextColor={Colors.placeHolderText}
+                    returnKeyType={'done'}
+                    onChangeText={customScheduleText =>
+                      this.setState({customScheduleText: customScheduleText})
+                    }
+                    onSubmitEditing={event => {
+                      Keyboard.dismiss();
+                    }}
+                  />
+                  <TouchableOpacity
+                    style={{marginLeft: 5}}
+                    onPress={() =>
+                      this.onAddTaskPress(this.state.customScheduleText)
+                    }>
+                    <Icon
+                      name={'check-circle'}
+                      size={26}
+                      color={Colors.pink}
+                      onPress={() =>
+                        this.onAddTaskPress(this.state.customScheduleText)
+                      }
+                    />
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={{marginLeft: 5}}
+                    onPress={() => this.onCloseTaskPress()}>
+                    <Icon
+                      name={'times-circle'}
+                      size={26}
+                      color={Colors.black}
+                      onPress={() => this.onCloseTaskPress()}
+                    />
+                  </TouchableOpacity>
+                </View>
+              ) : null}
+
+              {this.state.editingIndex !== null && (
+                <View
+                  style={[
+                    styles.formControl,
+                    {
+                      borderWidth: 1,
+                      borderRadius: 5,
+                      borderColor: Colors.frost,
+                      paddingHorizontal: 5,
+                      marginTop: 20,
+                      marginBottom: 0,
+                    },
+                  ]}>
+                  <TextInput
+                    style={[styles.input, {color: Colors.black}]}
+                    placeholder={'Enter Schedule Name'}
+                    underlineColorAndroid={'transparent'}
+                    placeholderTextColor={Colors.placeHolderText}
+                    returnKeyType={'done'}
+                    value={this.state.editingText}
+                    onChangeText={this.handleTextChange}
+                    onSubmitEditing={event => {
+                      Keyboard.dismiss();
+                    }}
+                  />
+                  <TouchableOpacity
+                    style={{marginLeft: 5}}
+                    onPress={() => this.handleTextSubmit()}>
+                    <Icon
+                      name={'check-circle'}
+                      size={26}
+                      color={Colors.pink}
+                      onPress={() => this.handleTextSubmit()}
+                    />
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={{marginLeft: 5}}
+                    onPress={() => this.onCloseTaskPress()}>
+                    <Icon
+                      name={'times-circle'}
+                      size={26}
+                      color={Colors.black}
+                      onPress={() => this.onCloseTaskPress()}
+                    />
+                  </TouchableOpacity>
+                </View>
+              )}
+
+              <Text
+                onPress={() => this.setState({showCustomTextInput: true})}
+                style={[
+                  styles.mediumButtonText,
+                  {color: Colors.banner, marginTop: 20},
+                ]}>
+                {'+' + 'ADD SCHEDULE'}
+              </Text>
+
+              <TouchableOpacity
+                style={[
+                  styles.button,
+                  styles.buttonPrimary,
+                  {marginTop: 10, marginBottom: 0},
+                ]}
+                onPress={() => this.onCloseCustomeTaskSheet()}>
+                <Text style={styles.buttonText}>{'Close'}</Text>
+              </TouchableOpacity>
+            </View>
+          </RBSheet>
         </ImageBackground>
       </View>
     );
