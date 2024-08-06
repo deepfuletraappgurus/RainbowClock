@@ -97,6 +97,7 @@ export default class ParentHomeScreen extends BaseComponent {
       editingIndex: null,
       editingText: '',
       showFullCalender: false,
+      pieDataPMAM: [],
     };
 
     this.handleNextTips = this.handleNextTips.bind(this);
@@ -291,8 +292,7 @@ export default class ParentHomeScreen extends BaseComponent {
           if (
             (typeof filteredTasks !== 'undefined' ||
               filteredTasks !== undefined) &&
-            !this.state.isLoading &&
-            filteredTasks[0]?.isEmpty !== true
+            !this.state.isLoading
           ) {
             console.log('------FILTERRRRRR', filteredTasks);
             this.state.pieDataAMPM = filteredTasks;
@@ -458,7 +458,108 @@ export default class ParentHomeScreen extends BaseComponent {
         }
       }
     } else {
-      pieData = this.state.pieDataPM;
+      var date, TimeType, hour;
+      date = new Date();
+      hour = date.getHours();
+      if (hour >= 18 && this.state.pieDataPMAM[0].value !== 720) {
+        console.log('pieDataPMAM---', this.state.pieDataPMAM);
+        const SIX_AM = moment('06:00 AM', 'hh:mm A');
+        const tasks = this.state.pieDataPMAM;
+
+        // Step 1: Remove tasks starting after 6 AM
+        const filteredTasks = tasks.filter(task => {
+          if (task.isEmpty) return true;
+          const startTime = moment(task?.taskId?.split(' - ')[0], 'hh:mm A');
+          return startTime.isBefore(SIX_AM);
+        });
+
+        // Step 2: Remove all tasks after the first task that ends after 6 AM
+        let foundEndAfterSix = false;
+        const adjustedTasks = filteredTasks.filter(task => {
+          if (foundEndAfterSix) return false;
+          if (task.isEmpty) return true;
+
+          const endTime = moment(task?.taskId?.split(' - ')[1], 'hh:mm A');
+          if (endTime.isAfter(SIX_AM)) {
+            foundEndAfterSix = true;
+            return true;
+          }
+          return true;
+        });
+
+        // Step 3: Adjust the last task based on the time difference to 6 AM
+        let finalTasks = [];
+        let lastTask = adjustedTasks?.slice(-1)[0];
+
+        // Find the last task with a time string
+        while (lastTask?.isEmpty && adjustedTasks.length > 0) {
+          adjustedTasks.pop();
+          lastTask = adjustedTasks.slice(-1)[0];
+        }
+
+        if (!lastTask?.isEmpty && lastTask?.taskId) {
+          const endTime = moment(lastTask?.taskId.split(' - ')[1], 'hh:mm A');
+          if (endTime.isAfter(SIX_AM)) {
+            const difference = endTime?.diff(SIX_AM, 'minutes');
+            lastTask.value -= difference;
+            finalTasks = adjustedTasks
+              .slice(0, adjustedTasks.length - 1)
+              .concat(lastTask);
+          } else {
+            const difference = SIX_AM.diff(endTime, 'minutes');
+            finalTasks = adjustedTasks.concat({
+              isEmpty: true,
+              taskId: 'Blannk4',
+              value: difference,
+            });
+          }
+        } else {
+          finalTasks = adjustedTasks;
+        }
+        console.log('FINAL_TASK===-', finalTasks, adjustedTasks);
+
+        // Helper function to convert time to minutes from 12:00 AM
+        function timeToMinutes(time) {
+          const [hours, minutes] = time.split(':').map(Number);
+          return hours * 60 + minutes;
+        }
+
+        // Helper function to get the start time in minutes from 12:00 AM
+        function getStartTimeInMinutes(taskId) {
+          const [startTime, meridiem] = taskId.split(' - ')[0].split(' ');
+          let [hours, minutes] = startTime.split(':').map(Number);
+
+          if (meridiem === 'PM' && hours !== 12) {
+            hours += 12;
+          } else if (meridiem === 'AM' && hours === 12) {
+            hours = 0;
+          }
+
+          return hours * 60 + minutes;
+        }
+
+        // Find the first object with taskId in time form
+        const firstTimeTask = this.state.pieDataPM.find(task =>
+          /AM|PM/.test(task.taskId),
+        );
+        if (firstTimeTask) {
+          const startTimeMinutes = getStartTimeInMinutes(firstTimeTask?.taskId);
+          const sixPMMinutes = timeToMinutes('18:00');
+
+          // Calculate the difference in minutes between the start time and 6 PM
+          const differenceInMinutes = startTimeMinutes - sixPMMinutes;
+
+          // Update the first object's value property
+          this.state.pieDataPM[0].value = differenceInMinutes;
+        }
+
+        console.log('#######--######', this.state?.pieDataPM);
+
+        pieData = finalTasks.concat(this.state?.pieDataPM);
+      } else {
+        console.log('PIEDATAPM----', this.state?.pieDataPM);
+        pieData = this.state?.pieDataPM;
+      }
     }
     if (this.state.currentTaskSlot) {
       Helper.getPaginatedArray(
@@ -791,8 +892,12 @@ export default class ParentHomeScreen extends BaseComponent {
       'dddd DD MMMM YYYY',
       'YYYY-MM-DD',
     );
+    var date, TimeType, hour;
+    date = new Date();
+    hour = date.getHours();
+    const next_day = hour >= 18 ? 1 : 0;
     objSecureAPI
-      .childTasksList(this.state.objSelectedChild.id, '', aDate)
+      .childTasksList(this.state.objSelectedChild.id, '', aDate, 0, next_day)
       .then(response => {
         if (response.ok) {
           if (response.data.success) {
@@ -885,6 +990,7 @@ export default class ParentHomeScreen extends BaseComponent {
         false,
       );
       const pieDataAMPM = Helper.generateClockTaskArray(arrPM, 'pm', 3, false);
+      const pieDataPMAM = Helper.generateClockTaskArray(arrAM, 'am', 1, false);
       const pieDataAMSchool = Helper.generateClockTaskArray(
         arrAM,
         'am',
@@ -960,6 +1066,7 @@ export default class ParentHomeScreen extends BaseComponent {
           pieData24Hour_School,
           pieDataAMPM,
           pieDataAMSchool,
+          pieDataPMAM,
         },
         () => this.setWatchData(),
       );
@@ -1069,7 +1176,10 @@ export default class ParentHomeScreen extends BaseComponent {
             <View style={{}}>
               <View style={styles.clockHeader}>
                 <View
-                  style={[styles.userName, {marginBottom: 0, marginTop: 15}]}>
+                  style={[
+                    styles.userName,
+                    {marginBottom: this.state.school ? -15 : 0, marginTop: 15},
+                  ]}>
                   <Text style={styles.userNameText}>
                     {' '}
                     {this.state.objSelectedChild &&
@@ -1161,39 +1271,10 @@ export default class ParentHomeScreen extends BaseComponent {
                     styles.clockBottomRight,
                     styles.center,
                   ]}>
-                  {/* {this.state.isRewardClaimed == true ? (
-                    <View style={[styles.clockBottomRight]}>
-                      <TouchableOpacity activeOpacity={1}>
-                        <View style={[styles.shapeContainer]}>
-                          <View style={[styles.shapeView]}>
-                            <Image
-                              source={Images.shapeRight}
-                              style={styles.shapeRight}
-                            />
-                            <View
-                              style={[
-                                styles.shape,
-                                {width: Metrics.screenWidth / 5.5},
-                              ]}>
-                              <Text style={[styles.shapeText]}>
-                                {'A reward \nhas been \nclaimed!'}
-                              </Text>
-                            </View>
-                          </View>
-                          {this.state.school === true ? (
-                            <Image
-                              source={Images.schoolBus}
-                              style={styles.alarmClock}
-                            />
-                          ) : null}
-                        </View>
-                      </TouchableOpacity>
-                    </View>
-                  ) : null} */}
                   {this.state.school === true ? (
                     <Image
                       source={Images.schoolBus}
-                      style={styles.alarmClock}
+                      style={[styles.alarmClock]}
                     />
                   ) : null}
                 </View>

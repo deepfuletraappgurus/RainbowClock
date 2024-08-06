@@ -2,6 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import React from 'react';
 import {
   Alert,
+  BackHandler,
   Dimensions,
   FlatList,
   Image,
@@ -73,6 +74,26 @@ export default class ScheduleScreen extends BaseComponent {
       editingText: '',
       showFullCalender: false,
     };
+    this.handleBackButtonClick = this.handleBackButtonClick.bind(this);
+  }
+
+  componentWillMount() {
+    BackHandler.addEventListener(
+      'hardwareBackPress',
+      this.handleBackButtonClick,
+    );
+  }
+
+  componentWillUnmount() {
+    BackHandler.removeEventListener(
+      'hardwareBackPress',
+      this.handleBackButtonClick,
+    );
+  }
+
+  handleBackButtonClick() {
+    alert('back');
+    return true;
   }
 
   //#region -> Component Methods
@@ -86,6 +107,18 @@ export default class ScheduleScreen extends BaseComponent {
     console.log('~~~~~~~', upComingDays[0]);
     this.getMenuAccessRole();
     this.getChildId();
+    this.navFocusListener = this.props.navigation.addListener(
+      'didFocus',
+      () => {
+        this.getChildId();
+      },
+    );
+    this.navFocusListener = this.props.navigation.addListener(
+      'didFocus',
+      () => {
+        Helper.getChildRewardPoints(this.props.navigation);
+      },
+    );
   }
 
   getMenuAccessRole = () => {
@@ -104,6 +137,14 @@ export default class ScheduleScreen extends BaseComponent {
     this.setState({objSelectedChild: JSON.parse(child)}, () =>
       this.getTaskList(),
     );
+  };
+
+  getMenuAccessRole = () => {
+    AsyncStorage.getItem(Constants.KEY_ACCESS_AS_PARENTS, (err, result) => {
+      if (result == '1') {
+        this.setState({isMenuAsParentPortal: true});
+      }
+    });
   };
 
   getTaskList = () => {

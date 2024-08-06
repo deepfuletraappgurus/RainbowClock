@@ -573,8 +573,8 @@ const ApplicationStyles = {
       height:Metrics.screenWidth/9
     },
     alarmClock:{
-      width:Metrics.screenWidth/3.8,
-      height:Metrics.screenWidth/3.8,
+      width:Metrics.screenWidth/4.8,
+      height:Metrics.screenWidth/4.8,
       resizeMode:'contain'
     },
     school:{

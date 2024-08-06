@@ -471,12 +471,13 @@ const createSecure = (baseURL = base_url) => {
     return api.post('/deleteSubTask', data);
   };
 
-  const childTasksList = (childId, childStatus, date, is_week = '0') => {
+  const childTasksList = (childId, childStatus, date, is_week = '0',next_day=0) => {
     const data = new FormData();
     data.append('child_id', childId);
     data.append('status', childStatus);
     data.append('date', date);
     data.append('is_week', is_week);
+    data.append('next_day',next_day)
     return api.post('tasks', data);
   };
 
