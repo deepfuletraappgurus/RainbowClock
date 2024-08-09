@@ -1119,7 +1119,7 @@ export default class SetupTimeBlockScreen extends BaseComponent {
                         />
                       </View>
 
-                      <View
+                      {/* <View
                         style={{
                           flex:1
                           // justifyContent: 'center',
@@ -1133,7 +1133,7 @@ export default class SetupTimeBlockScreen extends BaseComponent {
                           // style={{flex:1,width:'100%'}}
                           contentContainerStyle={{width:'100%',justifyContent:'space-between',marginTop:12 }}
                         />
-                      </View>
+                      </View> */}
 
                       <View
                         style={{

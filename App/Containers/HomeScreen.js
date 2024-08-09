@@ -506,7 +506,7 @@ export default class HomeScreen extends BaseComponent {
         var date, TimeType, hour;
         date = new Date();
         hour = date.getHours();
-        if (hour >= 18) {
+        if (hour >= 18 && stateData.pieDataPMAM[0].value !== 720) {
           console.log(
             '!!!!---!!!!!====!!!!!',
             stateData?.pieDataPMAM,
@@ -514,20 +514,22 @@ export default class HomeScreen extends BaseComponent {
           );
           const SIX_AM = moment('06:00 AM', 'hh:mm A');
           const tasks = stateData?.pieDataPMAM;
-
+        
           // Step 1: Remove tasks starting after 6 AM
           const filteredTasks = tasks.filter(task => {
             if (task.isEmpty) return true;
+            if (!task.taskId) return false; // Ensure taskId exists
             const startTime = moment(task.taskId.split(' - ')[0], 'hh:mm A');
             return startTime.isBefore(SIX_AM);
           });
-
+        
           // Step 2: Remove all tasks after the first task that ends after 6 AM
           let foundEndAfterSix = false;
           const adjustedTasks = filteredTasks.filter(task => {
             if (foundEndAfterSix) return false;
             if (task.isEmpty) return true;
-
+            if (!task.taskId) return false; // Ensure taskId exists
+        
             const endTime = moment(task.taskId.split(' - ')[1], 'hh:mm A');
             if (endTime.isAfter(SIX_AM)) {
               foundEndAfterSix = true;
@@ -535,18 +537,18 @@ export default class HomeScreen extends BaseComponent {
             }
             return true;
           });
-
+        
           // Step 3: Adjust the last task based on the time difference to 6 AM
           let finalTasks = [];
           let lastTask = adjustedTasks.slice(-1)[0];
-
+        
           // Find the last task with a time string
           while (lastTask.isEmpty && adjustedTasks.length > 0) {
             adjustedTasks.pop();
             lastTask = adjustedTasks.slice(-1)[0];
           }
-
-          if (!lastTask.isEmpty) {
+        
+          if (lastTask && !lastTask.isEmpty && lastTask.taskId) {
             const endTime = moment(lastTask.taskId.split(' - ')[1], 'hh:mm A');
             if (endTime.isAfter(SIX_AM)) {
               const difference = endTime.diff(SIX_AM, 'minutes');
@@ -566,40 +568,42 @@ export default class HomeScreen extends BaseComponent {
             finalTasks = adjustedTasks;
           }
           console.log('FINAL_TASK===-', finalTasks, adjustedTasks);
-
+        
           // Helper function to convert time to minutes from 12:00 AM
           function timeToMinutes(time) {
             const [hours, minutes] = time.split(':').map(Number);
             return hours * 60 + minutes;
           }
-
+        
           // Helper function to get the start time in minutes from 12:00 AM
           function getStartTimeInMinutes(taskId) {
             const [startTime, meridiem] = taskId.split(' - ')[0].split(' ');
             let [hours, minutes] = startTime.split(':').map(Number);
-
+        
             if (meridiem === 'PM' && hours !== 12) {
               hours += 12;
             } else if (meridiem === 'AM' && hours === 12) {
               hours = 0;
             }
-
+        
             return hours * 60 + minutes;
           }
-
+        
           // Find the first object with taskId in time form
           const firstTimeTask = stateData.pieDataPM.find(task => /AM|PM/.test(task.taskId));
-          const startTimeMinutes = getStartTimeInMinutes(firstTimeTask.taskId);
-          const sixPMMinutes = timeToMinutes('18:00');
-
-          // Calculate the difference in minutes between the start time and 6 PM
-          const differenceInMinutes = startTimeMinutes - sixPMMinutes;
-
-          // Update the first object's value property
-          stateData.pieDataPM[0].value = differenceInMinutes;
-
+          if (firstTimeTask) {
+            const startTimeMinutes = getStartTimeInMinutes(firstTimeTask.taskId);
+            const sixPMMinutes = timeToMinutes('18:00');
+        
+            // Calculate the difference in minutes between the start time and 6 PM
+            const differenceInMinutes = startTimeMinutes - sixPMMinutes;
+        
+            // Update the first object's value property
+            stateData.pieDataPM[0].value = differenceInMinutes;
+          }
+        
           console.log('#######--######', stateData?.pieDataPM);
-
+        
           pieData = finalTasks.concat(stateData?.pieDataPM);
         } else {
           console.log('PIEDATAPM----', stateData?.pieDataPM);

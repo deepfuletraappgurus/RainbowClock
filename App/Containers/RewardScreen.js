@@ -64,9 +64,9 @@ export default class RewardScreen extends BaseComponent {
     });
   };
 
-  getRewardList = () => {
+  getRewardList = (childId) => {
     mAPi
-      .parentRewardList()
+      .childReward(childId)
       .then(response => {
         if (response.ok) {
           if (response.data.success) {
@@ -112,13 +112,11 @@ export default class RewardScreen extends BaseComponent {
   };
   componentDidMount() {
     super.componentDidMount();
-    this.getRewardList();
     this.getChildDetail();
     this.navFocusListener = this.props.navigation.addListener(
       'didFocus',
       () => {
         Helper.getChildRewardPoints(this.props.navigation);
-        this.getRewardList();
       },
     );
   }
@@ -145,7 +143,7 @@ export default class RewardScreen extends BaseComponent {
             deleteRewardLoading: false,
           });
           this.RBSheetTimer.close();
-          this.getRewardList();
+          this.getRewardList(this.state.objSelectedChild.id);
         } else {
           this.setState({
             deleteItem: '',
@@ -352,7 +350,7 @@ export default class RewardScreen extends BaseComponent {
           style={styles.backgroundImage}>
           <ScrollView
             contentContainerStyle={styles.ScrollView}
-            onRefresh={() => this.getRewardList()}>
+            onRefresh={() => this.getRewardList(this.state.objSelectedChild.id)}>
             <View style={[styles.container]}>
               <View style={styles.clockHeader}>
                 <Text style={[styles.h1, styles.textCenter]}>
@@ -372,7 +370,7 @@ export default class RewardScreen extends BaseComponent {
                   this.renderRewardRow(item, index)
                 }
                 extraData={this.state}
-                onRefresh={() => this.getRewardList()}
+                onRefresh={() => this.getRewardList(this.state.objSelectedChild.id)}
                 // numColumns={2}
               />
               <View style={[styles.center, {flex: 1}]}>

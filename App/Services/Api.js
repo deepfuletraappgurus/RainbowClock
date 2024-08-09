@@ -518,8 +518,8 @@ const createSecure = (baseURL = base_url) => {
   const printTask = (childId, taskDate) =>
     api.post('/print', {child_id: childId, task_date: taskDate}); //MP
 
-  const parentRewardList = (status = '') =>
-    api.post('rewards/all', {status: status});
+  const parentRewardList = (childId) =>
+    api.post('rewards/all', {child_id: childId});
 
   const clearReward = rewardId => api.post('rewards/clear', {rid: rewardId});
 
