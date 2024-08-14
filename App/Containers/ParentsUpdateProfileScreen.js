@@ -82,30 +82,42 @@ export default class ParentsUpdateProfileScreen extends BaseComponent {
   };
 
   manageNextField(position, text, type) {
-    var sholdMoveForword = (text != '')
+    var sholdMoveForword = text != '';
     switch (position) {
       case 1:
-        type == txtInputType ? this.state.pin1 = text : this.state.cpin1 = text
-        this.setState(type == txtInputType ? { pin1: text } : { cpin1: text })
+        type == txtInputType
+          ? (this.state.pin1 = text)
+          : (this.state.cpin1 = text);
+        this.setState(type == txtInputType ? {pin1: text} : {cpin1: text});
         if (sholdMoveForword) {
-          type == txtInputType ? this.refs.pin2.focus() : this.refs.cpin2.focus()
+          type == txtInputType
+            ? this.refs.pin2.focus()
+            : this.refs.cpin2.focus();
         }
         break;
       case 2:
-        type == txtInputType ? this.state.pin2 = text : this.state.cpin2 = text
-        this.setState(type == txtInputType ? { pin2: text } : { cpin2: text })
+        type == txtInputType
+          ? (this.state.pin2 = text)
+          : (this.state.cpin2 = text);
+        this.setState(type == txtInputType ? {pin2: text} : {cpin2: text});
         if (sholdMoveForword) {
-          type == txtInputType ? this.refs.pin3.focus() : this.refs.cpin3.focus()
+          type == txtInputType
+            ? this.refs.pin3.focus()
+            : this.refs.cpin3.focus();
         }
         // else {
         //   type == txtInputType ? this.refs.pin1.focus() : this.refs.cpin1.focus()
         // }
         break;
       case 3:
-        type == txtInputType ? this.state.pin3 = text : this.state.cpin3 = text
-        this.setState(type == txtInputType ? { pin3: text } : { cpin3: text })
+        type == txtInputType
+          ? (this.state.pin3 = text)
+          : (this.state.cpin3 = text);
+        this.setState(type == txtInputType ? {pin3: text} : {cpin3: text});
         if (sholdMoveForword) {
-          type == txtInputType ? this.refs.pin4.focus() : this.refs.cpin4.focus()
+          type == txtInputType
+            ? this.refs.pin4.focus()
+            : this.refs.cpin4.focus();
         }
         // else {
         //   type == txtInputType ? this.refs.pin2.focus() : this.refs.cpin2.focus()
@@ -113,7 +125,7 @@ export default class ParentsUpdateProfileScreen extends BaseComponent {
         break;
       case 4:
         if (sholdMoveForword && type == txtInputType) {
-          this.refs.cpin1.focus()
+          this.refs.cpin1.focus();
         }
         // else if (type == txtInputType && !sholdMoveForword) {
         //   this.refs.pin3.focus();
@@ -125,7 +137,7 @@ export default class ParentsUpdateProfileScreen extends BaseComponent {
           Keyboard.dismiss();
         }
 
-        this.setState(type == txtInputType ? { pin4: text } : { cpin4: text })
+        this.setState(type == txtInputType ? {pin4: text} : {cpin4: text});
         break;
     }
   }
@@ -164,6 +176,9 @@ export default class ParentsUpdateProfileScreen extends BaseComponent {
       () => {},
       () => this.onActionYes(),
     );
+  };
+  btnChangePassword = () => {
+    this.props.navigation.navigate('ChangePasswordScreen');
   };
 
   onActionYes = () => {
@@ -271,16 +286,16 @@ export default class ParentsUpdateProfileScreen extends BaseComponent {
               );
               Helper.showErrorMessage(resJSON.data.message);
               this.setState({
-                pin1:'',
-                pin2:'',
-                pin3:'',
-                pin4:'',
-                cpin1:'',
-                cpin2:'',
-                cpin3:'',
-                cpin4:''
-              })
-              this.props.navigation.goBack()
+                pin1: '',
+                pin2: '',
+                pin3: '',
+                pin4: '',
+                cpin1: '',
+                cpin2: '',
+                cpin3: '',
+                cpin4: '',
+              });
+              this.props.navigation.goBack();
             } catch (error) {}
           } else {
             Helper.showErrorMessage(resJSON.data.message);
@@ -327,7 +342,6 @@ export default class ParentsUpdateProfileScreen extends BaseComponent {
                         onSubmitEditing={event => {
                           this.refs.email.focus();
                         }}
-                        
                       />
                     </View>
                     <View style={styles.formControl}>
@@ -598,6 +612,13 @@ export default class ParentsUpdateProfileScreen extends BaseComponent {
                           </Text>
                         </TouchableOpacity>
                       )}
+                      <TouchableOpacity
+                        style={[styles.button, styles.buttonPrimary]}
+                        onPress={() => this.btnChangePassword()}>
+                        <Text style={styles.buttonText}>
+                          {'CHANGE PASSWORD'}
+                        </Text>
+                      </TouchableOpacity>
                       <TouchableOpacity
                         style={[styles.button, styles.buttonPrimary]}
                         onPress={() => this.btnDeleteProfile()}>

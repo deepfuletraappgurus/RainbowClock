@@ -26,6 +26,7 @@ import moment from 'moment';
 import styles from './Styles/SetupTimeBlockScreenStyles';
 import Api from '../Services/Api';
 import colors from '../Themes/Colors';
+import {isEqual} from 'lodash';
 
 let days = [];
 
@@ -141,20 +142,11 @@ export default class EditScheduleScreen extends BaseComponent {
         Helper.getChildRewardPoints(this.props.navigation);
       },
     );
-    // Helper.checkChoosenTimeIsValidOrNot(this.state.fromTime, (aNewDay, isPastSelectedTime, todayIsSunday) => {
-    //     this.state.strMinimumDate = aNewDay
-    //     this.state.arrSelectedDates[aNewDay] = { selected: true, marked: true, selectedColor: 'white' }
-    //     this.state.arrSelectedTaskDates.push(Helper.dateFormater(aNewDay, 'YYYY-MM-DD', 'Y-M-D'))
-    //     // this.state.isPastSelectedTimeSlote = isPastSelectedTime
-    //     // this.state.isSunday = todayIsSunday
-    //     // this.setState({
-    //     //     current: aNewDay
-    //     // })
-    // })
+
     var startOfWeek = moment().add(0, 'days');
     var endOfWeek = moment().add(6, 'days');
     var day = startOfWeek;
-    days = [];
+    let days = [];
     while (day <= endOfWeek) {
       if (!days.includes(day)) {
         days.push({
@@ -165,54 +157,58 @@ export default class EditScheduleScreen extends BaseComponent {
       }
     }
 
-    this.setState(
-      {
-        arrSelectedDates: days,
-      },
-      () => {
-        const scheduleDetails = this.props.navigation.getParam(
-          'scheduleDetails',
-          {},
+    this.setState({arrSelectedDates: days}, () => {
+      const scheduleDetails = this.props.navigation.getParam(
+        'scheduleDetails',
+        {},
+      );
+
+      console.log('PARAMS DATA',scheduleDetails,scheduleDetails?.is_date)
+
+      if (scheduleDetails) {
+        const taskName = this.state.taskNameList.includes(
+          scheduleDetails?.name,
         );
-        console.log('SCHEDULEDETAILS', scheduleDetails);
-        if (scheduleDetails) {
-          const taskName = this.state.taskNameList.includes(
-            scheduleDetails?.name,
-          );
-          this.setState({
+        this.setState(
+          {
             selectedTask: taskName ? scheduleDetails?.name : '+CUSTOM',
             taskName: !taskName ? scheduleDetails?.name : '',
-          });
-          this.setState({
-            fromTime: scheduleDetails?.time_from,
-            toTime: scheduleDetails?.time_to,
-            taskSelectedColor: scheduleDetails?.color,
+            fromTime: scheduleDetails?.time_from || '',
+            toTime: scheduleDetails?.time_to || '',
+            taskSelectedColor: scheduleDetails?.color || '#f2c745',
             is_date: scheduleDetails?.is_date,
             is_new: scheduleDetails?.is_new,
             is_school_clock: scheduleDetails?.is_school_clock,
             time: moment(scheduleDetails?.time_from, 'h:mm A').toDate(),
             toTimeDate: moment(scheduleDetails?.time_to, 'h:mm A').toDate(),
-            tid: scheduleDetails?.id,
+            tid: scheduleDetails?.id || '',
+          },
+          () => {
+            // Now that state is updated, we set the initial values.
+            this.initialValues = {
+              taskName: this.state.taskName,
+              fromTime: this.state.fromTime,
+              toTime: this.state.toTime,
+              taskColor: this.state.taskSelectedColor,
+              task_date: this.state.task_date,
+              is_date: this.state.is_date,
+              is_new: this.state.is_new,
+              tid: this.state.tid,
+            };
+          },
+        );
+
+        if (scheduleDetails?.is_date) {
+          this.setState({calenderSelectedDay: scheduleDetails?.task_date});
+        } else {
+          scheduleDetails?.days.split(',').forEach(day => {
+            setTimeout(() => {
+              this.intialSelectedDay(day);
+            }, 300);
           });
-          if (scheduleDetails?.is_date) {
-            // this.setState({arrSelectedDates:[]})
-            this.setState({calenderSelectedDay: scheduleDetails?.task_date});
-          } else {
-            scheduleDetails?.days.split(',').forEach(day => {
-              setTimeout(() => {
-                this.intialSelectedDay(day);
-              }, 300);
-            });
-          }
-          // this.selectedDay(scheduleDetails?.task_date);
-          if (scheduleDetails?.is_date) {
-            this.setState({
-              calenderSelectedDay: new Date(scheduleDetails?.task_date),
-            });
-          }
         }
-      },
-    );
+      }
+    });
   }
 
   getChildDetail = async () => {
@@ -272,6 +268,39 @@ export default class EditScheduleScreen extends BaseComponent {
     }
   };
 
+  cancelChange = () => {
+    const {taskName, fromTime, toTime, taskSelectedColor, task_date, is_date} =
+      this.state;
+
+    // Check for changes
+    const hasChanged =
+      taskName !== this.initialValues.taskName ||
+      fromTime !== this.initialValues.fromTime ||
+      toTime !== this.initialValues.toTime ||
+      taskSelectedColor !== this.initialValues.taskColor ||
+      (task_date instanceof Date && this.initialValues.task_date instanceof Date
+        ? task_date.getTime() !== this.initialValues.task_date.getTime()
+        : task_date !== this.initialValues.task_date) ||
+      is_date !== this.initialValues.is_date;
+
+      console.log(this.initialValues.is_date,is_date)
+
+    // Handle the changed values
+    if (hasChanged) {
+      console.log('Values have changed');
+      Helper.showConfirmationMessageActions(
+        "Are you sure, you want to discard this change?",
+        'No',
+        'Yes',
+        this.onActionNo,
+        () => this.onDiscardChange(),
+      );
+      // Handle the changed values (e.g., prompt user to save changes or discard)
+    } else {
+      this.onDiscardChange();
+    }
+  };
+
   checkTimeValidation = () => {
     const [fromHours, fromMinutes, fromPeriod] =
       this.state.fromTime.split(/[:\s]/);
@@ -314,7 +343,7 @@ export default class EditScheduleScreen extends BaseComponent {
     var task_date = dictCreateTask['task_date'];
     var is_date = dictCreateTask['is_date'];
     var is_new = dictCreateTask['is_new'];
-    var is_school_clock = this.state.is_school_clock
+    var is_school_clock = this.state.is_school_clock;
 
     const res = objSecureAPI
       .updateSchedule(
@@ -327,7 +356,7 @@ export default class EditScheduleScreen extends BaseComponent {
         task_date,
         is_date,
         is_new,
-        is_school_clock
+        is_school_clock,
       )
       .then(resJSON => {
         if (resJSON.ok && resJSON.status == 200) {
@@ -347,6 +376,9 @@ export default class EditScheduleScreen extends BaseComponent {
       });
   };
   onActionNo = () => {};
+  onDiscardChange = () => {
+    this.props.navigation.goBack();
+  };
 
   setToggleColorPicker = () => {
     Keyboard.dismiss();
@@ -765,28 +797,32 @@ export default class EditScheduleScreen extends BaseComponent {
                       styles.justifyFooter,
                       {
                         flexDirection: 'row',
-                        justifyContent: 'flex-end',
+                        justifyContent: 'space-between',
                         alignItems: 'center',
                       },
                     ]}>
                     <TouchableOpacity
-                      style={styles.nextButton}
+                      style={[
+                        styles.buttonText,
+                        {
+                          borderRadius: 5,
+                          borderWidth: 1,
+                          borderColor: Colors.white,
+                          height: 50,
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          width: '45%',
+                        },
+                      ]}
                       onPress={() => {
-                        Helper.showConfirmationMessageActions(
-                          "Are you sure, you don't want to update this schedule?",
-                          'No',
-                          'Yes',
-                          this.onActionNo,
-                          () => this.props.navigation.goBack(),
-                        );
+                        this.cancelChange();
                       }}>
-                      <Image
-                        source={Images.circleArrowLeft}
-                        style={styles.circleArrow}
-                      />
+                      <Text style={[styles.h1, styles.textCenter]}>
+                        {'Cancel'.toUpperCase()}
+                      </Text>
                     </TouchableOpacity>
                     <TouchableOpacity
-                      style={[styles.nextButton, {marginLeft: 15}]}
+                      style={[styles.buttonYellow]}
                       onPress={() => this.moveToScheduleTask()}>
                       {this.state.isLoading ? (
                         <View
@@ -805,10 +841,9 @@ export default class EditScheduleScreen extends BaseComponent {
                           />
                         </View>
                       ) : (
-                        <Image
-                          source={Images.circleArrowRight}
-                          style={styles.circleArrow}
-                        />
+                        <Text style={[styles.h1, styles.textCenter]}>
+                          {'save'.toUpperCase()}
+                        </Text>
                       )}
                     </TouchableOpacity>
                   </View>

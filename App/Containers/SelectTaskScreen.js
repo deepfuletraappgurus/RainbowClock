@@ -95,6 +95,7 @@ export default class SelectTaskScreen extends BaseComponent {
       isSaveForFuture: 0,
       savedTaskList: [],
       createdTaskCount: 0,
+      chosenCategory:{}
     };
   }
 
@@ -110,7 +111,7 @@ export default class SelectTaskScreen extends BaseComponent {
       Constants.TASK_TOKEN_STANDARD,
       Constants.TASK_TOKEN_SPECIAL,
     ];
-    this.getTaskCategories();
+    
     this.getChildDetail();
     this.navFocusListener = this.props.navigation.addListener(
       'didFocus',
@@ -130,7 +131,6 @@ export default class SelectTaskScreen extends BaseComponent {
   getChildDetail = () => {
     AsyncStorage.getItem(Constants.KEY_SELECTED_CHILD, (err, child) => {
       if (child != '') {
-        console.log('========',JSON.parse(child))
         this.setState({objSelectedChild: JSON.parse(child)}, () => {
           const tasks = this.state.objSelectedChild.tasks;
           let arr = [];
@@ -140,6 +140,7 @@ export default class SelectTaskScreen extends BaseComponent {
             });
           });
           this.setState({arrSelectedTasksSubCatIds: arr});
+          this.getTaskCategories();
           this.getSavedtask();
         });
       }
@@ -154,6 +155,11 @@ export default class SelectTaskScreen extends BaseComponent {
       this.state.customTaskName = '';
       this.state.taskCustomImage = '';
       this.state.taskCustomImagePath = '';
+      const customchosencategory = {
+        parent_id:'14'
+      }
+      this.state.chosenCategory = customchosencategory
+      this.state.selectedSubCategory = ''
       this.setState({});
     });
   }
@@ -237,7 +243,7 @@ export default class SelectTaskScreen extends BaseComponent {
   //#endregion -> API Calls
   getTaskCategories = () => {
     this.setState({isLoading: true});
-    const res = objSecureAPI.getCategories().then(resJSON => {
+    const res = objSecureAPI.getCategories(this.state.objSelectedChild.id).then(resJSON => {
       if (resJSON.ok && resJSON.status == 200) {
         this.setState({isLoading: false});
         if (resJSON.data.success) {
@@ -261,12 +267,12 @@ export default class SelectTaskScreen extends BaseComponent {
           );
           this.state.customCategory = this.state.arrAllCategories.filter(
             item => {
-              return item.name === 'Custom';
+              return item.id == '14';
             },
-          )[0];
+          );
           this.state.arrCustomCategoryIcons = arrAllCategoriesData.filter(
             item => {
-              return item.parent_id == this.state.customCategory.id;
+              return item.parent_id == 14;
             },
           );
           this.setState({});
@@ -310,7 +316,7 @@ export default class SelectTaskScreen extends BaseComponent {
   callAddTask = () => {
     this.setState({isLoading: true});
     var childId = this.state.objSelectedChild.id;
-    var mainCatId = this.state.selectedCategory.id;
+    var mainCatId = this.state.chosenCategory.parent_id;
     var subCatId = this.state.selectedSubCategory;
     var taskType = this.state.taskType;
     var timeSloteName = this.state.dictCreateTask['taskName'];
@@ -521,7 +527,51 @@ export default class SelectTaskScreen extends BaseComponent {
     );
   }
 
+  renderCustomTask(item, index) {
+    return (
+      <TouchableOpacity
+        style={[
+          styles.taskIconTouch,
+          this.state.arrSelectedTasksSubCatIds.includes(item.id)
+            ? styles.taskIconTouchActive
+            : '',
+          {
+            justifyContent: 'center',
+            alignItems: 'center',
+            alignSelf: 'center',
+            width: '22%',
+          },
+        ]}
+        onPress={() => this.setTaskModelVisible(item)}>
+        <Image source={{uri: item.image}} style={styles.taskIcon} />
+        <TouchableOpacity
+          onPress={() => this.onCustomTaskDeletePress(item)}
+          style={{
+            padding: 5,
+            borderRadius: 5,
+            borderWidth: 2,
+            borderColor: Colors.snow,
+            position: 'absolute',
+            right:0,
+            top:0,
+            zIndex: 10000,
+          }}>
+          <Image
+            source={Images.bin}
+            style={{
+              width: 15,
+              height: 15,
+              // tintColor: colors.black,
+              resizeMode: 'contain',
+            }}
+          />
+        </TouchableOpacity>
+      </TouchableOpacity>
+    );
+  }
+
   renderSavedTaskList(item, index) {
+    console.log('save----')
     return (
       <TouchableOpacity
         style={[
@@ -574,6 +624,16 @@ export default class SelectTaskScreen extends BaseComponent {
     );
   };
 
+  onCustomTaskDeletePress = item => {
+    Helper.showConfirmationMessageActions(
+      'Are You sure you want to delete this custom task ?',
+      'No',
+      'Yes',
+      () => {},
+      () => this.onCustomtaskActionYes(item),
+    );
+  }
+
   onActionYes = item => {
     const res = objSecureAPI
       .deleteSavedtask(item?.id, this.state.objSelectedChild.id)
@@ -595,6 +655,28 @@ export default class SelectTaskScreen extends BaseComponent {
       });
   };
 
+  onCustomtaskActionYes = item => {
+    console.log('OOOOOOOOOO====',item)
+    const res = objSecureAPI
+      .deleteCustomtask(item?.id, this.state.objSelectedChild.id)
+      .then(resJSON => {
+        if (resJSON.ok && resJSON.status == 200) {
+          this.setState({isLoading: false});
+          if (resJSON.data.success) {
+            this.getChildDetail();
+          } else {
+            Helper.showErrorMessage(resJSON.data.message);
+          }
+        } else if (resJSON.status == 500) {
+          this.setState({isLoading: false});
+          Helper.showErrorMessage(resJSON.data.message);
+        } else {
+          this.setState({isLoading: false});
+          Helper.showErrorMessage(Constants.SERVER_ERROR);
+        }
+      });
+  }
+
   setTaskModelVisible(item) {
     // if (
     //   this.state.selectedCategory == '' &&
@@ -611,6 +693,7 @@ export default class SelectTaskScreen extends BaseComponent {
     this.state.taskType = item ? Constants.TASK_TYPE_DEFAULT : '';
     this.state.taskImage = item ? item.image : '';
     this.state.selectedSubCategory = item ? item.id : '';
+    this.state.chosenCategory = item
 
     if (!item) {
       // this.state.selectedCategory = '';
@@ -641,6 +724,7 @@ export default class SelectTaskScreen extends BaseComponent {
     this.state.taskType = item ? Constants.TASK_TYPE_DEFAULT : '';
     this.state.taskImage = item ? item.image : '';
     this.state.selectedSubCategory = item ? item.ccid : '';
+    this.state.chosenCategory = item
 
     if (!item) {
       // this.state.selectedCategory = '';
@@ -819,7 +903,7 @@ export default class SelectTaskScreen extends BaseComponent {
             data={this.state.arrCustomCategoryIcons}
             numColumns={4}
             horizontal={false}
-            renderItem={({item, index}) => this.renderImages(item, index)}
+            renderItem={({item, index}) => this.renderCustomTask(item, index)}
             keyExtractor={(item, index) => index}
             showsVerticalScrollIndicator={false}
           />

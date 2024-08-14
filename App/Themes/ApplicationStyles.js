@@ -135,6 +135,18 @@ const ApplicationStyles = {
       borderColor: Colors.darkBlue,
       width:'100%',
     },
+    buttonYellow:{
+      backgroundColor:Colors.yellow,
+      height:50,
+      borderRadius:5,
+      alignItems:'center',
+      justifyContent:'center',
+      marginBottom:15,
+      marginTop:15,
+      borderBottomWidth:5,
+      borderColor: Colors.dark_yellow_button,
+      width:'45%',
+    },
     buttonPrimary:{
       backgroundColor:Colors.pink,
       borderColor:Colors.darkPink,

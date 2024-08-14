@@ -150,6 +150,11 @@ const Constants = {
     MESSAGE_CURRENTTIME_DELETE_SCHEDULE:'You are currently in this block of time, would you still like to delete this block of time?',
     MESSAGE_RECOVER_TASK_ERROR:'Tasks need to be recovered before they can be updated',
     MESSAGE_NO_CREATE_TASK_ERROR:'You have not selected any tasks, Please select any of one task first',
+    MESSAGE_NO_CURRENT_PASSWORD:'Please enter current password.',
+    MESSAGE_NO_NEW_PASSWORD:'Please enter new password.',
+    MESSAGE_NO_CONFIRM_NEW_PASSWORD:'Please enter confirm password.',
+    MESSAGE_NOT_MATCH_PASSWORD:'New password and confirm password not matched',
+    MESSAGE_PASSWORD_CHANGE_SUCCESSFULL:'Password Save SuccessFully',
     //Other Messages 
     TEXT_FATCHING_CHILD: 'FETCHING YOUR USERS',
     TEXT_FATCHING_TASKS: 'FETCHING YOUR TASKS...',

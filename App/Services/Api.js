@@ -196,8 +196,10 @@ const createSecure = (baseURL = base_url) => {
     return api.get('/children');
   };
 
-  const getCategories = () => {
-    return api.get('/categories');
+  const getCategories = (child_id) => {
+    const data = new FormData()
+    data.append('child_id',child_id)
+    return api.post('/categoriesalt',data);
   };
 
   const getSavedtask = child_id => {
@@ -212,6 +214,13 @@ const createSecure = (baseURL = base_url) => {
     data.append('child_id', child_id);
     return api.post('/deleteFutureTask', data);
   };
+
+  const deleteCustomtask = (tid, child_id) => {
+    const data = new FormData();
+    data.append('cat_id', tid);
+    data.append('child_id', child_id);
+    return api.post('/deleteCategory', data);
+  }
 
   const updateChild = (childId, name, photo, rewardIcon) => {
     const data = new FormData();
@@ -283,6 +292,19 @@ const createSecure = (baseURL = base_url) => {
     data.append('device_type', device_type);
     data.append('device_token', device_token);
     return api.post('/updateprofile', data);
+  };
+
+  const doUpdatePassword = (
+    old_password,
+    password,
+    confirm_password,
+  ) => {
+    const data = new FormData();
+    //Parms
+    data.append('old_password', old_password);
+    data.append('password', password);
+    data.append('password_confirmation', confirm_password);
+    return api.post('/changePassword', data);
   };
 
   const addTask = (
@@ -603,8 +625,10 @@ const createSecure = (baseURL = base_url) => {
     deleteSchedule,
     deleteSubTask,
     deleteSavedtask,
+    deleteCustomtask,
     logout,
-    deleteReward
+    deleteReward,
+    doUpdatePassword
   };
 };
 

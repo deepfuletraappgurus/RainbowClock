@@ -112,10 +112,10 @@ export default class RewardScreen extends BaseComponent {
   };
   componentDidMount() {
     super.componentDidMount();
-    this.getChildDetail();
     this.navFocusListener = this.props.navigation.addListener(
       'didFocus',
       () => {
+        this.getChildDetail();
         Helper.getChildRewardPoints(this.props.navigation);
       },
     );
@@ -257,7 +257,7 @@ export default class RewardScreen extends BaseComponent {
           onPress={() => {
             if (item?.is_claimed) {
               Helper.showConfirmationMessageActions(
-                'Are you sure you want to recover this schedule?',
+                'Are you sure you want to recover this reward?',
                 'No',
                 'Yes',
                 () => {},

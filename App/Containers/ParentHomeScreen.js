@@ -169,7 +169,9 @@ export default class ParentHomeScreen extends BaseComponent {
         let isShowTime = JSON.parse(value);
         if (isShowTime != null) {
           if (isShowTime) {
-            this.start();
+            setTimeout(() => {
+              this.start();
+            }, 2000);
           } else {
             this.homeTips.options.disabled = true;
           }
@@ -1129,17 +1131,14 @@ export default class ParentHomeScreen extends BaseComponent {
         />
 
         <Tips
-          contentStyle={[
-            styles.contentStyle,
-            {
-              maxWidth: 200,
-            },
-          ]}
+          contentStyle={styles.contentStyle}
           tooltipContainerStyle={[
             styles.tooltipContainerStyle,
             {
-              left: '50%',
-              top: Helper.isIPhoneX() ? 190 : 170,
+              left: 70,
+              top: Helper.isIPhoneX()
+                ? Metrics.screenHeight / 1.2
+                : Metrics.screenHeight / 1.3,
             },
           ]}
           style={[styles.Tips]}
@@ -1187,7 +1186,7 @@ export default class ParentHomeScreen extends BaseComponent {
                     this.state.objSelectedChild.name
                       ? // ? this.state.objSelectedChild.name.toUpperCase() + "’S CLOCK"
                         this.state.school
-                        ? 'SCHOOL CLOCK'
+                        ?this.state.objSelectedChild.name.toUpperCase() + '’S SCHOOL CLOCK'
                         : this.state.objSelectedChild.name.toUpperCase() +
                           '’S CLOCK'
                       : ''}

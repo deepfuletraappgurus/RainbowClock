@@ -88,7 +88,7 @@ export default class ChildClaimedRewardsScreen extends BaseComponent {
 
   claimReward(item) {
     Helper.showConfirmationMessageActions(
-      'Are you sure tou want to claim this reward?',
+      'Are you sure you want to claim this reward?',
       'No',
       'Yes',
       () => {},

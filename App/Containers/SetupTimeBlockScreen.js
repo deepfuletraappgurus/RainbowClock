@@ -698,6 +698,9 @@ export default class SetupTimeBlockScreen extends BaseComponent {
           this.setState({
             calenderSelectedDay: value,
           });
+          setTimeout(() => {
+            this.handleResetSelection();
+          }, 300);
         } else {
           // If value is not a Date object, try converting it to a Date
           const dateValue = new Date(value);

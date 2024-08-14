@@ -28,6 +28,7 @@ const colors = {
   skyBlue:'#63d2eb',
   yellow:'#fed057',
   darkYellow:'#FBBD59',
+  dark_yellow_button:'#F7971E',
   pink:'#b95ad7',
   restoreGreen:'#35d3b5',
   darkPink:'#993dc6',

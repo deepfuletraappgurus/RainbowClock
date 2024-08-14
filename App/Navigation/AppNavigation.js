@@ -47,6 +47,7 @@ import EditScheduleScreen from '../Containers/EditScheduleScreen';
 import EditSelectTaskScreen from '../Containers/EditSelectTaskScreen';
 import PrintPdfScreen from '../Containers/PrintPdfScreen'
 import EditRewardScreen from '../Containers/EditRewardScreen'
+import ChangePasswordScreen from '../Containers/ChangePasswordScreen';
 
 const noTransitionConfig = () => ({
   transitionSpec: {
@@ -210,6 +211,10 @@ const drawerStack = createStackNavigator(
     },
     EditRewardScreen: {
       screen: EditRewardScreen,
+      navigationOptions: {title: 'My Rainbow Clock'.toUpperCase()},
+    },
+    ChangePasswordScreen: {
+      screen: ChangePasswordScreen,
       navigationOptions: {title: 'My Rainbow Clock'.toUpperCase()},
     },
   },
