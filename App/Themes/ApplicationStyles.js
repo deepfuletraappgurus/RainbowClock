@@ -1024,6 +1024,7 @@ const ApplicationStyles = {
       flexWrap:'wrap',
       justifyContent:'space-between',
       marginTop:20,
+      flex:1
     },
     borderTop:{
       borderTopWidth:1,
@@ -1346,16 +1347,16 @@ const ApplicationStyles = {
       alignItems:'center',
       paddingRight:10
     },
-    shapeJoke:{
-      padding:8,
-      paddingRight:15,
-      width:Metrics.screenWidth / 3,
-      minHeight:Metrics.screenWidth / 8,
-      justifyContent:'center',
-      alignItems:'center',
+    shapeJoke: {
+      padding: 8,
+      paddingRight: 15,
+      width: Metrics.screenWidth / 3,
+      minHeight: Metrics.screenWidth / 8, // Sets a minimum height
+      justifyContent: 'center',
+      alignItems: 'center',
       backgroundColor: Colors.darkPink,
-      borderRadius:5,
-      alignSelf:'center'
+      borderRadius: 5,
+      alignSelf: 'center',
     },
     shape:{
       padding:8,
@@ -1368,11 +1369,13 @@ const ApplicationStyles = {
       borderRadius:5,
       alignSelf:'center'
     },
-    shapeText:{
-      fontFamily:Fonts.type.base,
-      fontSize:10,
-      color:Colors.snow,
-      fontWeight:'700',
+    shapeText: {
+      fontFamily: Fonts.type.base,
+      fontSize: 10,
+      color: Colors.snow,
+      fontWeight: '700',
+      textAlign: 'center', // Centers text horizontally
+      flexWrap: 'wrap', // Allows text to wrap if it's too long
     },
     shapeRight:{
       width:15,

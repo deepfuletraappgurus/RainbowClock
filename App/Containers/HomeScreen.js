@@ -103,6 +103,11 @@ export default class HomeScreen extends BaseComponent {
       refresh: false,
       piedataSchool: [],
       animationRunning: true,
+      scrollable: false,
+      textHeight: 0,
+      futurearrTask:[],
+      futurearrFilteredTasks: [],
+      futuredicPieData:{},
     };
     this.handleNextTips = this.handleNextTips.bind(this);
   }
@@ -278,6 +283,7 @@ export default class HomeScreen extends BaseComponent {
   setWatchData(currentIndex) {
     var pieData = '';
     var stateData = this.state.dicPieData;
+    var futureStateData = this.state.futuredicPieData
 
     if (!stateData) {
       pieData = [];
@@ -291,12 +297,13 @@ export default class HomeScreen extends BaseComponent {
 
         // Getting current hour from Date object.
         hour = date.getHours();
-        console.log('22--222', stateData?.pieDataAMPM);
+        const schoolPieData = hour >= 18 ? futureStateData : stateData
+        console.log('22--222', schoolPieData?.pieDataAMPM,this.state.futuredicPieData,this.state.dicPieData);
         if (
-          stateData?.pieDataAMPM?.length == 1 &&
-          stateData.pieDataAMPM[0].isEmpty
+          schoolPieData?.pieDataAMPM?.length == 1 &&
+          schoolPieData.pieDataAMPM[0].isEmpty
         ) {
-          pieData = stateData?.pieDataAMSchool;
+          pieData = schoolPieData?.pieDataAMSchool;
         } else {
           function filterTasks(tasks) {
             let endIndex = -1;
@@ -322,21 +329,22 @@ export default class HomeScreen extends BaseComponent {
           }
 
           // Filter tasks
-          const filteredTasks = filterTasks(stateData?.pieDataAMPM);
+          const filteredTasks = filterTasks(schoolPieData?.pieDataAMPM);
           console.log('!!!!---!!!!!', filteredTasks);
           if (
             (typeof filteredTasks !== 'undefined' ||
               filteredTasks !== undefined) &&
-            !this.state.isLoading
+            !this.state.isLoading &&
+            filteredTasks.length !== 1
           ) {
-            stateData.pieDataAMPM = filteredTasks;
+            schoolPieData.pieDataAMPM = filteredTasks;
             let secondLastTaskEndTime =
-              stateData.pieDataAMPM[
-                stateData?.pieDataAMPM?.length - 2
+              schoolPieData.pieDataAMPM[
+                schoolPieData?.pieDataAMPM?.length - 2
               ]?.taskId?.split(' - ')[1];
-            console.log('1---1', stateData.pieDataAMPM);
+            console.log('1---1', schoolPieData.pieDataAMPM);
             let endTimeMeridiem =
-              stateData.pieDataAMPM[stateData?.pieDataAMPM?.length - 2]
+              schoolPieData.pieDataAMPM[schoolPieData?.pieDataAMPM?.length - 2]
                 .endTimeMeridiem;
 
             // Create moment objects for end time and 6:00 PM
@@ -350,49 +358,49 @@ export default class HomeScreen extends BaseComponent {
             let timeDifference = sixPMTime.diff(endTaskTime, 'minutes');
 
             // Update the value property of the last task
-            stateData.pieDataAMPM[stateData?.pieDataAMPM?.length - 1].value =
+            schoolPieData.pieDataAMPM[schoolPieData?.pieDataAMPM?.length - 1].value =
               timeDifference;
             // Extract the end time from the taskId
             if (
               !this.state.isLoading &&
-              stateData?.pieDataAMSchool !== undefined
+              schoolPieData?.pieDataAMSchool !== undefined
             ) {
               const startTime = parseInt(
-                stateData?.pieDataAMSchool[1]?.taskId
+                schoolPieData?.pieDataAMSchool[1]?.taskId
                   .split(' ')[0]
                   .split(':')[0],
               );
-              console.log('--44---', stateData?.pieDataAMSchool, startTime);
+              console.log('--44---', schoolPieData?.pieDataAMSchool, startTime);
               // Check if the start time is greater than or equal to 6:00 AM
               if (startTime <= 6) {
                 // Update the value property of the first element to 0
-                stateData.pieDataAMSchool[0].value = 0;
+                schoolPieData.pieDataAMSchool[0].value = 0;
               } else {
                 // Calculate the difference between 6:00 AM and the start time of the second element in minutes
                 const differenceInMinutes = (6 - startTime) * 60;
                 console.log('===11===', differenceInMinutes);
                 // Update the value property of the first element with the calculated difference
-                stateData.pieDataAMSchool[0].value = Math.abs(
+                schoolPieData.pieDataAMSchool[0].value = Math.abs(
                   isNaN(differenceInMinutes)
                     ? 360
                     : differenceInMinutes -
-                        stateData?.pieDataAMSchool[1]?.taskId
+                        schoolPieData?.pieDataAMSchool[1]?.taskId
                           .split(' ')[0]
                           .split(':')[1],
                 );
               }
             }
           } else {
-            stateData.pieDataAMPM = [
+            schoolPieData.pieDataAMPM = [
               {isEmpty: true, taskId: 'Blannk2', value: 0},
             ];
             console.log('ERROR');
           }
           console.log(
             '555====5555',
-            stateData?.pieDataAMPM.concat(stateData.pieDataAMSchool),
+            schoolPieData?.pieDataAMPM.concat(schoolPieData.pieDataAMSchool),
           );
-          pieData = stateData?.pieDataAMPM.concat(stateData.pieDataAMSchool);
+          pieData = schoolPieData?.pieDataAMPM.concat(schoolPieData.pieDataAMSchool);
         }
 
         //MP
@@ -570,41 +578,48 @@ export default class HomeScreen extends BaseComponent {
           }
           console.log('FINAL_TASK===-', finalTasks, adjustedTasks);
 
-          // Helper function to convert time to minutes from 12:00 AM
-          function timeToMinutes(time) {
-            const [hours, minutes] = time.split(':').map(Number);
-            return hours * 60 + minutes;
-          }
-
-          // Helper function to get the start time in minutes from 12:00 AM
-          function getStartTimeInMinutes(taskId) {
-            const [startTime, meridiem] = taskId.split(' - ')[0].split(' ');
-            let [hours, minutes] = startTime.split(':').map(Number);
-
-            if (meridiem === 'PM' && hours !== 12) {
-              hours += 12;
-            } else if (meridiem === 'AM' && hours === 12) {
-              hours = 0;
+          // Check if pieDataPM has length 1 and isEmpty is true
+          if (
+            stateData.pieDataPM.length === 1 &&
+            stateData.pieDataPM[0].isEmpty
+          ) {
+            stateData.pieDataPM[0].value = 360;
+          } else {
+            function timeToMinutes(time) {
+              const [hours, minutes] = time.split(':').map(Number);
+              return hours * 60 + minutes;
             }
 
-            return hours * 60 + minutes;
-          }
+            // Helper function to get the start time in minutes from 12:00 AM
+            function getStartTimeInMinutes(taskId) {
+              const [startTime, meridiem] = taskId.split(' - ')[0].split(' ');
+              let [hours, minutes] = startTime.split(':').map(Number);
 
-          // Find the first object with taskId in time form
-          const firstTimeTask = stateData.pieDataPM.find(task =>
-            /AM|PM/.test(task.taskId),
-          );
-          if (firstTimeTask) {
-            const startTimeMinutes = getStartTimeInMinutes(
-              firstTimeTask.taskId,
+              if (meridiem === 'PM' && hours !== 12) {
+                hours += 12;
+              } else if (meridiem === 'AM' && hours === 12) {
+                hours = 0;
+              }
+
+              return hours * 60 + minutes;
+            }
+
+            // Find the first object with taskId in time form
+            const firstTimeTask = stateData.pieDataPM.find(task =>
+              /AM|PM/.test(task.taskId),
             );
-            const sixPMMinutes = timeToMinutes('18:00');
+            if (firstTimeTask) {
+              const startTimeMinutes = getStartTimeInMinutes(
+                firstTimeTask.taskId,
+              );
+              const sixPMMinutes = timeToMinutes('18:00');
 
-            // Calculate the difference in minutes between the start time and 6 PM
-            const differenceInMinutes = startTimeMinutes - sixPMMinutes;
+              // Calculate the difference in minutes between the start time and 6 PM
+              const differenceInMinutes = startTimeMinutes - sixPMMinutes;
 
-            // Update the first object's value property
-            stateData.pieDataPM[0].value = differenceInMinutes;
+              // Update the first object's value property
+              stateData.pieDataPM[0].value = differenceInMinutes;
+            }
           }
 
           console.log('#######--######', stateData?.pieDataPM);
@@ -809,7 +824,6 @@ export default class HomeScreen extends BaseComponent {
     });
   }
   renderSwiperView = (currentIndex = this.state.currentIndex) => {
-    console.log('CURRENT', currentIndex);
     const date = Helper.dateFormater(
       this.state.arrWeekDays[currentIndex],
       'dddd DD MMMM YYYY',
@@ -821,7 +835,16 @@ export default class HomeScreen extends BaseComponent {
     };
 
     const swiperData = (
-      <View style={styles.container} key={date}>
+      <View
+        style={{
+          flex: 1,
+          flexGrow: 1,
+          backgroundColor: Colors.transparent,
+          padding: 20,
+          justifyContent: 'flex-start',
+          alignItems: 'center',
+        }}
+        key={date}>
         <View style={styles.clockHeader}>
           <Text style={[styles.title, styles.textCenter]}>
             {this.state.objSelectedChild &&
@@ -852,149 +875,9 @@ export default class HomeScreen extends BaseComponent {
             justifyContent: 'center',
             alignItems: 'center',
             backgroundColor: 'transparent',
+            flex: 1,
           }}>
           {this.renderClockView()}
-        </View>
-        <View style={styles.clockBottom}>
-          <View style={styles.clockBottomLeft}>
-            <TouchableOpacity
-              disabled={this.state.isLoading}
-              style={[styles.bellTouch, {zIndex: 10000}]}
-              onPress={() => this.toggleSchool()}>
-              {!this.state.school ? (
-                <Image source={Images.bell} style={styles.bell} />
-              ) : (
-                <Image source={Images.school} style={styles.school} />
-              )}
-            </TouchableOpacity>
-            {/* MP Added Schedule Icon */}
-            <TouchableOpacity
-              onPress={() => this.onPressMoveToSchedule()}
-              style={{zIndex: 1000}}>
-              <Image source={Images.navIcon3} style={styles.calendarIcon} />
-            </TouchableOpacity>
-            {/* MP Added Schedule Icon */}
-            {
-              this.state.school ? null : ( //Switch icon start (Have made this icon invisible as per client request)
-                <TouchableOpacity
-                  style={[
-                    styles.SwitchHide,
-                    this.state.is_24HrsClock
-                      ? styles.switch24Hrs
-                      : styles.switch12Hrs,
-                  ]}
-                  // onPress={() => this.toggleSwitch()}
-                >
-                  {this.state.is_24HrsClock ? (
-                    <View style={styles.SwitchButton24Hrs}></View>
-                  ) : null}
-                  <Text
-                    style={
-                      this.state.is_24HrsClock
-                        ? styles.SwitchText24Hrs
-                        : styles.SwitchText
-                    }>
-                    {this.state.is_24HrsClock ? '24hr' : '12hr'}
-                  </Text>
-                  {!this.state.is_24HrsClock ? (
-                    <View style={styles.SwitchButton}></View>
-                  ) : null}
-                </TouchableOpacity>
-              ) //Switch icon end
-            }
-          </View>
-          <View style={styles.clockBottomRight}>
-            <TouchableOpacity activeOpacity={0.7}>
-              {!this.state.school ? (
-                this.state.isPlanetIconVisible ? (
-                  <View style={styles.shapeContainer}>
-                    <View style={styles.shapeView}>
-                      <Image
-                        source={Images.shapeRight}
-                        style={styles.shapeRight}
-                      />
-                      <View style={styles.shape}>
-                        <Text style={styles.shapeText}>
-                          {
-                            Helper.getPlanetImageForTheDay(
-                              this.state.arrWeekDays,
-                              currentIndex,
-                            ).message
-                          }
-                        </Text>
-                      </View>
-                    </View>
-                    <TouchableOpacity
-                      onPress={() => this.handlePlanetIcon()}
-                      style={{zIndex: 100000}}>
-                      <Image
-                        source={
-                          Helper.getPlanetImageForTheDay(
-                            this.state.arrWeekDays,
-                            currentIndex,
-                          ).image
-                        }
-                        style={styles.alarmClock}
-                      />
-                    </TouchableOpacity>
-                  </View>
-                ) : (
-                  <View style={styles.shapeContainer}>
-                    {
-                      // this.state.isQAVisible ? <View style={[styles.shapeView]}>
-                      //   <Image source={Images.shapeRight} style={[styles.shapeRight, { tintColor: Colors.darkPink }]} />
-                      //   <TouchableOpacity style={styles.shapeJoke} onPress={() => {
-                      //     this.hideAwnswer()
-                      //   }}>
-                      //     <Text style={styles.shapeText}>{this.state.isAnswerOfJokeVisible ? this.state.jokeData.answer : this.state.jokeData.question}</Text>
-                      //   </TouchableOpacity>
-                      // </View> : null
-                      this.state.tickCount !== 3 ? (
-                        <View style={[styles.shapeView]}>
-                          <Image
-                            source={Images.shapeRight}
-                            style={[
-                              styles.shapeRight,
-                              {tintColor: Colors.darkPink},
-                            ]}
-                          />
-                          {console.log('RENDER JOKE', this.state.jokeData)}
-                          {this.state.tickCount == 2 ? null : (
-                            <View style={styles.shapeJoke}>
-                              <Text style={styles.shapeText}>
-                                {this.state.tickCount == 1
-                                  ? this.state.jokeData.answer
-                                  : this.state.jokeData.question}
-                              </Text>
-                            </View>
-                          )}
-                        </View>
-                      ) : null
-                    }
-                    {/* <View style={[styles.shapeView, { display: this.state.isQAVisible ? 'flex' : 'none' }]}>
-                      <Image source={Images.shapeRight} style={[styles.shapeRight, { tintColor: Colors.darkPink }]} />
-                      <TouchableOpacity style={styles.shapeJoke} onPress={() => {
-                        this.hideAwnswer()
-                        }}>
-                        <Text style={styles.shapeText}>{this.state.isAnswerOfJokeVisible ? this.state.jokeData.answer : this.state.jokeData.question}</Text>
-                      </TouchableOpacity>
-                    </View> */}
-                    <TouchableOpacity
-                      hitSlop={{left: 10, right: 10, top: 10, bottom: 10}}
-                      onPress={() => this.seeAnswerOfJoke()}
-                      style={{zIndex: 1000000}}>
-                      <Image
-                        source={Images.alarmClock}
-                        style={styles.alarmClock}
-                      />
-                    </TouchableOpacity>
-                  </View>
-                )
-              ) : (
-                <Image source={Images.schoolBus} style={styles.schoolBus} />
-              )}
-            </TouchableOpacity>
-          </View>
         </View>
       </View>
     );
@@ -1406,11 +1289,14 @@ export default class HomeScreen extends BaseComponent {
                     );
                   }, 200),
               );
+              this.setState({scrollable: true});
             }
           } else {
+            this.setState({scrollable: true});
             Helper.showErrorMessage(response.data.message);
           }
         } else {
+          this.setState({scrollable: true});
           this.setState({
             isLoading: false,
           });
@@ -1418,10 +1304,92 @@ export default class HomeScreen extends BaseComponent {
         }
       })
       .catch(error => {
+        this.setState({scrollable: true});
         this.setState({
           isLoading: false,
         });
       });
+
+      if (hour >= 18) {
+        objSecureAPI
+        .childTasksList(this.state.objSelectedChild.id, '', aDate, 0, 0)
+        .then(response => {
+          if (response.ok) {
+            this.setState({isLoading: false});
+            if (response.data.success) {
+              console.log(
+                'CLOCK RESPONSE-----6666-',
+                JSON.stringify(response.data.data),
+              );
+              let arr = [];
+              if (response.data.data.length > 0) {
+                const tasks = response.data.data[0].tasks;
+  
+                Object.keys(tasks).map(item => {
+                  arr.push({time: item, tasks: tasks[item]});
+                });
+                this.setState({futurearrTask: arr, futurearrFilteredTasks: arr});
+                const todaysSchoolHours =
+                  this.state.objSelectedChild.school_hours[Helper.getTodaysDay()];
+  
+                const schoolHoursFrom = moment(
+                  todaysSchoolHours ? todaysSchoolHours.FROM : '00:00',
+                  'hh:mm A',
+                );
+                const schoolHoursTo = moment(
+                  todaysSchoolHours ? todaysSchoolHours.TO : '00:00',
+                  'hh:mm A',
+                );
+                const schoolHoursFromMeradian = schoolHoursFrom.format('A');
+                const schoolHoursToMeradian = schoolHoursTo.format('A');
+                Helper.setupTasksBasedOnMeridiem(
+                  this.state.futurearrTask,
+                  schoolHoursFrom,
+                  schoolHoursTo,
+                  (
+                    arrAM,
+                    arrPM,
+                    runningTimeSlot,
+                    arrAM_School,
+                    arrPM_School,
+                    is_school_clock,
+                  ) =>
+                    setTimeout(() => {
+                      this.futuresetupTaskData(
+                        arrAM,
+                        arrPM,
+                        runningTimeSlot,
+                        arrAM_School,
+                        arrPM_School,
+                        todaysSchoolHours,
+                        schoolHoursFromMeradian,
+                        schoolHoursToMeradian,
+                        index,
+                        is_school_clock,
+                      );
+                    }, 200),
+                );
+                this.setState({scrollable: true});
+              }
+            } else {
+              this.setState({scrollable: true});
+              Helper.showErrorMessage(response.data.message);
+            }
+          } else {
+            this.setState({scrollable: true});
+            this.setState({
+              isLoading: false,
+            });
+            Helper.showErrorMessage(response.problem);
+          }
+        })
+        .catch(error => {
+          this.setState({scrollable: true});
+          this.setState({
+            isLoading: false,
+          });
+        });
+      }
   };
 
   setupTaskData(
@@ -1436,6 +1404,9 @@ export default class HomeScreen extends BaseComponent {
     currentIndex,
     is_school_clock,
   ) {
+    var date, TimeType, hour;
+    date = new Date();
+    hour = date.getHours();
     {
       const pieDataAM = Helper.generateClockTaskArray(
         arrAM,
@@ -1446,7 +1417,7 @@ export default class HomeScreen extends BaseComponent {
       const pieDataPM = Helper.generateClockTaskArray(
         arrPM,
         'pm',
-        undefined,
+        hour >= 18 ? 2 : undefined,
         false,
       );
       const pieDataAMPM = Helper.generateClockTaskArray(arrPM, 'pm', 3, false);
@@ -1527,6 +1498,112 @@ export default class HomeScreen extends BaseComponent {
       this.setWatchData(currentIndex);
     }
   }
+
+  futuresetupTaskData(
+    arrAM,
+    arrPM,
+    runningTimeSlot,
+    arrAM_School,
+    arrPM_School,
+    todaysSchoolHours,
+    schoolHoursFromMeradian,
+    schoolHoursToMeradian,
+    currentIndex,
+    is_school_clock,
+  ) {
+    var date, TimeType, hour;
+    date = new Date();
+    hour = date.getHours();
+    {
+      const pieDataAM = Helper.generateClockTaskArray(
+        arrAM,
+        'am',
+        undefined,
+        false,
+      );
+      const pieDataPM = Helper.generateClockTaskArray(
+        arrPM,
+        'pm',
+        hour >= 18 ? 2 : undefined,
+        false,
+      );
+      const pieDataAMPM = Helper.generateClockTaskArray(arrPM, 'pm', 3, false);
+      const pieDataPMAM = Helper.generateClockTaskArray(arrAM, 'am', 1, false);
+
+      console.log('__________111-------', pieDataPMAM, pieDataAM, pieDataPM);
+      const pieDataAMSchool = Helper.generateClockTaskArray(
+        arrAM,
+        'am',
+        2,
+        false,
+      );
+      // const pieDataAM_School = Helper.generateClockTaskArray(arrAM_School,"am",true);
+      // const pieDataPM_School = Helper.generateClockTaskArray(arrPM_School,"pm",true);
+      var pieDataAM_School = [];
+      var pieDataPM_School = [];
+      if (todaysSchoolHours) {
+        // todaysSchoolHours ={
+        //   FROM:"00:00",
+        //   TO:"00:00"
+        // }
+        // schoolHoursFromMeradian = "am"
+        // schoolHoursToMeradian =  "am"
+
+        if (schoolHoursFromMeradian != schoolHoursToMeradian) {
+          //here change arrAM_School to arrAM
+          pieDataAM_School = Helper.generateClockTaskArraySchool(
+            arrAM,
+            'am',
+            todaysSchoolHours.FROM,
+            '11:59 AM',
+            '',
+            true,
+          );
+          pieDataPM_School = Helper.generateClockTaskArraySchool(
+            arrPM_School,
+            'pm',
+            '12:00 PM',
+            todaysSchoolHours.TO,
+            '',
+            true,
+          );
+        } else {
+          pieDataAM_School = Helper.generateClockTaskArraySchool(
+            arrAM_School,
+            'am',
+            todaysSchoolHours.FROM,
+            todaysSchoolHours.TO,
+            schoolHoursFromMeradian,
+          );
+          pieDataPM_School = Helper.generateClockTaskArraySchool(
+            arrPM_School,
+            'pm',
+            todaysSchoolHours.FROM,
+            todaysSchoolHours.TO,
+            schoolHoursFromMeradian,
+          );
+        }
+      }
+      this.state.currentTaskSlot = runningTimeSlot;
+      pieData24Hour = [...pieDataAM, ...pieDataAMPM];
+      pieData24Hour_School = [...pieDataAM_School, ...pieDataPM_School];
+      meridian = Helper.getCurrentTimeMeridian();
+
+      this.state.futuredicPieData = {
+        meridian,
+        pieDataPM,
+        pieDataAM,
+        pieData24Hour,
+        pieDataAM_School,
+        pieDataPM_School,
+        pieData24Hour_School,
+        pieDataAMPM,
+        pieDataAMSchool,
+        pieDataPMAM,
+      };
+    }
+  }
+
   callRecoverTask(objTask) {
     console.log('!!!!!!!!-----!!!!!!!!', objTask);
     this.state.isLoading = true;
@@ -1569,7 +1646,7 @@ export default class HomeScreen extends BaseComponent {
   }
 
   indexChange = index => {
-    this.setState({isLoading: true});
+    this.setState({isLoading: true,scrollable:false});
     this._timer ? clearInterval(this._timer) : null;
     this._timer_task ? clearTimeout(this._timer_task) : null;
     this.setState({currentIndex: index}, () => {
@@ -1665,13 +1742,19 @@ export default class HomeScreen extends BaseComponent {
       }
     });
   }
+
+  handleTextLayout = event => {
+    const {height} = event.nativeEvent.layout;
+    this.setState({textHeight: height}); // Update state with text height
+  };
+
   render() {
     const renderPagination = (index, total, context) => {
       return null;
     };
     return (
       <View
-        style={styles.mainContainer}
+        style={[styles.mainContainer, {}]}
         pointerEvents={this.state.isLoading ? 'none' : 'auto'}>
         <Tips
           contentStyle={{flex: 1}}
@@ -1772,7 +1855,7 @@ export default class HomeScreen extends BaseComponent {
           source={
             this.state.school ? Images.cyanBackground : this.state.imageBg
           }
-          style={styles.backgroundImage}>
+          style={[styles.backgroundImage, {}]}>
           {this.state.pieData ? (
             <Swiper
               loop={false}
@@ -1781,10 +1864,152 @@ export default class HomeScreen extends BaseComponent {
               renderPagination={renderPagination}
               onIndexChanged={index => this.indexChange(index)}
               loadMinimal={Platform.OS === 'ios' ? false : true}
-              scrollEnabled={!this.state.isLoading}>
+              scrollEnabled={this.state.scrollable}>
               {this.renderSwiperData()}
             </Swiper>
           ) : null}
+
+          <View
+            style={[
+              styles.clockBottom,
+              {paddingHorizontal: 20, marginBottom: 20},
+            ]}>
+            <View>
+              <TouchableOpacity
+                disabled={this.state.isLoading}
+                style={[styles.bellTouch, {zIndex: 10000}]}
+                onPress={() => this.toggleSchool()}>
+                {!this.state.school ? (
+                  <Image source={Images.bell} style={styles.bell} />
+                ) : (
+                  <Image source={Images.school} style={styles.school} />
+                )}
+              </TouchableOpacity>
+              {/* MP Added Schedule Icon */}
+              <TouchableOpacity
+                onPress={() => this.onPressMoveToSchedule()}
+                style={{zIndex: 1000}}>
+                <Image source={Images.navIcon3} style={styles.calendarIcon} />
+              </TouchableOpacity>
+              {/* MP Added Schedule Icon */}
+              {
+                this.state.school ? null : ( //Switch icon start (Have made this icon invisible as per client request)
+                  <TouchableOpacity
+                    style={[
+                      styles.SwitchHide,
+                      this.state.is_24HrsClock
+                        ? styles.switch24Hrs
+                        : styles.switch12Hrs,
+                    ]}
+                    // onPress={() => this.toggleSwitch()}
+                  >
+                    {this.state.is_24HrsClock ? (
+                      <View style={styles.SwitchButton24Hrs}></View>
+                    ) : null}
+                    <Text
+                      style={
+                        this.state.is_24HrsClock
+                          ? styles.SwitchText24Hrs
+                          : styles.SwitchText
+                      }>
+                      {this.state.is_24HrsClock ? '24hr' : '12hr'}
+                    </Text>
+                    {!this.state.is_24HrsClock ? (
+                      <View style={styles.SwitchButton}></View>
+                    ) : null}
+                  </TouchableOpacity>
+                ) //Switch icon end
+              }
+            </View>
+            <View style={styles.clockBottomRight}>
+              <TouchableOpacity activeOpacity={0.7}>
+                {!this.state.school ? (
+                  this.state.isPlanetIconVisible ? (
+                    <View style={styles.shapeContainer}>
+                      <View style={styles.shapeView}>
+                        <Image
+                          source={Images.shapeRight}
+                          style={styles.shapeRight}
+                        />
+                        <View
+                          style={[
+                            styles.shapeJoke,
+                            {
+                              maxHeight: Math.max(
+                                this.state.textHeight,
+                                Metrics.screenWidth / 5,
+                              ),
+                              backgroundColor: Colors.blue,
+                            },
+                          ]}>
+                          <Text
+                            style={styles.shapeText}
+                            onLayout={this.handleTextLayout}>
+                            {
+                              Helper.getPlanetImageForTheDay(
+                                this.state.arrWeekDays,
+                                this.state.currentIndex,
+                              ).message
+                            }
+                          </Text>
+                        </View>
+                      </View>
+                      <TouchableOpacity
+                        onPress={() => this.handlePlanetIcon()}
+                        style={{zIndex: 100000}}>
+                        <Image
+                          source={
+                            Helper.getPlanetImageForTheDay(
+                              this.state.arrWeekDays,
+                              this.state.currentIndex,
+                            ).image
+                          }
+                          style={styles.alarmClock}
+                        />
+                      </TouchableOpacity>
+                    </View>
+                  ) : (
+                    <View style={styles.shapeContainer}>
+                      {this.state.tickCount !== 3 &&
+                      this.state.currentIndex == 0 ? (
+                        <View style={[styles.shapeView]}>
+                          <Image
+                            source={Images.shapeRight}
+                            style={[
+                              styles.shapeRight,
+                              {tintColor: Colors.darkPink},
+                            ]}
+                          />
+                          {console.log('RENDER JOKE', this.state.jokeData)}
+                          {this.state.tickCount == 2 ? null : (
+                            <View style={[styles.shapeJoke]}>
+                              <Text style={styles.shapeText} numberOfLines={3}>
+                                {this.state.tickCount == 1
+                                  ? this.state.jokeData.answer
+                                  : this.state.jokeData.question}
+                              </Text>
+                            </View>
+                          )}
+                        </View>
+                      ) : null}
+
+                      <TouchableOpacity
+                        hitSlop={{left: 10, right: 10, top: 10, bottom: 10}}
+                        onPress={() => this.seeAnswerOfJoke()}
+                        style={{zIndex: 1000000}}>
+                        <Image
+                          source={Images.alarmClock}
+                          style={styles.alarmClock}
+                        />
+                      </TouchableOpacity>
+                    </View>
+                  )
+                ) : (
+                  <Image source={Images.schoolBus} style={styles.schoolBus} />
+                )}
+              </TouchableOpacity>
+            </View>
+          </View>
 
           <SafeAreaView
             style={[
@@ -1793,7 +2018,7 @@ export default class HomeScreen extends BaseComponent {
                 ? {
                     backgroundColor:
                       this.state.currentTaskSlot[0].tasks[0].is_school_clock ==
-                      this.state.school
+                        this.state.school && !this.state.isLoading && this.state.currentIndex == 0
                         ? this.state.currentTaskSlot[0].tasks[0].color
                         : 'transparent',
                   }
@@ -1808,7 +2033,8 @@ export default class HomeScreen extends BaseComponent {
                   ? {
                       backgroundColor:
                         this.state.currentTaskSlot[0].tasks[0]
-                          .is_school_clock == this.state.school
+                          .is_school_clock == this.state.school &&
+                        !this.state.isLoading && this.state.currentIndex == 0
                           ? this.state.currentTaskSlot[0].tasks[0].color
                           : 'transparent',
                     }
@@ -1823,7 +2049,7 @@ export default class HomeScreen extends BaseComponent {
               ) : this.state.currentTaskSlot &&
                 this.state.arrFooterTasks.length &&
                 this.state.currentTaskSlot[0].tasks[0].is_school_clock ==
-                  this.state.school ? (
+                  this.state.school && this.state.currentIndex == 0 ? (
                 <Swiper
                   showsButtons={true}
                   key={this.state.currentTaskSlot.length}
@@ -1952,6 +2178,11 @@ export default class HomeScreen extends BaseComponent {
           onStateChange={state => this.setState({taskComplete: state})}
           closeParentModal={() => this.setModal()}
           navigation={this.props.navigation}
+          calenderSelectedDay={Helper.dateFormater(
+            this.state.arrWeekDays[this.state.currentIndex],
+            'dddd DD MMMM YYYY',
+            'YYYY-MM-DD',
+          )}
         />
         {/* <TaskListModel
           visible={this.state.showRecoverModel}

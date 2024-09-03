@@ -163,13 +163,14 @@ const Constants = {
     ADD_CHILD_CONFIRMATION_NO:'If you wish to add another child later you can do so in the Admin Portal which you can access from the menu bar.', //MP
     ADD_CHILD_SUCCESS:'Child has been added successfully!',//MP
     //Planet Messages
-    MONDAY_MESSAGE: `It's MONDAY.\nI was named after the moon. I am a natural satellite that orbits the earth.`,
-    TUESDAY_MESSAGE: `It's TUESDAY.\nI was named after Mars, also known as the Red Planet.`,
-    WEDNESDAY_MESSAGE: `It's WEDNESDAY.\nI was named after Mercury, the smallest planet in our solar system.`,
-    THURSDAY_MESSAGE: `It's THURSDAY.\nI was named after the planet Jupiter, a gas giant.`,
-    FRIDAY_MESSAGE: `It's FRIDAY.\nI was named after Venus the second planet from the Sun.`,
-    SATURDAY_MESSAGE: `It's SATURDAY.\nI was named after Saturn. I am the second largest planet in our solar system.`,
-    SUNDAY_MESSAGE: `It's SUNDAY.\nI was named after the Sun. I am a Star. All the planets in our solar system orbit around me.`,
+    MONDAY_MESSAGE: `I'm MONDAY.\nI was named after the moon. I am a natural satellite that orbits the earth.`,
+    TUESDAY_MESSAGE: `I'm TUESDAY.\nI was named after Mars, also known as the Red Planet.`,
+    WEDNESDAY_MESSAGE: `I'm WEDNESDAY.\nI was named after Mercury, the smallest planet in our solar system.`,
+    THURSDAY_MESSAGE: `I'm THURSDAY.\nI was named after the planet Jupiter, a gas giant.`,
+    FRIDAY_MESSAGE: `I'm FRIDAY.\nI was named after Venus the second planet from the Sun.`,
+    SATURDAY_MESSAGE: `I'm SATURDAY.\nI was named after Saturn. I am the second largest planet in our solar system.`,
+    SUNDAY_MESSAGE: "Hi, I'm Sunday, named after the Sun, the star at the center of our solar system.",
+    // SUNDAY_MESSAGE: `It's SUNDAY.\nI was named after the Sun. I am a Star. All the planets in our solar system orbit around me.`,
 
     // URL Keys
     URL_PRIVACY_POLICY: "",

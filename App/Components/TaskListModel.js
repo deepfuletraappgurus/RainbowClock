@@ -44,6 +44,7 @@ export default class TaskListModel extends Component {
       playing: false,
       buttonText: 'PAUSE TASK',
       taskComplete: false,
+      calenderSelectedDay:this.props?.calenderSelectedDay
     };
     this.handleBackButtonClick = this.handleBackButtonClick.bind(this);
   }
@@ -74,6 +75,7 @@ export default class TaskListModel extends Component {
       objSelectedChild: props.objSelectedChild,
       objSelectedDay: props.objSelectedDay,
       objSelectedTaskList: props.objSelectedTaskList,
+      calenderSelectedDay:moment(props?.calenderSelectedDay ?? new Date())
     });
     this.backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
       this.setState({visible: false});
@@ -302,6 +304,7 @@ export default class TaskListModel extends Component {
           navigation={this.props.navigation}
           closeParentModal={() => this.setModal(false)}
           onClose={() => this?.props?.onClose()}
+          calenderSelectedDay={this.state.calenderSelectedDay}
         />
       </Modal>
     );

@@ -20,6 +20,7 @@ import {Colors, Images, Metrics} from '../Themes';
 // Styles
 import styles from './Styles/CreateRewardScreenStyles';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
 // Global Variables
 const mAPi = Api.createSecure();
@@ -131,6 +132,9 @@ export default class EditRewardScreen extends BaseComponent {
     ) {
       Helper.showErrorMessage('Please enter reward token.');
       return false;
+    }else if (parseInt(this.state.numberOfToken) > 30) {
+      Helper.showErrorMessage('The maximum number of tokens is 30.');
+      return false;
     }
     return true;
   };
@@ -194,7 +198,7 @@ export default class EditRewardScreen extends BaseComponent {
         <ImageBackground
           source={Images.blueBackground}
           style={styles.backgroundImage}>
-          <ScrollView
+          <KeyboardAwareScrollView
             contentContainerStyle={[styles.ScrollView]}
             keyboardShouldPersistTaps="never">
             <View style={styles.container}>
@@ -357,7 +361,7 @@ export default class EditRewardScreen extends BaseComponent {
                 </TouchableOpacity>
               </View>
             </View>
-          </ScrollView>
+          </KeyboardAwareScrollView>
         </ImageBackground>
       </View>
     );

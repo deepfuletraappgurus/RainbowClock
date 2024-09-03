@@ -56,6 +56,7 @@ export default class TaskModal extends BaseComponent {
       is_new: this.props.objFooterSelectedTask?.is_new,
       showSuccess: false,
       showSuccessModal: false,
+      calenderSelectedDay:this.props?.calenderSelectedDay
     };
     this.handleBackButtonClick = this.handleBackButtonClick.bind(this);
   }
@@ -84,7 +85,7 @@ export default class TaskModal extends BaseComponent {
   }
 
   componentWillReceiveProps(props) {
-    console.log('===================OBJ--', props.objFooterSelectedTask);
+    console.log('===================OBJ--', props.calenderSelectedDay);
     this.setState({
       visible: props.visible,
       objFooterSelectedTask: props.objFooterSelectedTask,
@@ -97,6 +98,7 @@ export default class TaskModal extends BaseComponent {
           : props.objFooterSelectedTask?.start_time
           ? 'START TIME'
           : 'PAUSE TIME',
+          calenderSelectedDay:moment(props?.calenderSelectedDay ?? new Date())
     });
   }
   componentWillUnmount() {
@@ -173,6 +175,7 @@ export default class TaskModal extends BaseComponent {
   };
 
   callStartTask = (taskStatus, showAnimation) => {
+    console.log('AKSKSKSKSKKSKSKSKSKSKS',this.state.calenderSelectedDay)
     if (Helper.checkTaskTimeAndDate(this.state.objFooterSelectedTask)) {
       Helper.showErrorMessage(Constants.MESSAGE_NO_FUTURE_TASK);
       // this.navFocusListener =  this.props.navigation.addListener('didFocus', () => {
@@ -185,6 +188,7 @@ export default class TaskModal extends BaseComponent {
           this.state.objSelectedChild.id,
           taskStatus,
           this.state.is_new,
+          moment(this.state.calenderSelectedDay).format("YYYY-MM-DD")
         )
         .then(response => {
           console.log('responseeeeee', response);
@@ -222,7 +226,9 @@ export default class TaskModal extends BaseComponent {
             Helper.showErrorMessage(response.problem);
           }
         })
-        .catch(error => {});
+        .catch(error => {
+          console.log('EEEEEE',error)
+        });
     }
   };
 

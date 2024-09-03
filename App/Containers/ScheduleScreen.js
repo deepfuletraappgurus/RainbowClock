@@ -526,12 +526,23 @@ export default class ScheduleScreen extends BaseComponent {
     }));
   }
 
-  onCloseTaskPress() {
-    this.setState(prevState => ({
-      customScheduleText: '',
-      showCustomTextInput: false,
-    }));
-  }
+  onCloseTaskPress = () => {
+    const { editingIndex, scheduleType } = this.state;
+  
+    if (editingIndex !== null) {
+      // Remove the task at the editingIndex
+      const newData = scheduleType.filter((_, index) => index !== editingIndex);
+  
+      // Update the state
+      this.setState({
+        scheduleType: newData,
+        editingIndex: null, // Disable the edit box
+        customScheduleText: '',
+        showCustomTextInput: false,
+      });
+    }
+    this.setState({showCustomTextInput:false})
+  };
 
   onCloseEditingTaskPress() {
     this.setState(prevState => ({
@@ -845,9 +856,7 @@ export default class ScheduleScreen extends BaseComponent {
                 </View>
               ) : this.state.arrTasks.length > 0 && !this.state.isLoading ? (
                 <FlatList
-                  data={this.state.arrTasks.sort((a, b) =>
-                    a.time.localeCompare(b.time),
-                  )}
+                  data={this.state.arrTasks}
                   extraData={this.state}
                   keyExtractor={(item, index) => index + ''}
                   renderItem={({item, index}) =>
@@ -1201,6 +1210,7 @@ export default class ScheduleScreen extends BaseComponent {
           onStateChange={state => this.setState({taskComplete: state})}
           navigation={this.props.navigation}
           onClose={() => this.setModal()}
+          calenderSelectedDay={this.state.selectedDay}
         />
         <TaskListModel
           visible={this.state.showTaskList}
@@ -1215,6 +1225,7 @@ export default class ScheduleScreen extends BaseComponent {
           onStateChange={state => this.setState({showTaskList: state})}
           onClose={() => this.setModal()}
           navigation={this.props?.navigation}
+          calenderSelectedDay={this.state.selectedDay}
         />
       </View>
     );

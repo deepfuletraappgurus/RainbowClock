@@ -8,6 +8,7 @@ import {
   ScrollView,
   StyleSheet,
   Dimensions,
+  ActivityIndicator,
 } from 'react-native';
 import Api from '../Services/Api';
 import {Colors, Images, Metrics} from '../Themes';
@@ -51,6 +52,7 @@ export default class RewardScreen extends BaseComponent {
       deleteItem: '',
       deleteRewardLoading: false,
       objSelectedChild: '',
+      isLoading: true,
     };
   }
 
@@ -64,22 +66,27 @@ export default class RewardScreen extends BaseComponent {
     });
   };
 
-  getRewardList = (childId) => {
+  getRewardList = childId => {
+    this.setState({isLoading: true});
     mAPi
       .childReward(childId)
       .then(response => {
         if (response.ok) {
           if (response.data.success) {
             console.log('response.data.data', response.data.data);
-            this.setState({arrReward: response.data.data});
+            this.setState({arrReward: response.data.data, isLoading: false});
           } else {
+            this.setState({isLoading: false});
             Helper.showErrorMessage(response.data.message);
           }
         } else {
+          this.setState({isLoading: false});
           Helper.showErrorMessage(response.problem);
         }
       })
-      .catch(error => {});
+      .catch(error => {
+        this.setState({isLoading: false});
+      });
   };
 
   onPressClearReward = (item, index) => {
@@ -248,8 +255,16 @@ export default class RewardScreen extends BaseComponent {
               />
               <Text style={styles1.tokenText}>{item.no_of_tokens}</Text>
             </View>
-            <Text style={[styles1.rewardType,{color:item.is_claimed ? Colors.fire : colors.pink}]}>
-              {item?.is_claimed ? 'CLAIMED REWARD' : item.type == 'Special' ? 'SPECIAL REWARD' : 'EVERYDAY REWARD'}
+            <Text
+              style={[
+                styles1.rewardType,
+                {color: item.is_claimed ? Colors.fire : colors.pink},
+              ]}>
+              {item?.is_claimed
+                ? 'CLAIMED REWARD'
+                : item.type == 'Special'
+                ? 'SPECIAL REWARD'
+                : 'EVERYDAY REWARD'}
             </Text>
           </View>
         </View>
@@ -263,7 +278,6 @@ export default class RewardScreen extends BaseComponent {
                 () => {},
                 () => this.onPressClearReward(item),
               );
-              
             } else {
               this.props.navigation.navigate('EditRewardScreen', {
                 rewardDetail: item,
@@ -350,7 +364,9 @@ export default class RewardScreen extends BaseComponent {
           style={styles.backgroundImage}>
           <ScrollView
             contentContainerStyle={styles.ScrollView}
-            onRefresh={() => this.getRewardList(this.state.objSelectedChild.id)}>
+            onRefresh={() =>
+              this.getRewardList(this.state.objSelectedChild.id)
+            }>
             <View style={[styles.container]}>
               <View style={styles.clockHeader}>
                 <Text style={[styles.h1, styles.textCenter]}>
@@ -361,37 +377,53 @@ export default class RewardScreen extends BaseComponent {
                   ).toUpperCase()}
                 </Text>
               </View>
-              <FlatList
-                contentContainerStyle={styles.rewardGridContainer}
-                numColumns={2}
-                data={this.state.arrReward}
-                keyExtractor={(item, index) => index + ''}
-                renderItem={({item, index}) =>
-                  this.renderRewardRow(item, index)
-                }
-                extraData={this.state}
-                onRefresh={() => this.getRewardList(this.state.objSelectedChild.id)}
-                // numColumns={2}
-              />
-              <View style={[styles.center, {flex: 1}]}>
-                {/* <Image source={Images.alarmClock} style={styles.alarmClock} /> */}
+              {this.state.isLoading ? (
                 <View
                   style={{
-                    paddingLeft: 30,
-                    paddingRight: 30,
-                    width: '100%',
-                    position: 'absolute',
-                    bottom: 0,
-                    left: 0,
+                    flex: 1,
+                    justifyContent: 'center',
+                    alignItems: 'center',
                   }}>
-                  {/* <TouchableOpacity style={[styles.button, styles.buttonCarrot, { marginBottom: 0 }]} onPress={() => this.props.navigation.navigate('ClaimedRewardsScreen')}>
-                                    <Text style={styles.buttonText}>{'Claimed Reward'.toUpperCase()}</Text>
-                                    </TouchableOpacity>
-                                    <TouchableOpacity style={[styles.button, styles.buttonBlue, { marginBottom: 0 }]} onPress={() => this.props.navigation.navigate('EditRewardsScreen')}>
-                                    <Text style={styles.buttonText}>{'Edit Reward'.toUpperCase()}</Text>
-                                    </TouchableOpacity> */}
+                  <ActivityIndicator
+                    color={colors.white}
+                    size={30}
+                    style={{zIndex: 1000}}
+                  />
+                  <Text
+                    style={[
+                      styles.buttonText,
+                    ]}>
+                    Fetching Rewards...
+                  </Text>
                 </View>
-              </View>
+              ) : (
+                <FlatList
+                  contentContainerStyle={styles.rewardGridContainer}
+                  numColumns={2}
+                  data={this.state.arrReward}
+                  keyExtractor={(item, index) => index + ''}
+                  renderItem={({item, index}) =>
+                    this.renderRewardRow(item, index)
+                  }
+                  extraData={this.state}
+                  onRefresh={() =>
+                    this.getRewardList(this.state.objSelectedChild.id)
+                  }
+                  ListEmptyComponent={
+                    <View
+                      style={{
+                        flex: 1,
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                      }}>
+                      <Text style={[styles.h1, styles.textCenter]}>
+                        NO REWARD FOUND.
+                      </Text>
+                    </View>
+                  }
+                  // numColumns={2}
+                />
+              )}
             </View>
           </ScrollView>
           <TouchableOpacity

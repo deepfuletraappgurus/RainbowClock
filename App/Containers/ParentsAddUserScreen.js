@@ -210,7 +210,7 @@ export default class ParentsAddUserScreen extends BaseComponent {
 
   onActionOK = () => {
     try {
-      AsyncStorage.setItem(Constants.KEY_ACCESS_AS_PARENTS, '1');
+      // AsyncStorage.setItem(Constants.KEY_ACCESS_AS_PARENTS, '1');
       EventEmitter.emit(Constants.EVENT_DRAWER_UPDATE);
       this.props.navigation.push('ParentsSelectChildScreen');
     } catch (error) {

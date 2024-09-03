@@ -471,7 +471,7 @@ export default class SelectTaskScreen extends BaseComponent {
       <TouchableOpacity
         style={styles.dropdownItem}
         onPress={() => this.taskTimeSelected(item)}>
-        <Text style={styles.dropdownItemText}>{`${item} - Minute`}</Text>
+        <Text style={styles.dropdownItemText}>{`${item} - ${index == 0 ? 'Minute' : 'Minutes'}`}</Text>
       </TouchableOpacity>
     );
   }
@@ -487,7 +487,7 @@ export default class SelectTaskScreen extends BaseComponent {
           paddingVertical: 10,
         }}
         onPress={() => this.defaultTaskTimeSelected(item)}>
-        <Text style={styles.dropdownItemText}>{`${item} - Min`}</Text>
+        <Text style={styles.dropdownItemText}>{`${item} - Mins`}</Text>
       </TouchableOpacity>
     );
   }

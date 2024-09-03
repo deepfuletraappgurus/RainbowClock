@@ -7,6 +7,7 @@ import Constants from '../Components/Constants';
 //const base_url = 'https://myrainbowclock.dev-applications.net/api/v1'; //Dev
 // const base_url = ''; //Live
 const base_url = 'https://myrainbowclock.clouddownunder.com.au/public/api/v1';
+// const base_url = 'http://192.168.0.163:8000/api/v1/'
 
 // our "constructor"
 const create = (baseURL = base_url) => {
@@ -555,13 +556,14 @@ const createSecure = (baseURL = base_url) => {
   const childReward = childId =>
     api.post('rewards/crewards', {child_id: childId});
 
-  const updateTaskStatus = (taskId, childId, status, is_new) => {
+  const updateTaskStatus = (taskId, childId, status, is_new, calenderSelectedDay) => {
     const data = new FormData();
     data.append('tid', taskId);
     data.append('child_id', childId);
     data.append('status', status);
     data.append('is_new', is_new);
-    console.log('ISSSSSSSSSSSSS', data);
+    data.append('scheduler_date', calenderSelectedDay);
+    console.log('ISSSSSSSSSSSSS', JSON.stringify(data));
     return api.post('status', data);
   };
 

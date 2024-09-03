@@ -825,21 +825,12 @@ export default class EditScheduleScreen extends BaseComponent {
                       style={[styles.buttonYellow]}
                       onPress={() => this.moveToScheduleTask()}>
                       {this.state.isLoading ? (
-                        <View
-                          style={{
-                            backgroundColor: colors.yellow,
-                            borderRadius: 55,
-                            width: 55,
-                            height: 55,
-                            justifyContent: 'center',
-                            alignItems: 'center',
-                          }}>
+                       
                           <ActivityIndicator
                             color={colors.white}
                             size={30}
                             style={{zIndex: 1000}}
                           />
-                        </View>
                       ) : (
                         <Text style={[styles.h1, styles.textCenter]}>
                           {'save'.toUpperCase()}

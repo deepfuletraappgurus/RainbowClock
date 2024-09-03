@@ -24,7 +24,6 @@ import {Calendar, LocaleConfig} from 'react-native-calendars';
 
 import Tips from 'react-native-tips';
 
-
 // Styles
 import styles from './Styles/ParentHomeScreenStyles';
 import BaseComponent from '../Components/BaseComponent';
@@ -1186,7 +1185,8 @@ export default class ParentHomeScreen extends BaseComponent {
                     this.state.objSelectedChild.name
                       ? // ? this.state.objSelectedChild.name.toUpperCase() + "’S CLOCK"
                         this.state.school
-                        ?this.state.objSelectedChild.name.toUpperCase() + '’S SCHOOL CLOCK'
+                        ? this.state.objSelectedChild.name.toUpperCase() +
+                          '’S SCHOOL CLOCK'
                         : this.state.objSelectedChild.name.toUpperCase() +
                           '’S CLOCK'
                       : ''}
@@ -1434,7 +1434,8 @@ export default class ParentHomeScreen extends BaseComponent {
                     backgroundColor: this.state.is_24HrsClock
                       ? this.state.currentTaskSlot[0].tasks[0].color // Always show background color
                       : this.state.currentTaskSlot[0].tasks[0]
-                          .is_school_clock == this.state.school
+                          .is_school_clock == this.state.school &&
+                        !this.state.isLoading && moment(this.state.selectedDay).isSame(moment(),'day')
                       ? this.state.currentTaskSlot[0].tasks[0].color // Show if both conditions are met
                       : null,
                   }
@@ -1450,39 +1451,44 @@ export default class ParentHomeScreen extends BaseComponent {
                       backgroundColor: this.state.is_24HrsClock
                         ? this.state.currentTaskSlot[0].tasks[0].color // Always show background color
                         : this.state.currentTaskSlot[0].tasks[0]
-                            .is_school_clock == this.state.school
+                            .is_school_clock == this.state.school &&
+                          !this.state.isLoading && moment(this.state.selectedDay).isSame(moment(),'day')
                         ? this.state.currentTaskSlot[0].tasks[0].color // Show if both conditions are met
                         : null,
                     }
                   : null,
               ]}>
-              {this.state.isLoading ? (
-                <View>
-                  <Text style={styles.smallWaitText}>
-                    {Constants.TEXT_FATCHING_TASKS}
-                  </Text>
-                </View>
-              ) : this.state.currentTaskSlot &&
-                this.state.arrFooterTasks.length > 0 ? (
-                <Swiper
-                  showsButtons={true}
-                  key={this.state.currentTaskSlot.length}
-                  nextButton={
-                    <Image source={Images.next} style={styles.footerArrow} />
-                  }
-                  prevButton={
-                    <Image source={Images.prev} style={styles.footerArrow} />
-                  }
-                  renderPagination={renderPagination}
-                  loop={false}>
-                  {this.renderFooterView(this.state.currentTaskSlot)}
-                </Swiper>
-              ) : (
-                <View>
-                  <Text style={styles.smallWaitText}>
-                    {Constants.TEXT_NO_TASKS}
-                  </Text>
-                </View>
+              {(
+                this.state.isLoading ? (
+                  <View>
+                    <Text style={styles.smallWaitText}>
+                      {Constants.TEXT_FATCHING_TASKS}
+                    </Text>
+                  </View>
+                ) : this.state.currentTaskSlot &&
+                  this.state.arrFooterTasks.length > 0 &&
+                  this.state.currentTaskSlot[0].tasks[0].is_school_clock ==
+                    this.state.school && moment(this.state.selectedDay).isSame(moment(),'day') ? (
+                  <Swiper
+                    showsButtons={true}
+                    key={this.state.currentTaskSlot.length}
+                    nextButton={
+                      <Image source={Images.next} style={styles.footerArrow} />
+                    }
+                    prevButton={
+                      <Image source={Images.prev} style={styles.footerArrow} />
+                    }
+                    renderPagination={renderPagination}
+                    loop={false}>
+                    {this.renderFooterView(this.state.currentTaskSlot)}
+                  </Swiper>
+                ) : (
+                  <View>
+                    <Text style={styles.smallWaitText}>
+                      {Constants.TEXT_NO_TASKS}
+                    </Text>
+                  </View>
+                )
               )}
             </View>
           </SafeAreaView>

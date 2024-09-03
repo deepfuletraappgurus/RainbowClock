@@ -10,6 +10,9 @@ import {
   View,
   FlatList,
   StyleSheet,
+  ActivityIndicator,
+  Pressable,
+  Animated,
 } from 'react-native';
 import Api from '../Services/Api';
 import {Colors, Images, Metrics} from '../Themes';
@@ -17,9 +20,11 @@ import BaseComponent from '../Components/BaseComponent';
 import * as Helper from '../Lib/Helper';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import Constants from '../Components/Constants';
+import LinearGradient from 'react-native-linear-gradient';
 
 // Styles
 import styles from './Styles/ChildClaimedRewardsScreenStyles';
+import colors from '../Themes/Colors';
 
 // Global Variables
 const mAPi = Api.createSecure();
@@ -37,6 +42,9 @@ export default class ChildClaimedRewardsScreen extends BaseComponent {
       arrReward: [],
       objSelectedChild: '',
       showTokenBottomView: false,
+      isLoading: true,
+      tokenCounts: {},
+      handAnimation: new Animated.Value(0),
     };
   }
 
@@ -50,6 +58,23 @@ export default class ChildClaimedRewardsScreen extends BaseComponent {
         Helper.getChildRewardPoints(this.props.navigation);
       },
     );
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(this.state.handAnimation, {
+          toValue: 1,
+          duration: 500, // Half a second
+          useNativeDriver: true,
+        }),
+        Animated.timing(this.state.handAnimation, {
+          toValue: 0,
+          duration: 500, // Half a second
+          useNativeDriver: true,
+        }),
+      ]),
+      {
+        iterations: 6, // Run for 3 seconds (6 iterations * 0.5s)
+      },
+    ).start();
   }
   // componentWillUnmount() {
   //     this.navFocusListener.remove();
@@ -94,10 +119,9 @@ export default class ChildClaimedRewardsScreen extends BaseComponent {
       () => {},
       () => this.onActionYes(item),
     );
-    
   }
 
-  onActionYes = (item) => {
+  onActionYes = item => {
     mAPi
       .claimReward(
         item.id,
@@ -107,7 +131,7 @@ export default class ChildClaimedRewardsScreen extends BaseComponent {
         if (response.ok) {
           if (response.data.success) {
             item.is_claimed = 1;
-            this.setState({showTokenBottomView:false});
+            this.setState({showTokenBottomView: false});
             Helper.getChildRewardPoints(this.props.navigation);
           } else {
             Helper.showErrorMessage(response.data.message);
@@ -117,12 +141,14 @@ export default class ChildClaimedRewardsScreen extends BaseComponent {
         }
       })
       .catch(error => {});
-  }
+  };
 
   getRewardList = childId => {
+    this.setState({isLoading: true});
     mAPi
       .childReward(childId)
       .then(response => {
+        console.log('REWWWWWWWWWWWW', JSON.stringify(response.data.data));
         if (response.ok) {
           if (response.data.success) {
             this.state.arrReward_original = response.data.data;
@@ -136,7 +162,45 @@ export default class ChildClaimedRewardsScreen extends BaseComponent {
           Helper.showErrorMessage(response.problem);
         }
       })
-      .catch(error => {});
+      .catch(error => {})
+      .finally(() => {
+        this.setState({isLoading: false});
+      });
+  };
+
+  handleRewardPress = item => {
+    const {tokenCounts} = this.state;
+    const currentTokenCount = tokenCounts[item.id] || 0;
+    const tokenDiffrence =
+      (item.type == 'Special'
+        ? Constants.specialReward / currentTokenCount
+        : Constants.standardReward) / currentTokenCount;
+
+    if (tokenDiffrence <= 1) {
+      this.setState({noEnoughTokens: true});
+    } else if (currentTokenCount < item.no_of_tokens) {
+      // Increment token count
+      this.setState(
+        prevState => ({
+          tokenCounts: {
+            ...prevState.tokenCounts,
+            [item.id]: currentTokenCount + 1,
+          },
+        }),
+        () => {
+          // Check if tokens reached the limit
+          if (this.state.tokenCounts[item.id] === item.no_of_tokens) {
+            Alert.alert(
+              'Congratulations!',
+              'You have reached the token limit!',
+              [{text: 'OK'}],
+            );
+          }
+        },
+      );
+    } else {
+      this.claimReward(item);
+    }
   };
 
   render() {
@@ -159,80 +223,108 @@ export default class ChildClaimedRewardsScreen extends BaseComponent {
                   ).toUpperCase()}
                 </Text>
               </View>
-              <FlatList
-                keyboardShouldPersistTaps={'always'}
-                horizontal={false}
-                data={this.state.arrReward}
-                extraData={this.state}
-                keyExtractor={(item, index) => index + ''}
-                renderItem={({item, index}) =>
-                  this.renderRowFlatlist(item, index)
-                }
-              />
+              {this.state.isLoading ? (
+                <View
+                  style={{
+                    flex: 1,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                  }}>
+                  <ActivityIndicator
+                    color={colors.white}
+                    size={30}
+                    style={{zIndex: 1000}}
+                  />
+                  <Text style={[styles.buttonText]}>Fetching Rewards...</Text>
+                </View>
+              ) : (
+                <FlatList
+                  keyboardShouldPersistTaps={'always'}
+                  horizontal={false}
+                  data={this.state.arrReward}
+                  extraData={this.state}
+                  keyExtractor={(item, index) => index + ''}
+                  renderItem={({item, index}) =>
+                    this.renderRowFlatlist(item, index)
+                  }
+                />
+              )}
             </View>
           </ScrollView>
-          <TouchableOpacity
-            onPress={() => {
-              this.setState({
-                showTokenBottomView: !this.state.showTokenBottomView,
-              });
-            }}
+          <LinearGradient
+            colors={[colors.transparent, colors.pink]} // Transparent at the top to pink at the bottom
+            start={{x: 0.5, y: 0}} // Start at the top center
+            end={{x: 0.5, y: 0.6}} // End the gradient a bit earlier to show more pink
             style={{
-              backgroundColor: Colors.pink,
-              justifyContent: 'center',
-              alignItems: 'center',
               paddingVertical: 15,
               borderTopEndRadius: 15,
               borderTopStartRadius: 15,
+              alignItems: 'center', // Center align items horizontally
             }}>
-            <Image source={Images.rewardClaim} style={styles1.pigIcon} />
-            <Text style={[styles.h1, styles.textCenter, {marginTop: 10}]}>
-              TOKENS
-            </Text>
-            <View
+            <TouchableOpacity
+              onPress={() => {
+                this.setState({
+                  showTokenBottomView: !this.state.showTokenBottomView,
+                });
+              }}
               style={{
-                flexDirection: 'row',
-                justifyContent: 'space-evenly',
-                marginTop: 15,
-                width: '100%',
-                display: this.state.showTokenBottomView ? 'flex' : 'none',
+                backgroundColor: 'transparent', // Make sure background color is transparent to show gradient
+                justifyContent: 'center',
+                alignItems: 'center',
+                paddingVertical: 15,
+                width: '100%', // Ensure it spans the full width
               }}>
-              <TouchableOpacity
-                activeOpacity={1}
-                style={{
-                  padding: 10,
-                  backgroundColor: Colors.darkPink,
-                  borderRadius: 10,
-                  flex: 0.3,
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                }}>
-                <Image
-                  source={Constants.standardRewardIcon}
-                  style={styles1.tokenIcon}
-                />
-                <Text style={[styles.h1, styles.textCenter]}>
-                  {Constants.standardReward}
+              <Image source={Images.rewardClaim} style={styles1.pigIcon} />
+              <View style={{width: '100%'}}>
+                <Text style={[styles.h1, styles.textCenter, {marginTop: 10}]}>
+                  TOKENS EARNED
                 </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                activeOpacity={1}
+              </View>
+              <View
                 style={{
-                  padding: 10,
-                  backgroundColor: Colors.darkPink,
-                  borderRadius: 10,
-                  flex: 0.3,
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  display: Constants.specialReward > 0 ? 'flex' : 'none',
+                  flexDirection: 'row',
+                  justifyContent: 'space-evenly',
+                  paddingTop: 15,
+                  width: '100%',
+                  display: this.state.showTokenBottomView ? 'flex' : 'none',
                 }}>
-                <Image source={Images.reward} style={styles1.tokenIcon} />
-                <Text style={[styles.h1, styles.textCenter]}>
-                  {Constants.specialReward}
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </TouchableOpacity>
+                <TouchableOpacity
+                  activeOpacity={1}
+                  style={{
+                    padding: 10,
+                    backgroundColor: Colors.darkPink,
+                    borderRadius: 10,
+                    flex: 0.3,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                  }}>
+                  <Image
+                    source={Constants.standardRewardIcon}
+                    style={styles1.tokenIcon}
+                  />
+                  <Text style={[styles.h1, styles.textCenter]}>
+                    {Constants.standardReward}
+                  </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  activeOpacity={1}
+                  style={{
+                    padding: 10,
+                    backgroundColor: Colors.darkPink,
+                    borderRadius: 10,
+                    flex: 0.3,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                    display: Constants.specialReward > 0 ? 'flex' : 'none',
+                  }}>
+                  <Image source={Images.reward} style={styles1.tokenIcon} />
+                  <Text style={[styles.h1, styles.textCenter]}>
+                    {Constants.specialReward}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </TouchableOpacity>
+          </LinearGradient>
         </ImageBackground>
         <Modal
           animationType="slide"
@@ -345,18 +437,14 @@ export default class ChildClaimedRewardsScreen extends BaseComponent {
       <TouchableOpacity
         style={styles.rewardsItem}
         disabled={item?.is_claimed}
-        onPress={() =>
-          !canClaimReward
-            ? this.claimReward(item)
-            : this.setState({noEnoughTokens: true})
-        }>
+        activeOpacity={1}>
         <View
           style={[
             styles.rewardsItemContent,
             {
               backgroundColor: !canClaimReward
                 ? Colors.darkYellow
-                : Colors.charcoal + 90,
+                : Colors.white + 90,
             },
           ]}>
           <View
@@ -384,7 +472,10 @@ export default class ChildClaimedRewardsScreen extends BaseComponent {
             />
           </View>
           <View style={styles1.rewardInfo}>
-            <View style={styles1.rewardDetails}>
+            <Pressable
+              hitSlop={{left: 10, right: 10, top: 10, bottom: 10}}
+              onPress={() => this.handleRewardPress(item)}
+              style={styles1.rewardDetails}>
               <Image
                 source={
                   item.type == 'Special'
@@ -393,11 +484,29 @@ export default class ChildClaimedRewardsScreen extends BaseComponent {
                 }
                 style={styles1.icon}
               />
-              <Text style={styles1.tokenText}>{item.no_of_tokens}</Text>
-            </View>
-            <Text style={styles1.rewardType}>
-              {item.type == 'Special' ? 'SPECIAL REWARD' : 'EVERYDAY REWARD'}
-            </Text>
+              <Text style={styles1.tokenText}>
+                {this.state.tokenCounts[item.id] || 0}
+              </Text>
+            </Pressable>
+            {!item.is_claimed && (
+              <Animated.View
+                style={[
+                  styles1.handImageContainer,
+                  {
+                    opacity: this.state.handAnimation, // Fade in/out
+                    transform: [
+                      {
+                        scale: this.state.handAnimation.interpolate({
+                          inputRange: [0, 1],
+                          outputRange: [1, 1.2], // Scale up slightly
+                        }),
+                      },
+                    ],
+                  },
+                ]}>
+                <Image source={Images.finger} style={styles1.handImage} />
+              </Animated.View>
+            )}
           </View>
         </View>
         {item.is_claimed ? (
@@ -409,31 +518,23 @@ export default class ChildClaimedRewardsScreen extends BaseComponent {
         <TouchableOpacity
           activeOpacity={1}
           style={{
-            backgroundColor: item?.is_claimed
-              ? Colors.restoreGreen
-              : Colors.black,
+            backgroundColor: Colors.black,
             padding: 5,
             justifyContent: 'center',
             alignItems: 'center',
           }}>
           <Text
             style={[styles1.rewardType, {color: Colors.white, marginTop: 0}]}>
-            {tokenDiffrence < 1 ? (
-              'INSUFFICIENT TOKEN'
-            ) : (
-              <>
-                GET FOR {item?.no_of_tokens}
-                <Image
-                  source={
-                    item.type == 'Special'
-                      ? Images.reward
-                      : Constants.standardRewardIcon
-                  }
-                  style={[styles1.icon, {marginTop: -3}]}
-                />
-                TOKEN
-              </>
-            )}
+            Claim FOR {item?.no_of_tokens}
+            <Image
+              source={
+                item.type == 'Special'
+                  ? Images.reward
+                  : Constants.standardRewardIcon
+              }
+              style={[styles1.icon, {marginTop: -3}]}
+            />
+            TOKEN
           </Text>
         </TouchableOpacity>
       </TouchableOpacity>
@@ -463,9 +564,9 @@ const styles1 = StyleSheet.create({
     alignItems: 'center',
   },
   icon: {
-    width: 20,
-    height: 20,
-    marginRight: 5,
+    width: 17,
+    height: 17,
+    // marginRight: 5,
   },
   tokenText: {
     fontSize: 18,
@@ -489,6 +590,17 @@ const styles1 = StyleSheet.create({
   tokenIcon: {
     width: 50,
     height: 50,
+    resizeMode: 'contain',
+  },
+  handImageContainer: {
+    position: 'absolute',
+    top: 10, // Adjust to position above the Pressable
+    left: '40%', // Center it over the Pressable
+    zIndex: 1000,
+  },
+  handImage: {
+    width: 30,
+    height: 30,
     resizeMode: 'contain',
   },
 });
