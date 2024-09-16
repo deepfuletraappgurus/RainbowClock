@@ -13,6 +13,7 @@ import {
   ActivityIndicator,
   Pressable,
   Animated,
+  Alert,
 } from 'react-native';
 import Api from '../Services/Api';
 import {Colors, Images, Metrics} from '../Themes';
@@ -45,6 +46,7 @@ export default class ChildClaimedRewardsScreen extends BaseComponent {
       isLoading: true,
       tokenCounts: {},
       handAnimation: new Animated.Value(0),
+      pressedImages: {},
     };
   }
 
@@ -168,40 +170,67 @@ export default class ChildClaimedRewardsScreen extends BaseComponent {
       });
   };
 
-  handleRewardPress = item => {
-    const {tokenCounts} = this.state;
-    const currentTokenCount = tokenCounts[item.id] || 0;
-    const tokenDiffrence =
-      (item.type == 'Special'
-        ? Constants.specialReward / currentTokenCount
-        : Constants.standardReward) / currentTokenCount;
-
-    if (tokenDiffrence <= 1) {
-      this.setState({noEnoughTokens: true});
-    } else if (currentTokenCount < item.no_of_tokens) {
-      // Increment token count
-      this.setState(
-        prevState => ({
-          tokenCounts: {
-            ...prevState.tokenCounts,
-            [item.id]: currentTokenCount + 1,
-          },
-        }),
-        () => {
-          // Check if tokens reached the limit
-          if (this.state.tokenCounts[item.id] === item.no_of_tokens) {
-            Alert.alert(
-              'Congratulations!',
-              'You have reached the token limit!',
-              [{text: 'OK'}],
-            );
-          }
-        },
-      );
-    } else {
-      this.claimReward(item);
-    }
+  handlePressImage = (itemId, imageIndex, item) => {
+    console.log('iiiii', item);
+  
+    this.setState((prevState) => {
+      // Create a unique key for each image
+      const imageKey = `${itemId}-${imageIndex}`;
+  
+      // Determine the new color based on the current state
+      const currentColor = prevState.pressedImages[imageKey];
+      const newColor = currentColor === 'yellow' ? 'gray' : 'yellow';
+  
+      // Update the pressed images state without changing the color yet
+      const updatedPressedImages = {
+        ...prevState.pressedImages,
+      };
+  
+      // Only change the color if it is toggling to yellow
+      if (newColor === 'yellow') {
+        // Count the number of yellow images for the specific item
+        const yellowImageCount = Object.keys(prevState.pressedImages).filter(
+          (key) =>
+            key.startsWith(itemId) && prevState.pressedImages[key] === 'yellow'
+        ).length;
+  
+        // Determine the reward limit based on item type
+        const rewardLimit =
+          item.type === 'Special'
+            ? Constants.specialReward
+            : Constants.standardReward;
+  
+        // Check if the number of yellow images exceeds the reward limit
+        if (yellowImageCount + 1 > rewardLimit) {
+          // Show the alert or set state to show that there are no enough tokens
+          this.setState({ noEnoughTokens: true });
+          // Return early without changing the color
+          return null;
+        } else {
+          // If under the limit, apply the color change
+          updatedPressedImages[imageKey] = newColor;
+        }
+      } else {
+        // Allow toggling back to gray without any conditions
+        updatedPressedImages[imageKey] = newColor;
+      }
+  
+      // Count the number of yellow images after the state update
+      const yellowImageCountAfterUpdate = Object.keys(updatedPressedImages).filter(
+        (key) => key.startsWith(itemId) && updatedPressedImages[key] === 'yellow'
+      ).length;
+  
+      // Check if the number of yellow images equals the total number of tokens for the item
+      if (yellowImageCountAfterUpdate == item.no_of_tokens) {
+        this.claimReward(item);
+      }
+  
+      // Return the updated state with new image colors
+      return { pressedImages: updatedPressedImages };
+    });
   };
+  
+  
 
   render() {
     return (
@@ -423,13 +452,13 @@ export default class ChildClaimedRewardsScreen extends BaseComponent {
 
   renderRow(arrItems, index) {
     const item = arrItems[index];
-    const tokenDiffrence =
-      (item.type == 'Special'
+    const tokenDifference =
+      (item.type === 'Special'
         ? Constants.specialReward
         : Constants.standardReward) / item.no_of_tokens;
     const canClaimReward = item.is_claimed
       ? true
-      : tokenDiffrence < 1
+      : tokenDifference < 1
       ? true
       : false;
 
@@ -464,7 +493,7 @@ export default class ChildClaimedRewardsScreen extends BaseComponent {
           </View>
           <View style={styles.rewardItemImageContainer}>
             <Image
-              source={item.icon != '' ? {uri: item.icon} : Images.upload}
+              source={item.icon ? {uri: item.icon} : Images.upload}
               style={[
                 styles.imagePlaceholder,
                 {borderBottomLeftRadius: 10, borderBottomRightRadius: 10},
@@ -472,33 +501,59 @@ export default class ChildClaimedRewardsScreen extends BaseComponent {
             />
           </View>
           <View style={styles1.rewardInfo}>
-            <Pressable
-              hitSlop={{left: 10, right: 10, top: 10, bottom: 10}}
-              onPress={() => this.handleRewardPress(item)}
-              style={styles1.rewardDetails}>
-              <Image
-                source={
-                  item.type == 'Special'
-                    ? Images.reward
-                    : Constants.standardRewardIcon
-                }
-                style={styles1.icon}
-              />
-              <Text style={styles1.tokenText}>
-                {this.state.tokenCounts[item.id] || 0}
-              </Text>
-            </Pressable>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{flexGrow: 1, alignItems: 'center',justifyContent:'center'}}
+              style={{}}>
+              <View
+                style={[
+                  styles1.rewardDetails,
+                  {flexDirection: 'row', alignItems: 'center'},
+                ]}>
+                {/* Dynamically render images based on item.no_of_tokens */}
+                {Array.from({length: item.no_of_tokens}).map((_, idx) => {
+                  // Create a unique key for each image using item ID and image index
+                  const imageKey = `${item.id}-${idx}`;
+                  return (
+                    <TouchableOpacity
+                      key={idx}
+                      onPress={() => this.handlePressImage(item.id, idx,item)}>
+                      <Image
+                        source={
+                          item.type === 'Special'
+                            ? Images.reward
+                            : Constants.standardRewardIcon
+                        }
+                        style={[
+                          styles1.tokenImage,
+                          {
+                            marginRight: 5,
+                            tintColor:
+                              this.state.pressedImages[imageKey] === 'yellow'
+                                ? Colors.yellow // Set color to yellow if pressed
+                                : Colors.gray, // Default color if not pressed
+                                zIndex:10000
+                          },
+                        ]}
+                      />
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            </ScrollView>
             {!item.is_claimed && (
               <Animated.View
+              pointerEvents="none"
                 style={[
                   styles1.handImageContainer,
                   {
-                    opacity: this.state.handAnimation, // Fade in/out
+                    opacity: this.state.handAnimation,
                     transform: [
                       {
                         scale: this.state.handAnimation.interpolate({
                           inputRange: [0, 1],
-                          outputRange: [1, 1.2], // Scale up slightly
+                          outputRange: [1, 1.2],
                         }),
                       },
                     ],
@@ -518,23 +573,23 @@ export default class ChildClaimedRewardsScreen extends BaseComponent {
         <TouchableOpacity
           activeOpacity={1}
           style={{
-            backgroundColor: Colors.black,
+            backgroundColor: Colors.darkPink,
             padding: 5,
             justifyContent: 'center',
             alignItems: 'center',
           }}>
           <Text
             style={[styles1.rewardType, {color: Colors.white, marginTop: 0}]}>
-            Claim FOR {item?.no_of_tokens}
+            CLAIM for {item?.no_of_tokens}
             <Image
               source={
-                item.type == 'Special'
+                item.type === 'Special'
                   ? Images.reward
                   : Constants.standardRewardIcon
               }
               style={[styles1.icon, {marginTop: -3}]}
             />
-            TOKEN
+            token/s
           </Text>
         </TouchableOpacity>
       </TouchableOpacity>
@@ -596,11 +651,16 @@ const styles1 = StyleSheet.create({
     position: 'absolute',
     top: 10, // Adjust to position above the Pressable
     left: '40%', // Center it over the Pressable
-    zIndex: 1000,
+    // zIndex: 1000,
   },
   handImage: {
     width: 30,
     height: 30,
     resizeMode: 'contain',
+  },
+  tokenImage: {
+    width: 25,
+    height: 25,
+    // marginRight: 5,
   },
 });

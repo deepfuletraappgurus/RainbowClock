@@ -28,6 +28,7 @@ import {Colors, Images, Metrics} from '../Themes';
 import Moment from 'moment';
 import DropDownPicker from 'react-native-dropdown-picker';
 import RBSheet from 'react-native-raw-bottom-sheet';
+import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 
 // Styles
 import styles from './Styles/SelectTaskScreenStyles';
@@ -95,7 +96,7 @@ export default class SelectTaskScreen extends BaseComponent {
       isSaveForFuture: 0,
       savedTaskList: [],
       createdTaskCount: 0,
-      chosenCategory:{}
+      chosenCategory: {},
     };
   }
 
@@ -111,7 +112,7 @@ export default class SelectTaskScreen extends BaseComponent {
       Constants.TASK_TOKEN_STANDARD,
       Constants.TASK_TOKEN_SPECIAL,
     ];
-    
+
     this.getChildDetail();
     this.navFocusListener = this.props.navigation.addListener(
       'didFocus',
@@ -156,10 +157,10 @@ export default class SelectTaskScreen extends BaseComponent {
       this.state.taskCustomImage = '';
       this.state.taskCustomImagePath = '';
       const customchosencategory = {
-        parent_id:'14'
-      }
-      this.state.chosenCategory = customchosencategory
-      this.state.selectedSubCategory = ''
+        parent_id: '14',
+      };
+      this.state.chosenCategory = customchosencategory;
+      this.state.selectedSubCategory = '';
       this.setState({});
     });
   }
@@ -243,50 +244,52 @@ export default class SelectTaskScreen extends BaseComponent {
   //#endregion -> API Calls
   getTaskCategories = () => {
     this.setState({isLoading: true});
-    const res = objSecureAPI.getCategories(this.state.objSelectedChild.id).then(resJSON => {
-      if (resJSON.ok && resJSON.status == 200) {
-        this.setState({isLoading: false});
-        if (resJSON.data.success) {
-          const allCategories = {
-            id: 230,
-            image: '',
-            name: 'All Categories',
-            parent_id: 0,
-          };
-          console.log('RESSSSSSS', resJSON.data.data);
-          var arrAllCategoriesData = resJSON.data.data;
-          this.state.arrAllCategories = arrAllCategoriesData.filter(item => {
-            return item.parent_id == 0;
-          });
-          arrAllCategoriesData = [allCategories, ...arrAllCategoriesData];
+    const res = objSecureAPI
+      .getCategories(this.state.objSelectedChild.id)
+      .then(resJSON => {
+        if (resJSON.ok && resJSON.status == 200) {
+          this.setState({isLoading: false});
+          if (resJSON.data.success) {
+            const allCategories = {
+              id: 230,
+              image: '',
+              name: 'All Categories',
+              parent_id: 0,
+            };
+            console.log('RESSSSSSS', resJSON.data.data);
+            var arrAllCategoriesData = resJSON.data.data;
+            this.state.arrAllCategories = arrAllCategoriesData.filter(item => {
+              return item.parent_id == 0;
+            });
+            arrAllCategoriesData = [allCategories, ...arrAllCategoriesData];
 
-          this.state.arrAllCategoriesImages = arrAllCategoriesData.filter(
-            item => {
-              return item.parent_id != 0;
-            },
-          );
-          this.state.customCategory = this.state.arrAllCategories.filter(
-            item => {
-              return item.id == '14';
-            },
-          );
-          this.state.arrCustomCategoryIcons = arrAllCategoriesData.filter(
-            item => {
-              return item.parent_id == 14;
-            },
-          );
-          this.setState({});
-        } else {
+            this.state.arrAllCategoriesImages = arrAllCategoriesData.filter(
+              item => {
+                return item.parent_id != 0;
+              },
+            );
+            this.state.customCategory = this.state.arrAllCategories.filter(
+              item => {
+                return item.id == '14';
+              },
+            );
+            this.state.arrCustomCategoryIcons = arrAllCategoriesData.filter(
+              item => {
+                return item.parent_id == 14;
+              },
+            );
+            this.setState({});
+          } else {
+            Helper.showErrorMessage(resJSON.data.message);
+          }
+        } else if (resJSON.status == 500) {
+          this.setState({isLoading: false});
           Helper.showErrorMessage(resJSON.data.message);
+        } else {
+          this.setState({isLoading: false});
+          Helper.showErrorMessage(Constants.SERVER_ERROR);
         }
-      } else if (resJSON.status == 500) {
-        this.setState({isLoading: false});
-        Helper.showErrorMessage(resJSON.data.message);
-      } else {
-        this.setState({isLoading: false});
-        Helper.showErrorMessage(Constants.SERVER_ERROR);
-      }
-    });
+      });
   };
 
   getSavedtask = () => {
@@ -296,7 +299,7 @@ export default class SelectTaskScreen extends BaseComponent {
       .then(resJSON => {
         if (resJSON.ok && resJSON.status == 200) {
           this.setState({isLoading: false});
-          console.log('resJSON.data.data',resJSON.data.data)
+          console.log('resJSON.data.data', resJSON.data.data);
           if (resJSON.data.success) {
             this.state.savedTaskList = resJSON.data.data;
             this.setState({});
@@ -381,7 +384,7 @@ export default class SelectTaskScreen extends BaseComponent {
               this.setState({
                 createdTaskCount: this.state.createdTaskCount + 1,
               });
-              
+
               Helper.showConfirmationMessagesignleAction(
                 resJSON.data.message,
                 'Ok',
@@ -396,7 +399,7 @@ export default class SelectTaskScreen extends BaseComponent {
                       taskTime: '',
                       taskCustomImage: '',
                       taskCustomImagePath: '',
-                      isSaveForFuture: 0
+                      isSaveForFuture: 0,
                     });
                     this.setTaskModelVisible();
                     // this.moveToParentHomeScreen();
@@ -471,7 +474,9 @@ export default class SelectTaskScreen extends BaseComponent {
       <TouchableOpacity
         style={styles.dropdownItem}
         onPress={() => this.taskTimeSelected(item)}>
-        <Text style={styles.dropdownItemText}>{`${item} - ${index == 0 ? 'Minute' : 'Minutes'}`}</Text>
+        <Text style={styles.dropdownItemText}>{`${item} - ${
+          index == 0 ? 'Minute' : 'Minutes'
+        }`}</Text>
       </TouchableOpacity>
     );
   }
@@ -552,8 +557,8 @@ export default class SelectTaskScreen extends BaseComponent {
             borderWidth: 2,
             borderColor: Colors.snow,
             position: 'absolute',
-            right:0,
-            top:0,
+            right: 0,
+            top: 0,
             zIndex: 10000,
           }}>
           <Image
@@ -571,7 +576,7 @@ export default class SelectTaskScreen extends BaseComponent {
   }
 
   renderSavedTaskList(item, index) {
-    console.log('save----')
+    console.log('save----');
     return (
       <TouchableOpacity
         style={[
@@ -632,7 +637,7 @@ export default class SelectTaskScreen extends BaseComponent {
       () => {},
       () => this.onCustomtaskActionYes(item),
     );
-  }
+  };
 
   onActionYes = item => {
     const res = objSecureAPI
@@ -656,7 +661,7 @@ export default class SelectTaskScreen extends BaseComponent {
   };
 
   onCustomtaskActionYes = item => {
-    console.log('OOOOOOOOOO====',item)
+    console.log('OOOOOOOOOO====', item);
     const res = objSecureAPI
       .deleteCustomtask(item?.id, this.state.objSelectedChild.id)
       .then(resJSON => {
@@ -675,7 +680,7 @@ export default class SelectTaskScreen extends BaseComponent {
           Helper.showErrorMessage(Constants.SERVER_ERROR);
         }
       });
-  }
+  };
 
   setTaskModelVisible(item) {
     // if (
@@ -693,7 +698,7 @@ export default class SelectTaskScreen extends BaseComponent {
     this.state.taskType = item ? Constants.TASK_TYPE_DEFAULT : '';
     this.state.taskImage = item ? item.image : '';
     this.state.selectedSubCategory = item ? item.id : '';
-    this.state.chosenCategory = item
+    this.state.chosenCategory = item;
 
     if (!item) {
       // this.state.selectedCategory = '';
@@ -724,7 +729,7 @@ export default class SelectTaskScreen extends BaseComponent {
     this.state.taskType = item ? Constants.TASK_TYPE_DEFAULT : '';
     this.state.taskImage = item ? item.image : '';
     this.state.selectedSubCategory = item ? item.ccid : '';
-    this.state.chosenCategory = item
+    this.state.chosenCategory = item;
 
     if (!item) {
       // this.state.selectedCategory = '';
@@ -1121,13 +1126,13 @@ export default class SelectTaskScreen extends BaseComponent {
           visible={this.state.selectTaskModel}
           onRequestClose={() => {}}>
           <View style={[styles.modal, styles.modalBlueTrans]}>
-            <KeyboardAvoidingView
-              style={[styles.mainContainer]}
-              behavior={'padding'}>
+            <KeyboardAwareScrollView
+              style={[styles.modalDialog, {paddingVertical: 15}]}
+              contentContainerStyle={styles.ScrollView}
+              enableOnAndroid={false}
+            >
               <View style={styles.modalView}>
-                <ScrollView
-                  style={[styles.modalDialog, {paddingVertical: 15}]}
-                  contentContainerStyle={styles.ScrollView}>
+               
                   <View style={[styles.container]}>
                     <View
                       style={[
@@ -1434,9 +1439,8 @@ export default class SelectTaskScreen extends BaseComponent {
                       </View>
                     </View>
                   </View>
-                </ScrollView>
               </View>
-            </KeyboardAvoidingView>
+            </KeyboardAwareScrollView>
           </View>
         </Modal>
 
@@ -1444,13 +1448,13 @@ export default class SelectTaskScreen extends BaseComponent {
           animationType="slide"
           transparent={true}
           visible={this.state.createTask}
-          onRequestClose={() => {
-            Alert.alert('Modal has been closed.');
-          }}>
+          onRequestClose={() => {}}>
           <View style={[styles.modal, styles.modalBlueTrans]}>
-            <KeyboardAvoidingView
-              style={styles.mainContainer}
-              behavior={'padding'}>
+          <KeyboardAwareScrollView
+              style={[styles.modalDialog, {paddingVertical: 15}]}
+              contentContainerStyle={styles.ScrollView}
+              enableOnAndroid={false}
+            >
               <ScrollView
                 style={[styles.modalDialog, {paddingVertical: 15}]}
                 contentContainerStyle={styles.ScrollView}>
@@ -1773,29 +1777,29 @@ export default class SelectTaskScreen extends BaseComponent {
                           />
                         </View>
                         <TouchableOpacity
-                            style={{
-                              marginVertical: 10,
-                              flexDirection: 'row',
-                              alignItems: 'center',
-                            }}
-                            onPress={() => {
-                              this.setState({
-                                isSaveForFuture:
-                                  this.state.isSaveForFuture == 0 ? 1 : 0,
-                              });
-                            }}>
-                            <Image
-                              source={
-                                this.state.isSaveForFuture
-                                  ? Images.checked
-                                  : Images.unchecked
-                              }
-                              style={{width: 18, height: 18, marginRight: 5}}
-                            />
-                            <Text style={[styles.dropdownButtonText]}>
-                              Save This Task For Future Reference.
-                            </Text>
-                          </TouchableOpacity>
+                          style={{
+                            marginVertical: 10,
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                          }}
+                          onPress={() => {
+                            this.setState({
+                              isSaveForFuture:
+                                this.state.isSaveForFuture == 0 ? 1 : 0,
+                            });
+                          }}>
+                          <Image
+                            source={
+                              this.state.isSaveForFuture
+                                ? Images.checked
+                                : Images.unchecked
+                            }
+                            style={{width: 18, height: 18, marginRight: 5}}
+                          />
+                          <Text style={[styles.dropdownButtonText]}>
+                            Save This Task For Future Reference.
+                          </Text>
+                        </TouchableOpacity>
                       </View>
                     </View>
                   </View>
@@ -1861,7 +1865,7 @@ export default class SelectTaskScreen extends BaseComponent {
                   </Modal>
                 </View>
               </ScrollView>
-            </KeyboardAvoidingView>
+            </KeyboardAwareScrollView>
           </View>
         </Modal>
       </View>

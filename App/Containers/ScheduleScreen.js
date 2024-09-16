@@ -7,6 +7,7 @@ import {
   FlatList,
   Image,
   ImageBackground,
+  Linking,
   ScrollView,
   Text,
   TextInput,

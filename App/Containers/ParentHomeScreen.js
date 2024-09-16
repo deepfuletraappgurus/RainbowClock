@@ -9,6 +9,7 @@ import {
   TouchableOpacity,
   View,
   TextInput,
+  ScrollView,
 } from 'react-native';
 import Swiper from 'react-native-swiper';
 import Constants from '../Components/Constants';
@@ -588,12 +589,23 @@ export default class ParentHomeScreen extends BaseComponent {
     }));
   }
 
-  onCloseTaskPress() {
-    this.setState(prevState => ({
-      customScheduleText: '',
-      showCustomTextInput: false,
-    }));
-  }
+  onCloseTaskPress = () => {
+    const { editingIndex, scheduleType } = this.state;
+  
+    if (editingIndex !== null) {
+      // Remove the task at the editingIndex
+      const newData = scheduleType.filter((_, index) => index !== editingIndex);
+  
+      // Update the state
+      this.setState({
+        scheduleType: newData,
+        editingIndex: null, // Disable the edit box
+        customScheduleText: '',
+        showCustomTextInput: false,
+      });
+    }
+    this.setState({showCustomTextInput:false})
+  };
 
   onCloseEditingTaskPress() {
     this.setState(prevState => ({
@@ -1504,7 +1516,7 @@ export default class ParentHomeScreen extends BaseComponent {
                 paddingHorizontal: 15,
               },
             }}>
-            <View>
+            <ScrollView showsVerticalScrollIndicator={false}>
               <Text
                 style={[styles.timer, {color: Colors.black, marginBottom: 20}]}>
                 {'All Schedules'.toUpperCase()}
@@ -1634,7 +1646,7 @@ export default class ParentHomeScreen extends BaseComponent {
                 onPress={() => this.onCloseCustomeTaskSheet()}>
                 <Text style={styles.buttonText}>{'Close'}</Text>
               </TouchableOpacity>
-            </View>
+            </ScrollView>
           </RBSheet>
         </ImageBackground>
       </View>

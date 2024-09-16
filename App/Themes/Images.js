@@ -85,6 +85,7 @@ const images = {
   editTask: require('../Images/editTask.png'),
   tick: require('../Images/tick.png'),
   reward: require('../Images/reward.png'),
+  rewardOutline: require('../Images/tick.png'),
   cyanBackground:require('../Images/bgCyan.png'),
   arrowDown: require('../Images/arrow_down.png'),
 

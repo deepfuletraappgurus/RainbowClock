@@ -417,7 +417,7 @@ export default class RewardScreen extends BaseComponent {
                         alignItems: 'center',
                       }}>
                       <Text style={[styles.h1, styles.textCenter]}>
-                        NO REWARD FOUND.
+                        YOU HAVE NO REWARD/S.
                       </Text>
                     </View>
                   }

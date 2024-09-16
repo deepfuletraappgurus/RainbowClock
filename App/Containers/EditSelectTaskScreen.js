@@ -109,14 +109,14 @@ export default class EditSelectTaskScreen extends BaseComponent {
     const scheduleDetails =
       this.props.navigation.state.params.dictCreateTask.scheduleDetails;
 
-    console.log('SCHEDULEEEEKKNKN', scheduleDetails);
-
-    const getCurrentCat = this.state.arrAllCategories?.filter(
-      cat => cat.id === scheduleDetails?.mcid,
-    );
-    const childCat = this.state.arrAllCategoriesImages?.filter(
-      cat => cat.id === scheduleDetails?.ccid,
-    );
+      
+      const getCurrentCat = this.state.arrAllCategories?.filter(
+        cat => cat.id === scheduleDetails?.mcid,
+      );
+      const childCat = this.state.arrAllCategoriesImages?.filter(
+        cat => cat.id === scheduleDetails?.ccid,
+      );
+      console.log('SCHEDULEEEEKKNKN', scheduleDetails);
     this.categorySelected(getCurrentCat[0], false);
     setTimeout(() => {
       this.setTaskModelVisible(childCat[0]);
@@ -130,6 +130,7 @@ export default class EditSelectTaskScreen extends BaseComponent {
         taskType: scheduleDetails?.type == null ? '' : scheduleDetails?.type,
         isSavedForFuture: scheduleDetails?.is_saved_for_future,
         taskStatus: scheduleDetails?.status,
+        taskImage:scheduleDetails?.cate_image
       });
       this.tokenTypeSelected(scheduleDetails?.token_type);
       this.taskTimeSelected(scheduleDetails?.task_time);
@@ -529,7 +530,7 @@ export default class EditSelectTaskScreen extends BaseComponent {
       <TouchableOpacity
         style={styles.dropdownItem}
         onPress={() => this.taskTimeSelected(item)}>
-        <Text style={styles.dropdownItemText}>{`${item} - Minute`}</Text>
+        <Text style={styles.dropdownItemText}>{`${item} - ${index == 0 ? 'Minute' : 'Minutes'}`}</Text>
       </TouchableOpacity>
     );
   }
