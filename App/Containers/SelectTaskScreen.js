@@ -159,7 +159,7 @@ export default class SelectTaskScreen extends BaseComponent {
       const customchosencategory = {
         parent_id: '14',
       };
-      this.state.chosenCategory = customchosencategory;
+      this.state.chosenCategory = customchosencategory.parent_id;
       this.state.selectedSubCategory = '';
       this.setState({});
     });
@@ -244,6 +244,7 @@ export default class SelectTaskScreen extends BaseComponent {
   //#endregion -> API Calls
   getTaskCategories = () => {
     this.setState({isLoading: true});
+    console.log('this.state.objSelectedChild',this.state.objSelectedChild)
     const res = objSecureAPI
       .getCategories(this.state.objSelectedChild.id)
       .then(resJSON => {
@@ -319,7 +320,7 @@ export default class SelectTaskScreen extends BaseComponent {
   callAddTask = () => {
     this.setState({isLoading: true});
     var childId = this.state.objSelectedChild.id;
-    var mainCatId = this.state.chosenCategory.parent_id;
+    var mainCatId = this.state.chosenCategory;
     var subCatId = this.state.selectedSubCategory;
     var taskType = this.state.taskType;
     var timeSloteName = this.state.dictCreateTask['taskName'];
@@ -683,6 +684,7 @@ export default class SelectTaskScreen extends BaseComponent {
   };
 
   setTaskModelVisible(item) {
+    console.log('CATEGORY ITEM',item)
     // if (
     //   this.state.selectedCategory == '' &&
     //   item &&
@@ -698,7 +700,7 @@ export default class SelectTaskScreen extends BaseComponent {
     this.state.taskType = item ? Constants.TASK_TYPE_DEFAULT : '';
     this.state.taskImage = item ? item.image : '';
     this.state.selectedSubCategory = item ? item.id : '';
-    this.state.chosenCategory = item;
+    this.state.chosenCategory = item?.parent_id;
 
     if (!item) {
       // this.state.selectedCategory = '';
@@ -715,6 +717,7 @@ export default class SelectTaskScreen extends BaseComponent {
   }
 
   setSavedTaskModelVisible(item) {
+    console.log('SAVED ITEM',item)
     // this.state.taskType = item ? Constants.TASK_TYPE_DEFAULT : ''
     // this.state.taskName = item?.task_name;
     // this.state.taskTime = item?.task_time;
@@ -729,7 +732,7 @@ export default class SelectTaskScreen extends BaseComponent {
     this.state.taskType = item ? Constants.TASK_TYPE_DEFAULT : '';
     this.state.taskImage = item ? item.image : '';
     this.state.selectedSubCategory = item ? item.ccid : '';
-    this.state.chosenCategory = item;
+    this.state.chosenCategory = item.mcid;
 
     if (!item) {
       // this.state.selectedCategory = '';
@@ -982,6 +985,7 @@ export default class SelectTaskScreen extends BaseComponent {
                   flex: 0.32,
                 }}>
                 <Text
+                numberOfLines={1}
                   style={[
                     styles.dropdownButtonText,
                     styles.textCenter,
@@ -989,6 +993,7 @@ export default class SelectTaskScreen extends BaseComponent {
                       color: this.state.isAllCategoriesSelected
                         ? Colors.black
                         : Colors.white,
+                        // width:'33%'
                     },
                   ]}>
                   All Categories

@@ -268,6 +268,7 @@ export default class ChildClaimedRewardsScreen extends BaseComponent {
                 </View>
               ) : (
                 <FlatList
+                contentContainerStyle={styles.rewardGridContainer}
                   keyboardShouldPersistTaps={'always'}
                   horizontal={false}
                   data={this.state.arrReward}
@@ -275,6 +276,18 @@ export default class ChildClaimedRewardsScreen extends BaseComponent {
                   keyExtractor={(item, index) => index + ''}
                   renderItem={({item, index}) =>
                     this.renderRowFlatlist(item, index)
+                  }
+                  ListEmptyComponent={
+                    <View
+                      style={{
+                        flex: 1,
+                        justifyContent: 'center',
+                        alignItems: 'center',
+                      }}>
+                      <Text style={[styles.h1, styles.textCenter]}>
+                        YOU HAVE NO REWARD/S.
+                      </Text>
+                    </View>
                   }
                 />
               )}

@@ -105,9 +105,9 @@ export default class HomeScreen extends BaseComponent {
       animationRunning: true,
       scrollable: false,
       textHeight: 0,
-      futurearrTask:[],
+      futurearrTask: [],
       futurearrFilteredTasks: [],
-      futuredicPieData:{},
+      futuredicPieData: {},
     };
     this.handleNextTips = this.handleNextTips.bind(this);
   }
@@ -229,7 +229,9 @@ export default class HomeScreen extends BaseComponent {
         let isShowTime = JSON.parse(value);
         if (isShowTime != null) {
           if (isShowTime) {
-            this.start();
+            setTimeout(() => {
+              this.start();
+            }, 1000);
           } else {
             this.homeTips.options.disabled = true;
           }
@@ -283,7 +285,7 @@ export default class HomeScreen extends BaseComponent {
   setWatchData(currentIndex) {
     var pieData = '';
     var stateData = this.state.dicPieData;
-    var futureStateData = this.state.futuredicPieData
+    var futureStateData = this.state.futuredicPieData;
 
     if (!stateData) {
       pieData = [];
@@ -297,8 +299,13 @@ export default class HomeScreen extends BaseComponent {
 
         // Getting current hour from Date object.
         hour = date.getHours();
-        const schoolPieData = hour >= 18 ? futureStateData : stateData
-        console.log('22--222', schoolPieData?.pieDataAMPM,this.state.futuredicPieData,this.state.dicPieData);
+        const schoolPieData = hour >= 18 ? futureStateData : stateData;
+        console.log(
+          '22--222',
+          schoolPieData?.pieDataAMPM,
+          this.state.futuredicPieData,
+          this.state.dicPieData,
+        );
         if (
           schoolPieData?.pieDataAMPM?.length == 1 &&
           schoolPieData.pieDataAMPM[0].isEmpty
@@ -358,8 +365,9 @@ export default class HomeScreen extends BaseComponent {
             let timeDifference = sixPMTime.diff(endTaskTime, 'minutes');
 
             // Update the value property of the last task
-            schoolPieData.pieDataAMPM[schoolPieData?.pieDataAMPM?.length - 1].value =
-              timeDifference;
+            schoolPieData.pieDataAMPM[
+              schoolPieData?.pieDataAMPM?.length - 1
+            ].value = timeDifference;
             // Extract the end time from the taskId
             if (
               !this.state.isLoading &&
@@ -400,7 +408,9 @@ export default class HomeScreen extends BaseComponent {
             '555====5555',
             schoolPieData?.pieDataAMPM.concat(schoolPieData.pieDataAMSchool),
           );
-          pieData = schoolPieData?.pieDataAMPM.concat(schoolPieData.pieDataAMSchool);
+          pieData = schoolPieData?.pieDataAMPM.concat(
+            schoolPieData.pieDataAMSchool,
+          );
         }
 
         //MP
@@ -647,13 +657,23 @@ export default class HomeScreen extends BaseComponent {
   }
 
   setPlanetIcon = () => {
-    this.setState({animationRunning: false}, () => {
-      this.state.isPlanetIconVisible ? '' : this.startCounter();
-      this.state.isPlanetIconVisible = true;
-      this.state.swiperData[this.state.currentIndex] = this.renderSwiperView();
+    console.log('PRESS');
+
+    // Update the state for animationRunning first
+    this.setState({ animationRunning: false }, () => {
+      // After animationRunning is updated, handle the rest of the logic
+      if (!this.state.isPlanetIconVisible) {
+        this.startCounter();
+      }
+
+      this.setState(prevState => ({
+        isPlanetIconVisible: true,
+        swiperData: prevState.swiperData.map((item, index) =>
+          index === this.state.currentIndex ? this.renderSwiperView() : item
+        )
+      }));
     });
-    // this.setState({});
-  };
+};
 
   handlePlanetIcon = () => {
     // alert('helllo');
@@ -1310,8 +1330,8 @@ export default class HomeScreen extends BaseComponent {
         });
       });
 
-      if (hour >= 18) {
-        objSecureAPI
+    if (hour >= 18) {
+      objSecureAPI
         .childTasksList(this.state.objSelectedChild.id, '', aDate, 0, 0)
         .then(response => {
           if (response.ok) {
@@ -1324,14 +1344,19 @@ export default class HomeScreen extends BaseComponent {
               let arr = [];
               if (response.data.data.length > 0) {
                 const tasks = response.data.data[0].tasks;
-  
+
                 Object.keys(tasks).map(item => {
                   arr.push({time: item, tasks: tasks[item]});
                 });
-                this.setState({futurearrTask: arr, futurearrFilteredTasks: arr});
+                this.setState({
+                  futurearrTask: arr,
+                  futurearrFilteredTasks: arr,
+                });
                 const todaysSchoolHours =
-                  this.state.objSelectedChild.school_hours[Helper.getTodaysDay()];
-  
+                  this.state.objSelectedChild.school_hours[
+                    Helper.getTodaysDay()
+                  ];
+
                 const schoolHoursFrom = moment(
                   todaysSchoolHours ? todaysSchoolHours.FROM : '00:00',
                   'hh:mm A',
@@ -1389,7 +1414,7 @@ export default class HomeScreen extends BaseComponent {
             isLoading: false,
           });
         });
-      }
+    }
   };
 
   setupTaskData(
@@ -1646,17 +1671,20 @@ export default class HomeScreen extends BaseComponent {
   }
 
   indexChange = index => {
-    this.setState({isLoading: true,scrollable:false});
-    this._timer ? clearInterval(this._timer) : null;
-    this._timer_task ? clearTimeout(this._timer_task) : null;
-    this.setState({currentIndex: index}, () => {
-      // this,_timer_task = setTimeout(() => {
-      // this.getJokeOfTheDay(index);
-      this.getTaskList(index);
-      // this.state.swiperData[index] = this.renderSwiperView(index);
-      // }, 10000);
+    this.setState({isLoading: true, scrollable: false}, () => {
+      this._timer ? clearInterval(this._timer) : null;
+      this._timer_task ? clearTimeout(this._timer_task) : null;
+      this.setState({currentIndex: index}, () => {
+        // this,_timer_task = setTimeout(() => {
+        // this.getJokeOfTheDay(index);
+        if (!this.state.scrollable) {
+          this.getTaskList(index);
+        }
+        // this.state.swiperData[index] = this.renderSwiperView(index);
+        // }, 10000);
+      });
+      this.state.isPlanetIconVisible = false;
     });
-    this.state.isPlanetIconVisible = false;
   };
 
   //#endregion
@@ -1757,7 +1785,7 @@ export default class HomeScreen extends BaseComponent {
         style={[styles.mainContainer, {}]}
         pointerEvents={this.state.isLoading ? 'none' : 'auto'}>
         <Tips
-          contentStyle={{flex: 1}}
+          contentStyle={styles.contentStyle}
           tooltipContainerStyle={[
             styles.tooltipContainerStyle,
             {
@@ -1783,10 +1811,10 @@ export default class HomeScreen extends BaseComponent {
           tooltipContainerStyle={[
             styles.tooltipContainerStyle,
             {
-              left: 70,
+              left: 60,
               top: Helper.isIPhoneX()
-                ? Metrics.screenHeight / 1.5
-                : Metrics.screenHeight / 1.6,
+                ? Metrics.screenHeight / 1.4
+                : Metrics.screenHeight / 1.5,
             },
           ]}
         />
@@ -1860,11 +1888,10 @@ export default class HomeScreen extends BaseComponent {
             <Swiper
               loop={false}
               showsButtons={false}
-              index={this.state.currentIndex}
+              // index={this.state.currentIndex}
               renderPagination={renderPagination}
               onIndexChanged={index => this.indexChange(index)}
-              loadMinimal={Platform.OS === 'ios' ? false : true}
-              scrollEnabled={this.state.scrollable}>
+              scrollEnabled={this.state.scrollable && !this.state.isLoading}>
               {this.renderSwiperData()}
             </Swiper>
           ) : null}
@@ -2018,7 +2045,9 @@ export default class HomeScreen extends BaseComponent {
                 ? {
                     backgroundColor:
                       this.state.currentTaskSlot[0].tasks[0].is_school_clock ==
-                        this.state.school && !this.state.isLoading && this.state.currentIndex == 0
+                        this.state.school &&
+                      !this.state.isLoading &&
+                      this.state.currentIndex == 0
                         ? this.state.currentTaskSlot[0].tasks[0].color
                         : 'transparent',
                   }
@@ -2034,7 +2063,8 @@ export default class HomeScreen extends BaseComponent {
                       backgroundColor:
                         this.state.currentTaskSlot[0].tasks[0]
                           .is_school_clock == this.state.school &&
-                        !this.state.isLoading && this.state.currentIndex == 0
+                        !this.state.isLoading &&
+                        this.state.currentIndex == 0
                           ? this.state.currentTaskSlot[0].tasks[0].color
                           : 'transparent',
                     }
@@ -2049,7 +2079,8 @@ export default class HomeScreen extends BaseComponent {
               ) : this.state.currentTaskSlot &&
                 this.state.arrFooterTasks.length &&
                 this.state.currentTaskSlot[0].tasks[0].is_school_clock ==
-                  this.state.school && this.state.currentIndex == 0 ? (
+                  this.state.school &&
+                this.state.currentIndex == 0 ? (
                 <Swiper
                   showsButtons={true}
                   key={this.state.currentTaskSlot.length}

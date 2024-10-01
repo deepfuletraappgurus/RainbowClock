@@ -100,7 +100,7 @@ export default class EditSelectTaskScreen extends BaseComponent {
       Constants.TASK_TOKEN_STANDARD,
       Constants.TASK_TOKEN_SPECIAL,
     ];
-    this.getTaskCategories();
+    
     this.getChildDetail();
   }
   //#endregion
@@ -111,10 +111,10 @@ export default class EditSelectTaskScreen extends BaseComponent {
 
       
       const getCurrentCat = this.state.arrAllCategories?.filter(
-        cat => cat.id === scheduleDetails?.mcid,
+        cat => cat.id == scheduleDetails?.mcid,
       );
       const childCat = this.state.arrAllCategoriesImages?.filter(
-        cat => cat.id === scheduleDetails?.ccid,
+        cat => cat.id == scheduleDetails?.ccid,
       );
       console.log('SCHEDULEEEEKKNKN', scheduleDetails);
     this.categorySelected(getCurrentCat[0], false);
@@ -154,6 +154,7 @@ export default class EditSelectTaskScreen extends BaseComponent {
             });
           });
           this.setState({arrSelectedTasksSubCatIds: arr});
+          this.getTaskCategories();
         });
       }
     });
@@ -263,7 +264,6 @@ export default class EditSelectTaskScreen extends BaseComponent {
       if (resJSON.ok && resJSON.status == 200) {
         this.setState({isDeletesubTaskLoading: false});
         if (resJSON.data.success) {
-          console.log('11111111111111111111111');
           this.handleDelete(taskId);
           try {
             Helper.showConfirmationMessagesignleAction(
@@ -271,14 +271,9 @@ export default class EditSelectTaskScreen extends BaseComponent {
               'Ok',
             ).then(action => {
               if (action) {
-                if (this.state.taskType === Constants.TASK_TYPE_DEFAULT) {
-                  this.setState({isLoading: false});
+                this.setState({isLoading: false});
                   this.setTaskModelVisible();
                   this.props.navigation.goBack();
-                } else {
-                  this.setCreateTask();
-                  this.getTaskCategories();
-                }
               }
             });
           } catch (error) {}
@@ -362,7 +357,7 @@ export default class EditSelectTaskScreen extends BaseComponent {
   //#endregion -> API Calls
   getTaskCategories = () => {
     this.setState({isLoading: true});
-    const res = objSecureAPI.getCategories().then(resJSON => {
+    const res = objSecureAPI.getCategories(this.state.objSelectedChild.id).then(resJSON => {
       if (resJSON.ok && resJSON.status == 200) {
         this.setState({isLoading: false});
         if (resJSON.data.success) {
@@ -386,12 +381,12 @@ export default class EditSelectTaskScreen extends BaseComponent {
           );
           this.state.customCategory = this.state.arrAllCategories.filter(
             item => {
-              return item.name === 'Custom';
+              return item.id == '14';
             },
           )[0];
           this.state.arrCustomCategoryIcons = arrAllCategoriesData.filter(
             item => {
-              return item.parent_id == this.state.customCategory.id;
+              return item.parent_id == 14;
             },
           );
           this.setState({});
@@ -408,6 +403,8 @@ export default class EditSelectTaskScreen extends BaseComponent {
         this.setState({isLoading: false});
         Helper.showErrorMessage(Constants.SERVER_ERROR);
       }
+    }).catch(e => {
+      console.log('ERROR',e)
     });
   };
 
@@ -461,7 +458,7 @@ export default class EditSelectTaskScreen extends BaseComponent {
                 Constants.KEY_SELECTED_CHILD,
                 JSON.stringify(resJSON.data.data[0]),
               );
-              this.getChildDetail();
+              // this.getChildDetail();
               Helper.showConfirmationMessagesignleAction(
                 resJSON.data.message,
                 'Ok',
@@ -499,6 +496,7 @@ export default class EditSelectTaskScreen extends BaseComponent {
   }
 
   categorySelected = (category, dropdown = true) => {
+    console.log('CCCCCCC',category)
     this.state.selectedCategory = category;
     this.state.arrSelectedCategoryImages =
       this.state.arrAllCategoriesImages.filter(item => {
