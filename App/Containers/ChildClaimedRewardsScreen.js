@@ -47,6 +47,8 @@ export default class ChildClaimedRewardsScreen extends BaseComponent {
       tokenCounts: {},
       handAnimation: new Animated.Value(0),
       pressedImages: {},
+      standardRewardCount:Constants.standardReward,
+      specialRewardCount:Constants.specialReward
     };
   }
 
@@ -113,17 +115,17 @@ export default class ChildClaimedRewardsScreen extends BaseComponent {
     });
   };
 
-  claimReward(item) {
+  claimReward(item,callback) {
     Helper.showConfirmationMessageActions(
       'Are you sure you want to claim this reward?',
       'No',
       'Yes',
       () => {},
-      () => this.onActionYes(item),
+      () => this.onActionYes(item,callback),
     );
   }
 
-  onActionYes = item => {
+  onActionYes = (item,callback) => {
     mAPi
       .claimReward(
         item.id,
@@ -134,7 +136,12 @@ export default class ChildClaimedRewardsScreen extends BaseComponent {
           if (response.data.success) {
             item.is_claimed = 1;
             this.setState({showTokenBottomView: false});
-            Helper.getChildRewardPoints(this.props.navigation);
+            Helper.getChildRewardPoints(this.props.navigation,() => {
+              this.setRewardCount()
+              if (callback) {
+                callback()
+              }
+            })
           } else {
             Helper.showErrorMessage(response.data.message);
           }
@@ -197,11 +204,11 @@ export default class ChildClaimedRewardsScreen extends BaseComponent {
         // Determine the reward limit based on item type
         const rewardLimit =
           item.type === 'Special'
-            ? Constants.specialReward
-            : Constants.standardReward;
+            ? this.state.specialRewardCount
+            : this.state.standardRewardCount;
   
         // Check if the number of yellow images exceeds the reward limit
-        if (yellowImageCount + 1 > rewardLimit) {
+        if (rewardLimit == 0) {
           // Show the alert or set state to show that there are no enough tokens
           this.setState({ noEnoughTokens: true });
           // Return early without changing the color
@@ -209,10 +216,22 @@ export default class ChildClaimedRewardsScreen extends BaseComponent {
         } else {
           // If under the limit, apply the color change
           updatedPressedImages[imageKey] = newColor;
+          if (item.type === 'Standard') {
+            this.setState({standardRewardCount:this.state.standardRewardCount - 1})
+          }
+          else{
+            this.setState({specialRewardCount:this.state.specialRewardCount - 1})
+          }
         }
       } else {
         // Allow toggling back to gray without any conditions
         updatedPressedImages[imageKey] = newColor;
+        if (item.type === 'Standard') {
+          this.setState({standardRewardCount:this.state.standardRewardCount + 1})
+        }
+        else{
+          this.setState({specialRewardCount:this.state.specialRewardCount + 1})
+        }
       }
   
       // Count the number of yellow images after the state update
@@ -222,7 +241,11 @@ export default class ChildClaimedRewardsScreen extends BaseComponent {
   
       // Check if the number of yellow images equals the total number of tokens for the item
       if (yellowImageCountAfterUpdate == item.no_of_tokens) {
-        this.claimReward(item);
+        this.claimReward(item,() => {
+          Object.keys(updatedPressedImages).forEach((key) => {
+            updatedPressedImages[key] = 'gray'; // Set all images to gray
+          });
+        });
       }
   
       // Return the updated state with new image colors
@@ -230,7 +253,12 @@ export default class ChildClaimedRewardsScreen extends BaseComponent {
     });
   };
   
-  
+  setRewardCount = () => {
+    this.setState({
+      standardRewardCount:Constants.standardReward,
+      specialReward:Constants.specialReward
+    })
+  }
 
   render() {
     return (
@@ -345,7 +373,7 @@ export default class ChildClaimedRewardsScreen extends BaseComponent {
                     style={styles1.tokenIcon}
                   />
                   <Text style={[styles.h1, styles.textCenter]}>
-                    {Constants.standardReward}
+                    {this.state.standardRewardCount}
                   </Text>
                 </TouchableOpacity>
                 <TouchableOpacity
@@ -361,7 +389,7 @@ export default class ChildClaimedRewardsScreen extends BaseComponent {
                   }}>
                   <Image source={Images.reward} style={styles1.tokenIcon} />
                   <Text style={[styles.h1, styles.textCenter]}>
-                    {Constants.specialReward}
+                    {this.state.specialRewardCount}
                   </Text>
                 </TouchableOpacity>
               </View>

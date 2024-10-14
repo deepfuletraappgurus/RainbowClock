@@ -214,6 +214,7 @@ export default class SetupTimeBlockScreen extends BaseComponent {
           is_school_clock: this.state.is_school_clock,
           from_listing: 0,
           is_new: 1,
+          isEdit:false
         };
 
         const res = objSecureAPI
@@ -1122,7 +1123,7 @@ export default class SetupTimeBlockScreen extends BaseComponent {
                         />
                       </View>
 
-                      {/* <View
+                      <View
                         style={{
                           flex:1
                           // justifyContent: 'center',
@@ -1136,7 +1137,7 @@ export default class SetupTimeBlockScreen extends BaseComponent {
                           // style={{flex:1,width:'100%'}}
                           contentContainerStyle={{width:'100%',justifyContent:'space-between',marginTop:12 }}
                         />
-                      </View> */}
+                      </View>
 
                       <View
                         style={{

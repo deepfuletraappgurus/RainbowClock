@@ -416,7 +416,7 @@ export function isIPhoneX() {
   return false;
 }
 
-export async function getChildRewardPoints(navigation) {
+export async function getChildRewardPoints(navigation,callback) {
   var specialReward = 0,
     standardReward = 0;
 
@@ -436,6 +436,9 @@ export async function getChildRewardPoints(navigation) {
             Constants.specialReward = response.data.data.special;
             navigation ? Helper.setNavigationRewardCoins(navigation) : null;
             EventEmitter.emit(Constants.EVENT_REWARD_COIN_UPDATE);
+            if (callback) {
+              callback();
+            }
           }
         }
       })
@@ -1676,4 +1679,29 @@ export const checkEmptyValue = (value) => {
   } else {
     return false;
   }
+};
+
+
+export const checkStoredDateTime = async () => {
+  const storedDateTime = await AsyncStorage.getItem(Constants.PRESS_DAY_TIME);
+  console.log('STORE DAT AND TIME',storedDateTime)
+  if (!storedDateTime) {
+    // If no time is stored, return false
+    return true;
+  }
+
+  const currentTime = new Date().getTime(); // Get current time in milliseconds
+  const storedTime = new Date(storedDateTime).getTime(); // Convert stored ISO string to time in milliseconds
+
+  // Calculate the difference between current time and stored time
+  const timeDifference = currentTime - storedTime;
+
+  // If the difference is less than 24 hours (86400000 milliseconds), return false
+  const twentyFourHoursInMs = 24 * 60 * 60 * 1000;
+  if (timeDifference < twentyFourHoursInMs) {
+    return false;
+  }
+
+  // If the stored time is more than 24 hours ago, return true
+  return true;
 };

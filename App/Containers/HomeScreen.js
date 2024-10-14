@@ -102,7 +102,7 @@ export default class HomeScreen extends BaseComponent {
       showRecoverModel: false,
       refresh: false,
       piedataSchool: [],
-      animationRunning: true,
+      animationRunning: null,
       scrollable: false,
       textHeight: 0,
       futurearrTask: [],
@@ -111,6 +111,8 @@ export default class HomeScreen extends BaseComponent {
     };
     this.handleNextTips = this.handleNextTips.bind(this);
   }
+
+  
 
   //show next tips
   handleNextTips() {
@@ -156,6 +158,7 @@ export default class HomeScreen extends BaseComponent {
   //#region -> Component Methods
   componentDidMount() {
     super.componentDidMount();
+    this.checkStoredDateTime()
     var date, TimeType, hour;
 
     // Creating Date() function object.
@@ -238,6 +241,11 @@ export default class HomeScreen extends BaseComponent {
         }
       }
     });
+  }
+
+  async checkStoredDateTime() {
+    const isTimeValid = await Helper.checkStoredDateTime();
+    this.setState({ animationRunning:isTimeValid }); // Store the value in state
   }
 
   componentWillUnmount() {
@@ -391,7 +399,7 @@ export default class HomeScreen extends BaseComponent {
                 schoolPieData.pieDataAMSchool[0].value = Math.abs(
                   isNaN(differenceInMinutes)
                     ? 360
-                    : differenceInMinutes -
+                    : differenceInMinutes <= 0 ? 0 : differenceInMinutes -
                         schoolPieData?.pieDataAMSchool[1]?.taskId
                           .split(' ')[0]
                           .split(':')[1],
@@ -525,6 +533,7 @@ export default class HomeScreen extends BaseComponent {
         var date, TimeType, hour;
         date = new Date();
         hour = date.getHours();
+        
         if (hour >= 18 && stateData.pieDataPMAM[0].value !== 720) {
           console.log(
             '!!!!---!!!!!====!!!!!',
@@ -657,10 +666,11 @@ export default class HomeScreen extends BaseComponent {
   }
 
   setPlanetIcon = () => {
-    console.log('PRESS');
 
     // Update the state for animationRunning first
-    this.setState({ animationRunning: false }, () => {
+    this.setState({animationRunning: false}, async () => {
+      const currentDateTime = new Date().toISOString(); // Get current date and time in ISO format
+      await AsyncStorage.setItem(Constants.PRESS_DAY_TIME, currentDateTime);
       // After animationRunning is updated, handle the rest of the logic
       if (!this.state.isPlanetIconVisible) {
         this.startCounter();
@@ -669,11 +679,11 @@ export default class HomeScreen extends BaseComponent {
       this.setState(prevState => ({
         isPlanetIconVisible: true,
         swiperData: prevState.swiperData.map((item, index) =>
-          index === this.state.currentIndex ? this.renderSwiperView() : item
-        )
+          index === this.state.currentIndex ? this.renderSwiperView() : item,
+        ),
       }));
     });
-};
+  };
 
   handlePlanetIcon = () => {
     // alert('helllo');
@@ -877,6 +887,9 @@ export default class HomeScreen extends BaseComponent {
           <TouchableOpacity
             onPress={() => this.setPlanetIcon()}
             style={{zIndex: 1000}}>
+            {
+              console.log('ǚ',this.state.animationRunning)
+            }
             {/* <Text > */}
             <Animatable.Text
               ref={this.handleViewRef} //MP
@@ -1472,7 +1485,7 @@ export default class HomeScreen extends BaseComponent {
           pieDataAM_School = Helper.generateClockTaskArraySchool(
             arrAM,
             'am',
-            todaysSchoolHours.FROM,
+            todaysSchoolHours.FROM,      
             '11:59 AM',
             '',
             true,
@@ -1950,87 +1963,86 @@ export default class HomeScreen extends BaseComponent {
             </View>
             <View style={styles.clockBottomRight}>
               <TouchableOpacity activeOpacity={0.7}>
-                {!this.state.school ? (
-                  this.state.isPlanetIconVisible ? (
-                    <View style={styles.shapeContainer}>
-                      <View style={styles.shapeView}>
-                        <Image
-                          source={Images.shapeRight}
-                          style={styles.shapeRight}
-                        />
-                        <View
-                          style={[
-                            styles.shapeJoke,
-                            {
-                              maxHeight: Math.max(
-                                this.state.textHeight,
-                                Metrics.screenWidth / 5,
-                              ),
-                              backgroundColor: Colors.blue,
-                            },
-                          ]}>
-                          <Text
-                            style={styles.shapeText}
-                            onLayout={this.handleTextLayout}>
-                            {
-                              Helper.getPlanetImageForTheDay(
-                                this.state.arrWeekDays,
-                                this.state.currentIndex,
-                              ).message
-                            }
-                          </Text>
-                        </View>
-                      </View>
-                      <TouchableOpacity
-                        onPress={() => this.handlePlanetIcon()}
-                        style={{zIndex: 100000}}>
-                        <Image
-                          source={
+                {this.state.isPlanetIconVisible &&
+                    this.state.currentIndex == 0 ? (
+                  <View style={styles.shapeContainer}>
+                    <View style={styles.shapeView}>
+                      <Image
+                        source={Images.shapeRight}
+                        style={styles.shapeRight}
+                      />
+                      <View
+                        style={[
+                          styles.shapeJoke,
+                          {
+                            maxHeight: Math.max(
+                              this.state.textHeight,
+                              Metrics.screenWidth / 5,
+                            ),
+                            backgroundColor: Colors.blue,
+                          },
+                        ]}>
+                        <Text
+                          style={styles.shapeText}
+                          onLayout={this.handleTextLayout}>
+                          {
                             Helper.getPlanetImageForTheDay(
                               this.state.arrWeekDays,
                               this.state.currentIndex,
-                            ).image
+                            ).message
                           }
-                          style={styles.alarmClock}
-                        />
-                      </TouchableOpacity>
+                        </Text>
+                      </View>
                     </View>
-                  ) : (
-                    <View style={styles.shapeContainer}>
-                      {this.state.tickCount !== 3 &&
-                      this.state.currentIndex == 0 ? (
-                        <View style={[styles.shapeView]}>
-                          <Image
-                            source={Images.shapeRight}
-                            style={[
-                              styles.shapeRight,
-                              {tintColor: Colors.darkPink},
-                            ]}
-                          />
-                          {console.log('RENDER JOKE', this.state.jokeData)}
-                          {this.state.tickCount == 2 ? null : (
-                            <View style={[styles.shapeJoke]}>
-                              <Text style={styles.shapeText} numberOfLines={3}>
-                                {this.state.tickCount == 1
-                                  ? this.state.jokeData.answer
-                                  : this.state.jokeData.question}
-                              </Text>
-                            </View>
-                          )}
-                        </View>
-                      ) : null}
-
-                      <TouchableOpacity
-                        hitSlop={{left: 10, right: 10, top: 10, bottom: 10}}
-                        onPress={() => this.seeAnswerOfJoke()}
-                        style={{zIndex: 1000000}}>
+                    <TouchableOpacity
+                      onPress={() => this.handlePlanetIcon()}
+                      style={{zIndex: 100000}}>
+                      <Image
+                        source={
+                          Helper.getPlanetImageForTheDay(
+                            this.state.arrWeekDays,
+                            this.state.currentIndex,
+                          ).image
+                        }
+                        style={styles.alarmClock}
+                      />
+                    </TouchableOpacity>
+                  </View>
+                ) : !this.state.school ? (
+                  <View style={styles.shapeContainer}>
+                    {this.state.tickCount !== 3 &&
+                    this.state.currentIndex == 0 ? (
+                      <View style={[styles.shapeView]}>
                         <Image
-                          source={Images.alarmClock}
-                          style={styles.alarmClock}
+                          source={Images.shapeRight}
+                          style={[
+                            styles.shapeRight,
+                            {tintColor: Colors.darkPink},
+                          ]}
                         />
-                      </TouchableOpacity>
-                    </View>
-                  )
+                        {console.log('RENDER JOKE', this.state.jokeData)}
+                        {this.state.tickCount == 2 ? null : (
+                          <View style={[styles.shapeJoke]}>
+                            <Text style={styles.shapeText} numberOfLines={3}>
+                              {this.state.tickCount == 1
+                                ? this.state.jokeData.answer
+                                : this.state.jokeData.question}
+                            </Text>
+                          </View>
+                        )}
+                      </View>
+                    ) : null}
+
+                    <TouchableOpacity
+                      hitSlop={{left: 10, right: 10, top: 10, bottom: 10}}
+                      onPress={() => this.seeAnswerOfJoke()}
+                      style={{zIndex: 1000000}}>
+                      <Image
+                        source={Images.alarmClock}
+                        style={styles.alarmClock}
+                      />
+                    </TouchableOpacity>
+                  </View>
                 ) : (
                   <Image source={Images.schoolBus} style={styles.schoolBus} />
                 )}

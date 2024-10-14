@@ -99,6 +99,9 @@ export default class ParentHomeScreen extends BaseComponent {
       editingText: '',
       showFullCalender: false,
       pieDataPMAM: [],
+      futurearrTask: [],
+      futurearrFilteredTasks: [],
+      futuredicPieData: {},
     };
 
     this.handleNextTips = this.handleNextTips.bind(this);
@@ -250,6 +253,7 @@ export default class ParentHomeScreen extends BaseComponent {
 
   setWatchData() {
     pieData = '';
+    var futureStateData = this.state.futuredicPieData;
     if (this.state.is_24HrsClock) {
       pieData = this.state.school
         ? this.state.pieData24Hour_School
@@ -258,115 +262,113 @@ export default class ParentHomeScreen extends BaseComponent {
       var date, TimeType, hour;
       date = new Date();
       hour = date.getHours();
-
+      let schoolPieDataAMPM = hour >= 18 ? futureStateData.pieDataAMPM : this.state.pieDataAMPM;
+      let schoolPieDataAMSchool = hour >= 18 ? futureStateData.pieDataAMSchool : this.state.pieDataAMSchool;
       if (
-        this.state.pieDataAMPM.length == 1 &&
-        this.state.pieDataAMPM[0].isEmpty
+        schoolPieDataAMPM?.length == 1 &&
+        schoolPieDataAMPM[0].isEmpty
       ) {
-        pieData = this.state?.pieDataAMSchool;
+        pieData = schoolPieDataAMSchool;
       } else {
-        if (hour >= 6) {
-          function filterTasks(tasks) {
-            let endIndex = -1;
-            for (let i = 0; i < tasks.length; i++) {
-              const task = tasks[i];
-              if (!task.taskId) continue;
-              const startTime = moment(task.taskId.split(' - ')[0], 'hh:mm A');
-              const endTime = moment(task.taskId.split(' - ')[1], 'hh:mm A');
-              const sixPM = moment('06:00 PM', 'hh:mm A');
-              if (startTime.isAfter(sixPM)) {
-                endIndex = i;
-                break;
-              }
-              if (endTime.isAfter(sixPM)) {
-                task.value = sixPM.diff(startTime, 'minutes');
-              }
+        function filterTasks(tasks) {
+          let endIndex = -1;
+          for (let i = 0; i < tasks?.length; i++) {
+            const task = tasks[i];
+            if (!task.taskId) continue;
+            const startTime = moment(task.taskId.split(' - ')[0], 'hh:mm A');
+            const endTime = moment(task.taskId.split(' - ')[1], 'hh:mm A');
+            const sixPM = moment('06:00 PM', 'hh:mm A');
+            if (startTime.isAfter(sixPM)) {
+              endIndex = i;
+              break;
             }
-            if (endIndex !== -1) {
-              return tasks.slice(0, endIndex);
-            } else {
-              return tasks;
+            if (endTime.isAfter(sixPM)) {
+              task.value = sixPM.diff(startTime, 'minutes');
             }
           }
+          if (endIndex !== -1) {
+            return tasks.slice(0, endIndex);
+          } else {
+            return tasks;
+          }
+        }
 
-          // Filter tasks
-          const filteredTasks = filterTasks(this.state.pieDataAMPM);
+        // Filter tasks
+        const filteredTasks = filterTasks(schoolPieDataAMPM);
+        console.log('!!!!---!!!!!', filteredTasks);
+        if (
+          (typeof filteredTasks !== 'undefined' ||
+            filteredTasks !== undefined) &&
+          !this.state.isLoading &&
+          filteredTasks.length !== 1
+        ) {
+          schoolPieDataAMPM = filteredTasks;
+          let secondLastTaskEndTime =
+            schoolPieDataAMPM[
+              schoolPieDataAMPM?.length - 2
+            ]?.taskId?.split(' - ')[1];
+          console.log('1---1', schoolPieDataAMPM);
+          let endTimeMeridiem =
+            schoolPieDataAMPM[schoolPieDataAMPM?.length - 2]
+              .endTimeMeridiem;
 
+          // Create moment objects for end time and 6:00 PM
+          let endTaskTime = moment(
+            secondLastTaskEndTime + ' ' + endTimeMeridiem,
+            'hh:mm A',
+          );
+          let sixPMTime = moment('06:00 PM', 'hh:mm A');
+
+          // Calculate the difference between end time and 6:00 PM
+          let timeDifference = sixPMTime.diff(endTaskTime, 'minutes');
+
+          // Update the value property of the last task
+          schoolPieDataAMPM[
+            schoolPieDataAMPM?.length - 1
+          ].value = timeDifference;
+          // Extract the end time from the taskId
           if (
-            (typeof filteredTasks !== 'undefined' ||
-              filteredTasks !== undefined) &&
-            !this.state.isLoading
+            !this.state.isLoading &&
+            schoolPieDataAMSchool !== undefined
           ) {
-            console.log('------FILTERRRRRR', filteredTasks);
-            this.state.pieDataAMPM = filteredTasks;
-            let secondLastTaskEndTime =
-              this.state.pieDataAMPM[
-                this.state.pieDataAMPM.length - 2
-              ]?.taskId.split(' - ')[1];
-            if (
-              typeof secondLastTaskEndTime !== 'undefined' ||
-              secondLastTaskEndTime !== undefined
-            ) {
-              let endTimeMeridiem =
-                this.state.pieDataAMPM[this.state.pieDataAMPM.length - 2]
-                  .endTimeMeridiem;
-
-              // Create moment objects for end time and 6:00 PM
-              let endTaskTime = moment(
-                secondLastTaskEndTime + ' ' + endTimeMeridiem,
-                'hh:mm A',
-              );
-              let sixPMTime = moment('06:00 PM', 'hh:mm A');
-
-              // Calculate the difference between end time and 6:00 PM
-              let timeDifference = sixPMTime.diff(endTaskTime, 'minutes');
-
-              // Update the value property of the last task
-              this.state.pieDataAMPM[this.state.pieDataAMPM.length - 1].value =
-                timeDifference;
-            }
-            // Extract the end time from the taskId
-
             const startTime = parseInt(
-              this.state.pieDataAMSchool[1]?.taskId.split(' ')[0].split(':')[0],
+              schoolPieDataAMSchool[1]?.taskId
+                .split(' ')[0]
+                .split(':')[0],
             );
-
+            console.log('--44---', schoolPieDataAMSchool, startTime);
             // Check if the start time is greater than or equal to 6:00 AM
             if (startTime <= 6) {
               // Update the value property of the first element to 0
-              this.state.pieDataAMSchool[0].value = 0;
+              schoolPieDataAMSchool[0].value = 0;
             } else {
               // Calculate the difference between 6:00 AM and the start time of the second element in minutes
               const differenceInMinutes = (6 - startTime) * 60;
+              console.log('===11===', differenceInMinutes);
               // Update the value property of the first element with the calculated difference
-              this.state.pieDataAMSchool[0].value = Math.abs(
+              schoolPieDataAMSchool[0].value = Math.abs(
                 isNaN(differenceInMinutes)
                   ? 360
-                  : differenceInMinutes -
-                      this.state.pieDataAMSchool[1]?.taskId
+                  : differenceInMinutes <= 0 ? 0 : differenceInMinutes -
+                      schoolPieDataAMSchool[1]?.taskId
                         .split(' ')[0]
                         .split(':')[1],
               );
             }
-            pieData = this.state?.pieDataAMPM.concat(
-              this.state.pieDataAMSchool,
-            );
-          } else {
-            console.log('*********');
-            this.setState({
-              pieDataAMPM: [{isEmpty: true, taskId: 'Blannk2', value: 0}],
-            });
-            pieData = [{isEmpty: true, taskId: 'Blannk2', value: 0}].concat(
-              this.state.pieDataAMSchool,
-            );
           }
-          // console.log(
-          //   '==========',
-          //   this.state?.pieDataAMPM.concat(this.state.pieDataAMSchool),
-          // );
         } else {
-          pieData = this.state?.pieDataAMSchool;
+          schoolPieDataAMPM = [
+            {isEmpty: true, taskId: 'Blannk2', value: 0},
+          ];
+          console.log('ERROR');
         }
+        console.log(
+          '555====5555',
+          schoolPieDataAMPM.concat(schoolPieDataAMSchool),
+        );
+        pieData = schoolPieDataAMPM.concat(
+          schoolPieDataAMSchool,
+        );
       }
     } else if (this.state.meridiam == 'am') {
       var date, TimeType, hour;
@@ -590,12 +592,12 @@ export default class ParentHomeScreen extends BaseComponent {
   }
 
   onCloseTaskPress = () => {
-    const { editingIndex, scheduleType } = this.state;
-  
+    const {editingIndex, scheduleType} = this.state;
+
     if (editingIndex !== null) {
       // Remove the task at the editingIndex
       const newData = scheduleType.filter((_, index) => index !== editingIndex);
-  
+
       // Update the state
       this.setState({
         scheduleType: newData,
@@ -604,7 +606,7 @@ export default class ParentHomeScreen extends BaseComponent {
         showCustomTextInput: false,
       });
     }
-    this.setState({showCustomTextInput:false})
+    this.setState({showCustomTextInput: false});
   };
 
   onCloseEditingTaskPress() {
@@ -976,6 +978,91 @@ export default class ParentHomeScreen extends BaseComponent {
       .catch(error => {
         this.setState({isLoading: false});
       });
+
+    if (hour >= 18) {
+      objSecureAPI
+        .childTasksList(this.state.objSelectedChild.id, '', aDate, 0, 0)
+        .then(response => {
+          if (response.ok) {
+            this.setState({isLoading: false});
+            if (response.data.success) {
+              console.log(
+                'CLOCK RESPONSE-----6666-',
+                JSON.stringify(response.data.data),
+              );
+              let arr = [];
+              if (response.data.data.length > 0) {
+                const tasks = response.data.data[0].tasks;
+
+                Object.keys(tasks).map(item => {
+                  arr.push({time: item, tasks: tasks[item]});
+                });
+                this.setState({
+                  futurearrTask: arr,
+                  futurearrFilteredTasks: arr,
+                });
+                const todaysSchoolHours =
+                  this.state.objSelectedChild.school_hours[
+                    Helper.getTodaysDay()
+                  ];
+
+                const schoolHoursFrom = moment(
+                  todaysSchoolHours ? todaysSchoolHours.FROM : '00:00',
+                  'hh:mm A',
+                );
+                const schoolHoursTo = moment(
+                  todaysSchoolHours ? todaysSchoolHours.TO : '00:00',
+                  'hh:mm A',
+                );
+                const schoolHoursFromMeradian = schoolHoursFrom.format('A');
+                const schoolHoursToMeradian = schoolHoursTo.format('A');
+                Helper.setupTasksBasedOnMeridiem(
+                  this.state.futurearrTask,
+                  schoolHoursFrom,
+                  schoolHoursTo,
+                  (
+                    arrAM,
+                    arrPM,
+                    runningTimeSlot,
+                    arrAM_School,
+                    arrPM_School,
+                    is_school_clock,
+                  ) =>
+                    setTimeout(() => {
+                      this.futuresetupTaskData(
+                        arrAM,
+                        arrPM,
+                        runningTimeSlot,
+                        arrAM_School,
+                        arrPM_School,
+                        todaysSchoolHours,
+                        schoolHoursFromMeradian,
+                        schoolHoursToMeradian,
+                        is_school_clock,
+                      );
+                    }, 200),
+                );
+                this.setState({scrollable: true});
+              }
+            } else {
+              this.setState({scrollable: true});
+              Helper.showErrorMessage(response.data.message);
+            }
+          } else {
+            this.setState({scrollable: true});
+            this.setState({
+              isLoading: false,
+            });
+            Helper.showErrorMessage(response.problem);
+          }
+        })
+        .catch(error => {
+          this.setState({scrollable: true});
+          this.setState({
+            isLoading: false,
+          });
+        });
+    }
   };
 
   setupTaskData(
@@ -989,6 +1076,9 @@ export default class ParentHomeScreen extends BaseComponent {
     schoolHoursToMeradian,
     is_school_clock,
   ) {
+    var date, TimeType, hour;
+    date = new Date();
+    hour = date.getHours();
     {
       this.state.isLoading = false;
       const pieDataAM = Helper.generateClockTaskArray(
@@ -1000,7 +1090,7 @@ export default class ParentHomeScreen extends BaseComponent {
       const pieDataPM = Helper.generateClockTaskArray(
         arrPM,
         'pm',
-        undefined,
+        hour >= 18 ? 2 : undefined,
         false,
       );
       const pieDataAMPM = Helper.generateClockTaskArray(arrPM, 'pm', 3, false);
@@ -1084,6 +1174,111 @@ export default class ParentHomeScreen extends BaseComponent {
         },
         () => this.setWatchData(),
       );
+    }
+  }
+
+  futuresetupTaskData(
+    arrAM,
+    arrPM,
+    runningTimeSlot,
+    arrAM_School,
+    arrPM_School,
+    todaysSchoolHours,
+    schoolHoursFromMeradian,
+    schoolHoursToMeradian,
+    currentIndex,
+    is_school_clock,
+  ) {
+    var date, TimeType, hour;
+    date = new Date();
+    hour = date.getHours();
+    {
+      const pieDataAM = Helper.generateClockTaskArray(
+        arrAM,
+        'am',
+        undefined,
+        false,
+      );
+      const pieDataPM = Helper.generateClockTaskArray(
+        arrPM,
+        'pm',
+        hour >= 18 ? 2 : undefined,
+        false,
+      );
+      const pieDataAMPM = Helper.generateClockTaskArray(arrPM, 'pm', 3, false);
+      const pieDataPMAM = Helper.generateClockTaskArray(arrAM, 'am', 1, false);
+
+      console.log('__________111-------', pieDataPMAM, pieDataAM, pieDataPM);
+      const pieDataAMSchool = Helper.generateClockTaskArray(
+        arrAM,
+        'am',
+        2,
+        false,
+      );
+      // const pieDataAM_School = Helper.generateClockTaskArray(arrAM_School,"am",true);
+      // const pieDataPM_School = Helper.generateClockTaskArray(arrPM_School,"pm",true);
+      var pieDataAM_School = [];
+      var pieDataPM_School = [];
+      if (todaysSchoolHours) {
+        // todaysSchoolHours ={
+        //   FROM:"00:00",
+        //   TO:"00:00"
+        // }
+        // schoolHoursFromMeradian = "am"
+        // schoolHoursToMeradian =  "am"
+
+        if (schoolHoursFromMeradian != schoolHoursToMeradian) {
+          //here change arrAM_School to arrAM
+          pieDataAM_School = Helper.generateClockTaskArraySchool(
+            arrAM,
+            'am',
+            todaysSchoolHours.FROM,
+            '11:59 AM',
+            '',
+            true,
+          );
+          pieDataPM_School = Helper.generateClockTaskArraySchool(
+            arrPM_School,
+            'pm',
+            '12:00 PM',
+            todaysSchoolHours.TO,
+            '',
+            true,
+          );
+        } else {
+          pieDataAM_School = Helper.generateClockTaskArraySchool(
+            arrAM_School,
+            'am',
+            todaysSchoolHours.FROM,
+            todaysSchoolHours.TO,
+            schoolHoursFromMeradian,
+          );
+          pieDataPM_School = Helper.generateClockTaskArraySchool(
+            arrPM_School,
+            'pm',
+            todaysSchoolHours.FROM,
+            todaysSchoolHours.TO,
+            schoolHoursFromMeradian,
+          );
+        }
+      }
+      this.state.currentTaskSlot = runningTimeSlot;
+      pieData24Hour = [...pieDataAM, ...pieDataAMPM];
+      pieData24Hour_School = [...pieDataAM_School, ...pieDataPM_School];
+      meridian = Helper.getCurrentTimeMeridian();
+
+      this.state.futuredicPieData = {
+        meridian,
+        pieDataPM,
+        pieDataAM,
+        pieData24Hour,
+        pieDataAM_School,
+        pieDataPM_School,
+        pieData24Hour_School,
+        pieDataAMPM,
+        pieDataAMSchool,
+        pieDataPMAM,
+      };
     }
   }
 
@@ -1447,7 +1642,8 @@ export default class ParentHomeScreen extends BaseComponent {
                       ? this.state.currentTaskSlot[0].tasks[0].color // Always show background color
                       : this.state.currentTaskSlot[0].tasks[0]
                           .is_school_clock == this.state.school &&
-                        !this.state.isLoading && moment(this.state.selectedDay).isSame(moment(),'day')
+                        !this.state.isLoading &&
+                        moment(this.state.selectedDay).isSame(moment(), 'day')
                       ? this.state.currentTaskSlot[0].tasks[0].color // Show if both conditions are met
                       : null,
                   }
@@ -1464,43 +1660,43 @@ export default class ParentHomeScreen extends BaseComponent {
                         ? this.state.currentTaskSlot[0].tasks[0].color // Always show background color
                         : this.state.currentTaskSlot[0].tasks[0]
                             .is_school_clock == this.state.school &&
-                          !this.state.isLoading && moment(this.state.selectedDay).isSame(moment(),'day')
+                          !this.state.isLoading &&
+                          moment(this.state.selectedDay).isSame(moment(), 'day')
                         ? this.state.currentTaskSlot[0].tasks[0].color // Show if both conditions are met
                         : null,
                     }
                   : null,
               ]}>
-              {(
-                this.state.isLoading ? (
-                  <View>
-                    <Text style={styles.smallWaitText}>
-                      {Constants.TEXT_FATCHING_TASKS}
-                    </Text>
-                  </View>
-                ) : this.state.currentTaskSlot &&
-                  this.state.arrFooterTasks.length > 0 &&
-                  this.state.currentTaskSlot[0].tasks[0].is_school_clock ==
-                    this.state.school && moment(this.state.selectedDay).isSame(moment(),'day') ? (
-                  <Swiper
-                    showsButtons={true}
-                    key={this.state.currentTaskSlot.length}
-                    nextButton={
-                      <Image source={Images.next} style={styles.footerArrow} />
-                    }
-                    prevButton={
-                      <Image source={Images.prev} style={styles.footerArrow} />
-                    }
-                    renderPagination={renderPagination}
-                    loop={false}>
-                    {this.renderFooterView(this.state.currentTaskSlot)}
-                  </Swiper>
-                ) : (
-                  <View>
-                    <Text style={styles.smallWaitText}>
-                      {Constants.TEXT_NO_TASKS}
-                    </Text>
-                  </View>
-                )
+              {this.state.isLoading ? (
+                <View>
+                  <Text style={styles.smallWaitText}>
+                    {Constants.TEXT_FATCHING_TASKS}
+                  </Text>
+                </View>
+              ) : this.state.currentTaskSlot &&
+                this.state.arrFooterTasks.length > 0 &&
+                this.state.currentTaskSlot[0].tasks[0].is_school_clock ==
+                  this.state.school &&
+                moment(this.state.selectedDay).isSame(moment(), 'day') ? (
+                <Swiper
+                  showsButtons={true}
+                  key={this.state.currentTaskSlot.length}
+                  nextButton={
+                    <Image source={Images.next} style={styles.footerArrow} />
+                  }
+                  prevButton={
+                    <Image source={Images.prev} style={styles.footerArrow} />
+                  }
+                  renderPagination={renderPagination}
+                  loop={false}>
+                  {this.renderFooterView(this.state.currentTaskSlot)}
+                </Swiper>
+              ) : (
+                <View>
+                  <Text style={styles.smallWaitText}>
+                    {Constants.TEXT_NO_TASKS}
+                  </Text>
+                </View>
               )}
             </View>
           </SafeAreaView>

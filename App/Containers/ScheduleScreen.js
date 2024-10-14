@@ -510,6 +510,8 @@ export default class ScheduleScreen extends BaseComponent {
       task_id: item?.id,
       from_listing: 1,
       is_new: item?.is_new,
+      userDate: this.state.selectedDay,
+      isEdit:true
     };
     this.props.navigation.navigate('SelectTaskScreen', {
       dictCreateTask: dictCreateTask,

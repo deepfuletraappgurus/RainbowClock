@@ -331,6 +331,8 @@ const createSecure = (baseURL = base_url) => {
     task_id,
     from_listing,
     is_new,
+    userDate,
+    isEdit
   ) => {
     const data = new FormData();
     //Parms
@@ -354,6 +356,8 @@ const createSecure = (baseURL = base_url) => {
     data.append('task_id', task_id);
     data.append('from_listing', from_listing);
     data.append('is_new', is_new);
+    data.append('userDate',userDate);
+    data.append('isEdit',isEdit)
     if (frequency) {
       data.append('frequency', frequency);
     }

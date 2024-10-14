@@ -96,6 +96,7 @@ export default class RewardScreen extends BaseComponent {
       item.clearLoading = false;
       this.setState({});
       if (response.ok) {
+        Helper.getChildRewardPoints(this.props.navigation)
         if (response.data.success) {
           item.is_claimed = 0;
           this.setState({});

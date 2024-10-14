@@ -16,6 +16,7 @@ const Constants = {
     TASK_TOKEN_STANDARD: 'Standard',
     TASK_STATUS_START: 'Start',
     TASK_STATUS_COMPLETED: 'Completed',
+    PRESS_DAY_TIME:'pressDayTime',
 
 
     CHILD_HOME_TIPS: [

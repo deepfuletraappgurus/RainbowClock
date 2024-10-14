@@ -10,7 +10,7 @@
     "android": "react-native run-android",
     "ios": "react-native run-ios",
     "web": "expo start --web",
-    "clean": "cd android && gradlew clean",
+    "clean": "cd android && ./gradlew clean",
     "apk": "cd android && ./gradlew assembleDebug",
     "apk-release": "cd android && ./gradlew assembleRelease",
     "assets-ios": "react-native bundle --minify --entry-file index.js --platform ios --dev false --bundle-output ./ios/main.jsbundle --assets-dest ./ios",

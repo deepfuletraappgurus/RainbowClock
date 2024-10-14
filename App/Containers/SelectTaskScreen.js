@@ -34,6 +34,7 @@ import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import styles from './Styles/SelectTaskScreenStyles';
 import images from '../Themes/Images';
 import colors from '../Themes/Colors';
+import moment from 'moment';
 
 // Global Variables
 const objSecureAPI = Api.createSecure();
@@ -97,6 +98,7 @@ export default class SelectTaskScreen extends BaseComponent {
       savedTaskList: [],
       createdTaskCount: 0,
       chosenCategory: {},
+      isEdit: this.props.navigation.state.params.dictCreateTask.isEdit ?? false,
     };
   }
 
@@ -244,7 +246,7 @@ export default class SelectTaskScreen extends BaseComponent {
   //#endregion -> API Calls
   getTaskCategories = () => {
     this.setState({isLoading: true});
-    console.log('this.state.objSelectedChild',this.state.objSelectedChild)
+    console.log('this.state.objSelectedChild', this.state.objSelectedChild);
     const res = objSecureAPI
       .getCategories(this.state.objSelectedChild.id)
       .then(resJSON => {
@@ -344,6 +346,10 @@ export default class SelectTaskScreen extends BaseComponent {
     var task_id = this.state.dictCreateTask['task_id'];
     var from_listing = this.state.dictCreateTask['from_listing'];
     var is_new = this.state.dictCreateTask['is_new'];
+    var userDate = moment(this.state.dictCreateTask['userDate']).format(
+      'YYYY-MM-DD',
+    );
+    var isEdit = this.state.dictCreateTask['isEdit']
 
     const res = objSecureAPI
       .addTask(
@@ -369,6 +375,8 @@ export default class SelectTaskScreen extends BaseComponent {
         task_id,
         from_listing,
         is_new,
+        userDate,
+        isEdit
       )
       .then(resJSON => {
         if (resJSON.ok && resJSON.status == 200) {
@@ -684,7 +692,7 @@ export default class SelectTaskScreen extends BaseComponent {
   };
 
   setTaskModelVisible(item) {
-    console.log('CATEGORY ITEM',item)
+    console.log('CATEGORY ITEM', item);
     // if (
     //   this.state.selectedCategory == '' &&
     //   item &&
@@ -717,7 +725,7 @@ export default class SelectTaskScreen extends BaseComponent {
   }
 
   setSavedTaskModelVisible(item) {
-    console.log('SAVED ITEM',item)
+    console.log('SAVED ITEM', item);
     // this.state.taskType = item ? Constants.TASK_TYPE_DEFAULT : ''
     // this.state.taskName = item?.task_name;
     // this.state.taskTime = item?.task_time;
@@ -985,7 +993,7 @@ export default class SelectTaskScreen extends BaseComponent {
                   flex: 0.32,
                 }}>
                 <Text
-                numberOfLines={1}
+                  numberOfLines={1}
                   style={[
                     styles.dropdownButtonText,
                     styles.textCenter,
@@ -993,7 +1001,7 @@ export default class SelectTaskScreen extends BaseComponent {
                       color: this.state.isAllCategoriesSelected
                         ? Colors.black
                         : Colors.white,
-                        // width:'33%'
+                      // width:'33%'
                     },
                   ]}>
                   All Categories
@@ -1134,316 +1142,314 @@ export default class SelectTaskScreen extends BaseComponent {
             <KeyboardAwareScrollView
               style={[styles.modalDialog, {paddingVertical: 15}]}
               contentContainerStyle={styles.ScrollView}
-              enableOnAndroid={false}
-            >
+              enableOnAndroid={false}>
               <View style={styles.modalView}>
-               
-                  <View style={[styles.container]}>
+                <View style={[styles.container]}>
+                  <View
+                    style={[
+                      styles.containerBody,
+                      {flexDirection: 'column-reverse'},
+                    ]}>
                     <View
                       style={[
-                        styles.containerBody,
-                        {flexDirection: 'column-reverse'},
+                        styles.modalFooter,
+                        styles.paddingNull,
+                        {marginTop: 30},
                       ]}>
-                      <View
+                      <TouchableOpacity
                         style={[
-                          styles.modalFooter,
-                          styles.paddingNull,
-                          {marginTop: 30},
-                        ]}>
+                          styles.button,
+                          styles.buttonPrimary,
+                          {marginTop: 0},
+                        ]}
+                        onPress={() => this.addTask()}>
+                        {this.state.isLoading ? (
+                          <Spinner color={'#FFFFFF'} size={'small'} />
+                        ) : (
+                          <Text style={styles.buttonText}>{'SAVE'}</Text>
+                        )}
+                      </TouchableOpacity>
+                    </View>
+                    <View style={{flexGrow: 1}}>
+                      <View style={styles.modalTopheader}>
                         <TouchableOpacity
-                          style={[
-                            styles.button,
-                            styles.buttonPrimary,
-                            {marginTop: 0},
-                          ]}
-                          onPress={() => this.addTask()}>
-                          {this.state.isLoading ? (
-                            <Spinner color={'#FFFFFF'} size={'small'} />
-                          ) : (
-                            <Text style={styles.buttonText}>{'SAVE'}</Text>
-                          )}
+                          style={styles.modalCloseTouch}
+                          onPress={() => {
+                            this.setState({isLoading: false});
+                            this.setTaskModelVisible();
+                          }}>
+                          <Image
+                            source={Images.close}
+                            style={[styles.close, {tintColor: Colors.black}]}
+                          />
                         </TouchableOpacity>
-                      </View>
-                      <View style={{flexGrow: 1}}>
-                        <View style={styles.modalTopheader}>
-                          <TouchableOpacity
-                            style={styles.modalCloseTouch}
-                            onPress={() => {
-                              this.setState({isLoading: false});
-                              this.setTaskModelVisible();
-                            }}>
-                            <Image
-                              source={Images.close}
-                              style={[styles.close, {tintColor: Colors.black}]}
-                            />
-                          </TouchableOpacity>
-                          <View
-                            style={{
-                              padding: 15,
-                              borderRadius: 15,
-                              justifyContent: 'center',
-                              alignItems: 'center',
-                              backgroundColor:
-                                this.state.dictCreateTask['taskColor'],
-                              alignSelf: 'center',
-                              marginTop: 20,
-                            }}>
-                            <Image
-                              source={{uri: this.state.taskImage}}
-                              style={styles.taskIconLarge}
-                            />
-                          </View>
+                        <View
+                          style={{
+                            padding: 15,
+                            borderRadius: 15,
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            backgroundColor:
+                              this.state.dictCreateTask['taskColor'],
+                            alignSelf: 'center',
+                            marginTop: 20,
+                          }}>
+                          <Image
+                            source={{uri: this.state.taskImage}}
+                            style={styles.taskIconLarge}
+                          />
                         </View>
-                        <View style={{marginTop: 30}}>
-                          <View style={{marginVertical: 10}}>
-                            <Text style={[styles.dropdownButtonText]}>
-                              Enter Task Name
-                            </Text>
-                            <TextInput
-                              value={this.state.taskName.toUpperCase()}
-                              style={{
-                                borderWidth: 1,
-                                borderColor: Colors.gray,
-                                padding: Platform.OS === 'ios' ? 15 : null,
-                                borderRadius: 5,
-                                marginTop: 10,
-                              }}
-                              autoCapitalize="characters"
-                              underlineColorAndroid={'transparent'}
-                              returnKeyType={'done'}
-                              placeholder={'Task Name'.toUpperCase()}
-                              onChangeText={name => {
-                                (this.state.taskName = name.toUpperCase()),
-                                  this.setState({});
-                              }}
-                              onSubmitEditing={event => {}}
-                              maxLength={20}
-                            />
-                          </View>
+                      </View>
+                      <View style={{marginTop: 30}}>
+                        <View style={{marginVertical: 10}}>
+                          <Text style={[styles.dropdownButtonText]}>
+                            Enter Task Name
+                          </Text>
+                          <TextInput
+                            value={this.state.taskName.toUpperCase()}
+                            style={{
+                              borderWidth: 1,
+                              borderColor: Colors.gray,
+                              padding: Platform.OS === 'ios' ? 15 : null,
+                              borderRadius: 5,
+                              marginTop: 10,
+                            }}
+                            autoCapitalize="characters"
+                            underlineColorAndroid={'transparent'}
+                            returnKeyType={'done'}
+                            placeholder={'Task Name'.toUpperCase()}
+                            onChangeText={name => {
+                              (this.state.taskName = name.toUpperCase()),
+                                this.setState({});
+                            }}
+                            onSubmitEditing={event => {}}
+                            maxLength={20}
+                          />
+                        </View>
 
-                          <View style={{marginVertical: 10}}>
-                            <RBSheet
-                              ref={ref => {
-                                this.RBSheetTimer = ref;
-                              }}
-                              height={Dimensions.get('window').height / 2.4}
-                              width={Dimensions.get('window').width}
-                              openDuration={250}>
-                              {this.renderTimerBottomSheet()}
-                            </RBSheet>
-                            <Text style={[styles.dropdownButtonText]}>
-                              Set a Timer
+                        <View style={{marginVertical: 10}}>
+                          <RBSheet
+                            ref={ref => {
+                              this.RBSheetTimer = ref;
+                            }}
+                            height={Dimensions.get('window').height / 2.4}
+                            width={Dimensions.get('window').width}
+                            openDuration={250}>
+                            {this.renderTimerBottomSheet()}
+                          </RBSheet>
+                          <Text style={[styles.dropdownButtonText]}>
+                            Set a Timer
+                          </Text>
+                          <TouchableOpacity
+                            onPress={() => this.RBSheetTimer?.open()}
+                            style={{
+                              flex: 1,
+                              padding: 14,
+                              borderWidth: 1,
+                              borderColor: Colors.gray,
+                              borderRadius: 5,
+                              // justifyContent: 'center',
+                              alignItems: 'center',
+                              flexDirection: 'row',
+                              backgroundColor: Colors.white,
+                              marginTop: 10,
+                            }}>
+                            <Text
+                              style={[
+                                styles.mediumButtonText,
+                                {
+                                  color: this.state.taskTime
+                                    ? Colors.charcoal
+                                    : Colors.gray,
+                                },
+                              ]}>
+                              {this.state.taskTime
+                                ? this.state.taskTime + ' Minutes'
+                                : 'Select Time'}
                             </Text>
                             <TouchableOpacity
-                              onPress={() => this.RBSheetTimer?.open()}
                               style={{
-                                flex: 1,
-                                padding: 14,
-                                borderWidth: 1,
-                                borderColor: Colors.gray,
+                                padding: 5,
+                                position: 'absolute',
+                                right: 5,
+                              }}
+                              onPress={() => this.setState({taskTime: ''})}>
+                              <Image
+                                source={images.cross}
+                                style={{
+                                  width: 24,
+                                  height: 24,
+                                  tintColor: Colors.charcoal,
+                                }}
+                              />
+                            </TouchableOpacity>
+                          </TouchableOpacity>
+                          <FlatList
+                            data={this.state.arrDefaultTaskTime}
+                            extraData={this.state}
+                            keyExtractor={(item, index) => index}
+                            renderItem={({item, index}) =>
+                              this.renderDefaultTaskTime(item, index)
+                            }
+                            contentContainerStyle={{paddingVertical: 15}}
+                            showsVerticalScrollIndicator={false}
+                            keyboardShouldPersistTaps={'always'}
+                            horizontal
+                            showsHorizontalScrollIndicator={false}
+                          />
+                        </View>
+
+                        <View style={{marginVertical: 10}}>
+                          <Text style={[styles.dropdownButtonText]}>
+                            Type Of Tokens
+                          </Text>
+                          <View
+                            style={{
+                              flexDirection: 'row',
+                              alignItems: 'center',
+                              justifyContent: 'space-between',
+                              marginTop: 10,
+                            }}>
+                            <TouchableOpacity
+                              onPress={() =>
+                                this.tokenTypeSelected(
+                                  Constants.TASK_TOKEN_STANDARD,
+                                )
+                              }
+                              style={{
+                                flex: 0.45,
+                                paddingVertical: 11,
+                                borderWidth:
+                                  this.state.taskTokenType ===
+                                  Constants.TASK_TOKEN_STANDARD
+                                    ? 2
+                                    : 1,
+                                borderColor:
+                                  this.state.taskTokenType ===
+                                  Constants.TASK_TOKEN_STANDARD
+                                    ? Colors.darkPink
+                                    : Colors.gray,
                                 borderRadius: 5,
-                                // justifyContent: 'center',
+                                justifyContent: 'center',
                                 alignItems: 'center',
                                 flexDirection: 'row',
-                                backgroundColor: Colors.white,
-                                marginTop: 10,
+                                backgroundColor:
+                                  this.state.taskTokenType ===
+                                  Constants.TASK_TOKEN_STANDARD
+                                    ? Colors.pink + 15
+                                    : Colors.white,
                               }}>
+                              <Image
+                                source={Constants.standardRewardIcon}
+                                style={{width: 24, height: 24}}
+                              />
                               <Text
                                 style={[
                                   styles.mediumButtonText,
-                                  {
-                                    color: this.state.taskTime
-                                      ? Colors.charcoal
-                                      : Colors.gray,
-                                  },
+                                  {color: Colors.charcoal},
                                 ]}>
-                                {this.state.taskTime
-                                  ? this.state.taskTime + ' Minutes'
-                                  : 'Select Time'}
+                                {Constants.TASK_TOKEN_STANDARD}
                               </Text>
-                              <TouchableOpacity
-                                style={{
-                                  padding: 5,
-                                  position: 'absolute',
-                                  right: 5,
-                                }}
-                                onPress={() => this.setState({taskTime: ''})}>
-                                <Image
-                                  source={images.cross}
-                                  style={{
-                                    width: 24,
-                                    height: 24,
-                                    tintColor: Colors.charcoal,
-                                  }}
-                                />
-                              </TouchableOpacity>
                             </TouchableOpacity>
-                            <FlatList
-                              data={this.state.arrDefaultTaskTime}
-                              extraData={this.state}
-                              keyExtractor={(item, index) => index}
-                              renderItem={({item, index}) =>
-                                this.renderDefaultTaskTime(item, index)
+
+                            <TouchableOpacity
+                              onPress={() =>
+                                this.tokenTypeSelected(
+                                  Constants.TASK_TOKEN_SPECIAL,
+                                )
                               }
-                              contentContainerStyle={{paddingVertical: 15}}
-                              showsVerticalScrollIndicator={false}
-                              keyboardShouldPersistTaps={'always'}
-                              horizontal
-                              showsHorizontalScrollIndicator={false}
-                            />
-                          </View>
-
-                          <View style={{marginVertical: 10}}>
-                            <Text style={[styles.dropdownButtonText]}>
-                              Type Of Tokens
-                            </Text>
-                            <View
                               style={{
-                                flexDirection: 'row',
-                                alignItems: 'center',
-                                justifyContent: 'space-between',
-                                marginTop: 10,
-                              }}>
-                              <TouchableOpacity
-                                onPress={() =>
-                                  this.tokenTypeSelected(
-                                    Constants.TASK_TOKEN_STANDARD,
-                                  )
-                                }
-                                style={{
-                                  flex: 0.45,
-                                  paddingVertical: 11,
-                                  borderWidth:
-                                    this.state.taskTokenType ===
-                                    Constants.TASK_TOKEN_STANDARD
-                                      ? 2
-                                      : 1,
-                                  borderColor:
-                                    this.state.taskTokenType ===
-                                    Constants.TASK_TOKEN_STANDARD
-                                      ? Colors.darkPink
-                                      : Colors.gray,
-                                  borderRadius: 5,
-                                  justifyContent: 'center',
-                                  alignItems: 'center',
-                                  flexDirection: 'row',
-                                  backgroundColor:
-                                    this.state.taskTokenType ===
-                                    Constants.TASK_TOKEN_STANDARD
-                                      ? Colors.pink + 15
-                                      : Colors.white,
-                                }}>
-                                <Image
-                                  source={Constants.standardRewardIcon}
-                                  style={{width: 24, height: 24}}
-                                />
-                                <Text
-                                  style={[
-                                    styles.mediumButtonText,
-                                    {color: Colors.charcoal},
-                                  ]}>
-                                  {Constants.TASK_TOKEN_STANDARD}
-                                </Text>
-                              </TouchableOpacity>
-
-                              <TouchableOpacity
-                                onPress={() =>
-                                  this.tokenTypeSelected(
-                                    Constants.TASK_TOKEN_SPECIAL,
-                                  )
-                                }
-                                style={{
-                                  flex: 0.45,
-                                  paddingVertical: 11,
-                                  borderWidth:
-                                    this.state.taskTokenType ===
-                                    Constants.TASK_TOKEN_SPECIAL
-                                      ? 2
-                                      : 1,
-                                  borderColor:
-                                    this.state.taskTokenType ===
-                                    Constants.TASK_TOKEN_SPECIAL
-                                      ? Colors.darkPink
-                                      : Colors.gray,
-                                  borderRadius: 5,
-                                  justifyContent: 'center',
-                                  alignItems: 'center',
-                                  flexDirection: 'row',
-                                  backgroundColor:
-                                    this.state.taskTokenType ===
-                                    Constants.TASK_TOKEN_SPECIAL
-                                      ? Colors.pink + 15
-                                      : Colors.white,
-                                }}>
-                                <Image
-                                  source={Images.reward}
-                                  style={{width: 24, height: 24}}
-                                />
-                                <Text
-                                  style={[
-                                    styles.mediumButtonText,
-                                    {color: Colors.charcoal},
-                                  ]}>
-                                  {Constants.TASK_TOKEN_SPECIAL}
-                                </Text>
-                              </TouchableOpacity>
-                            </View>
-                          </View>
-
-                          <View style={{marginVertical: 10}}>
-                            <Text style={[styles.dropdownButtonText]}>
-                              {'Number Of Tokens'.toUpperCase()}
-                            </Text>
-                            <TextInput
-                              style={{
-                                borderWidth: 1,
-                                borderColor: Colors.gray,
-                                padding: Platform.OS === 'ios' ? 15 : null,
+                                flex: 0.45,
+                                paddingVertical: 11,
+                                borderWidth:
+                                  this.state.taskTokenType ===
+                                  Constants.TASK_TOKEN_SPECIAL
+                                    ? 2
+                                    : 1,
+                                borderColor:
+                                  this.state.taskTokenType ===
+                                  Constants.TASK_TOKEN_SPECIAL
+                                    ? Colors.darkPink
+                                    : Colors.gray,
                                 borderRadius: 5,
-                                marginTop: 10,
-                              }}
-                              autoCapitalize="characters"
-                              underlineColorAndroid={'transparent'}
-                              returnKeyType={'done'}
-                              placeholder={'Number of tokens'.toUpperCase()}
-                              maxLength={20}
-                              value={this.state.taskNumberOfToken}
-                              keyboardType={'numeric'}
-                              onChangeText={token =>
-                                this.setState({taskNumberOfToken: token})
-                              }
-                              onSubmitEditing={event => {}}
-                            />
+                                justifyContent: 'center',
+                                alignItems: 'center',
+                                flexDirection: 'row',
+                                backgroundColor:
+                                  this.state.taskTokenType ===
+                                  Constants.TASK_TOKEN_SPECIAL
+                                    ? Colors.pink + 15
+                                    : Colors.white,
+                              }}>
+                              <Image
+                                source={Images.reward}
+                                style={{width: 24, height: 24}}
+                              />
+                              <Text
+                                style={[
+                                  styles.mediumButtonText,
+                                  {color: Colors.charcoal},
+                                ]}>
+                                {Constants.TASK_TOKEN_SPECIAL}
+                              </Text>
+                            </TouchableOpacity>
                           </View>
-
-                          <TouchableOpacity
-                            style={{
-                              marginVertical: 10,
-                              flexDirection: 'row',
-                              alignItems: 'center',
-                            }}
-                            onPress={() => {
-                              this.setState({
-                                isSaveForFuture:
-                                  this.state.isSaveForFuture == 0 ? 1 : 0,
-                              });
-                            }}>
-                            <Image
-                              source={
-                                this.state.isSaveForFuture
-                                  ? Images.checked
-                                  : Images.unchecked
-                              }
-                              style={{width: 18, height: 18, marginRight: 5}}
-                            />
-                            <Text style={[styles.dropdownButtonText]}>
-                              Save This Task For Future Reference.
-                            </Text>
-                          </TouchableOpacity>
                         </View>
+
+                        <View style={{marginVertical: 10}}>
+                          <Text style={[styles.dropdownButtonText]}>
+                            {'Number Of Tokens'.toUpperCase()}
+                          </Text>
+                          <TextInput
+                            style={{
+                              borderWidth: 1,
+                              borderColor: Colors.gray,
+                              padding: Platform.OS === 'ios' ? 15 : null,
+                              borderRadius: 5,
+                              marginTop: 10,
+                            }}
+                            autoCapitalize="characters"
+                            underlineColorAndroid={'transparent'}
+                            returnKeyType={'done'}
+                            placeholder={'Number of tokens'.toUpperCase()}
+                            maxLength={20}
+                            value={this.state.taskNumberOfToken}
+                            keyboardType={'numeric'}
+                            onChangeText={token =>
+                              this.setState({taskNumberOfToken: token})
+                            }
+                            onSubmitEditing={event => {}}
+                          />
+                        </View>
+
+                        <TouchableOpacity
+                          style={{
+                            marginVertical: 10,
+                            flexDirection: 'row',
+                            alignItems: 'center',
+                          }}
+                          onPress={() => {
+                            this.setState({
+                              isSaveForFuture:
+                                this.state.isSaveForFuture == 0 ? 1 : 0,
+                            });
+                          }}>
+                          <Image
+                            source={
+                              this.state.isSaveForFuture
+                                ? Images.checked
+                                : Images.unchecked
+                            }
+                            style={{width: 18, height: 18, marginRight: 5}}
+                          />
+                          <Text style={[styles.dropdownButtonText]}>
+                            Save This Task For Future Reference.
+                          </Text>
+                        </TouchableOpacity>
                       </View>
                     </View>
                   </View>
+                </View>
               </View>
             </KeyboardAwareScrollView>
           </View>
@@ -1455,11 +1461,10 @@ export default class SelectTaskScreen extends BaseComponent {
           visible={this.state.createTask}
           onRequestClose={() => {}}>
           <View style={[styles.modal, styles.modalBlueTrans]}>
-          <KeyboardAwareScrollView
+            <KeyboardAwareScrollView
               style={[styles.modalDialog, {paddingVertical: 15}]}
               contentContainerStyle={styles.ScrollView}
-              enableOnAndroid={false}
-            >
+              enableOnAndroid={false}>
               <ScrollView
                 style={[styles.modalDialog, {paddingVertical: 15}]}
                 contentContainerStyle={styles.ScrollView}>
