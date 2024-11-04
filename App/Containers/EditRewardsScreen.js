@@ -1,7 +1,6 @@
 import Spinner from '../Components/Spinner';
 import React from 'react';
-import { Image, ImageBackground, Modal, ScrollView, Text, TextInput, TouchableOpacity, View, SafeAreaView, KeyboardAvoidingView, Keyboard } from 'react-native';
-import { FlatList } from 'react-native-gesture-handler';
+import { Image, ImageBackground, Modal, ScrollView, Text, TextInput, TouchableOpacity, View, SafeAreaView, KeyboardAvoidingView, Keyboard,FlatList } from 'react-native';
 import ImagePicker from 'react-native-image-crop-picker';
 import Permission from 'react-native-permissions';
 import BaseComponent from '../Components/BaseComponent';

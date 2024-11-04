@@ -17,6 +17,7 @@ import {
   Alert,
   Dimensions,
   Platform,
+  ActivityIndicator,
 } from 'react-native';
 import ImagePicker from 'react-native-image-crop-picker';
 import Icon from 'react-native-vector-icons/FontAwesome';
@@ -99,6 +100,7 @@ export default class SelectTaskScreen extends BaseComponent {
       createdTaskCount: 0,
       chosenCategory: {},
       isEdit: this.props.navigation.state.params.dictCreateTask.isEdit ?? false,
+      categoryListLoading: true,
     };
   }
 
@@ -245,13 +247,13 @@ export default class SelectTaskScreen extends BaseComponent {
 
   //#endregion -> API Calls
   getTaskCategories = () => {
-    this.setState({isLoading: true});
+    this.setState({categoryListLoading: true});
     console.log('this.state.objSelectedChild', this.state.objSelectedChild);
     const res = objSecureAPI
       .getCategories(this.state.objSelectedChild.id)
       .then(resJSON => {
         if (resJSON.ok && resJSON.status == 200) {
-          this.setState({isLoading: false});
+          this.setState({categoryListLoading: false});
           if (resJSON.data.success) {
             const allCategories = {
               id: 230,
@@ -286,10 +288,10 @@ export default class SelectTaskScreen extends BaseComponent {
             Helper.showErrorMessage(resJSON.data.message);
           }
         } else if (resJSON.status == 500) {
-          this.setState({isLoading: false});
+          this.setState({categoryListLoading: false});
           Helper.showErrorMessage(resJSON.data.message);
         } else {
-          this.setState({isLoading: false});
+          this.setState({categoryListLoading: false});
           Helper.showErrorMessage(Constants.SERVER_ERROR);
         }
       });
@@ -349,7 +351,7 @@ export default class SelectTaskScreen extends BaseComponent {
     var userDate = moment(this.state.dictCreateTask['userDate']).format(
       'YYYY-MM-DD',
     );
-    var isEdit = this.state.dictCreateTask['isEdit']
+    var isEdit = this.state.dictCreateTask['isEdit'];
 
     const res = objSecureAPI
       .addTask(
@@ -376,7 +378,7 @@ export default class SelectTaskScreen extends BaseComponent {
         from_listing,
         is_new,
         userDate,
-        isEdit
+        isEdit,
       )
       .then(resJSON => {
         if (resJSON.ok && resJSON.status == 200) {
@@ -837,17 +839,23 @@ export default class SelectTaskScreen extends BaseComponent {
   renderCategoriesBottomSheet = () => {
     return (
       <View style={{flex: 1, padding: 15}}>
-        <FlatList
-          keyboardShouldPersistTaps={'always'}
-          data={this.state.arrAllCategories.sort((a, b) =>
-            a.name.localeCompare(b.name),
-          )}
-          extraData={this.state}
-          keyExtractor={(item, index) => index}
-          renderItem={({item, index}) => this.renderRow(item, index)}
-          contentContainerStyle={{paddingVertical: 15}}
-          showsVerticalScrollIndicator={false}
-        />
+        {this.state.categoryListLoading ? (
+          <View style={{flex:1,justifyContent:'center',alignSelf:'center'}}>
+            <ActivityIndicator style={{alignSelf:'center'}}/>
+          </View>
+        ) : (
+          <FlatList
+            keyboardShouldPersistTaps={'always'}
+            data={this.state.arrAllCategories.sort((a, b) =>
+              a.name.localeCompare(b.name),
+            )}
+            extraData={this.state}
+            keyExtractor={(item, index) => index}
+            renderItem={({item, index}) => this.renderRow(item, index)}
+            contentContainerStyle={{paddingVertical: 15}}
+            showsVerticalScrollIndicator={false}
+          />
+        )}
       </View>
     );
   };

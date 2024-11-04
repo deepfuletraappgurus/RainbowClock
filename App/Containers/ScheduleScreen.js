@@ -103,9 +103,10 @@ export default class ScheduleScreen extends BaseComponent {
     const upComingDays = Helper.getUpcominSevenDays();
     this.setState({
       arrWeekDays: upComingDays,
-      selectedDay: new Date(),
+      selectedDay: this.props.navigation.state?.params?.selectedDay
+        ? new Date(this.props.navigation.state?.params?.selectedDay)
+        : new Date(),
     });
-    console.log('~~~~~~~', upComingDays[0]);
     this.getMenuAccessRole();
     this.getChildId();
     this.navFocusListener = this.props.navigation.addListener(
@@ -304,8 +305,9 @@ export default class ScheduleScreen extends BaseComponent {
       'dddd DD MMMM YYYY',
       'YYYY-MM-DD',
     );
+    // console.log('!!!!!!!!!----!!!!!!!!!',this.state.selectedDay)
     mApi
-      .printTask(this.state.objSelectedChild.id, aDate)
+      .printTask(this.state.objSelectedChild.id, this.state.selectedDay)
       .then(response => {
         console.log('PDF LIST ✅✅✅', JSON.stringify(response));
         if (response.ok) {
@@ -511,7 +513,7 @@ export default class ScheduleScreen extends BaseComponent {
       from_listing: 1,
       is_new: item?.is_new,
       userDate: this.state.selectedDay,
-      isEdit:true
+      isEdit: true,
     };
     this.props.navigation.navigate('SelectTaskScreen', {
       dictCreateTask: dictCreateTask,
@@ -530,12 +532,12 @@ export default class ScheduleScreen extends BaseComponent {
   }
 
   onCloseTaskPress = () => {
-    const { editingIndex, scheduleType } = this.state;
-  
+    const {editingIndex, scheduleType} = this.state;
+
     if (editingIndex !== null) {
       // Remove the task at the editingIndex
       const newData = scheduleType.filter((_, index) => index !== editingIndex);
-  
+
       // Update the state
       this.setState({
         scheduleType: newData,
@@ -544,7 +546,7 @@ export default class ScheduleScreen extends BaseComponent {
         showCustomTextInput: false,
       });
     }
-    this.setState({showCustomTextInput:false})
+    this.setState({showCustomTextInput: false});
   };
 
   onCloseEditingTaskPress() {
@@ -1033,7 +1035,7 @@ export default class ScheduleScreen extends BaseComponent {
                     selectedDate={this.state.selectedDay}
                     onDateSelected={e => {
                       // this.setState({selectedDay: new Date(e)});
-                      this.selectDay((moment(e).format('YYYY-MM-DD')));
+                      this.selectDay(moment(e).format('YYYY-MM-DD'));
                     }}
                     calendarHeaderContainerStyle={{display: 'none'}}
                     highlightDateContainerStyle={{

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Image, ImageBackground, ScrollView, SectionList, Text, TouchableOpacity, View } from 'react-native';
+import { Image, ImageBackground, ScrollView, SectionList, Text, TouchableOpacity, View,FlatList } from 'react-native';
 import BaseComponent from '../Components/BaseComponent';
 import Api from '../Services/Api';
 import { Colors, Images, Metrics } from '../Themes';
@@ -10,7 +10,6 @@ import Constants from '../Components/Constants';
 // Styles
 import styles from './Styles/ClaimedRewardsScreenStyles';
 import Spinner from '../Components/Spinner';
-import { FlatList } from 'react-native-gesture-handler';
 
 // Global Variables
 const mAPi = Api.createSecure();

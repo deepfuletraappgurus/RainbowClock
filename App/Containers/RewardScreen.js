@@ -336,7 +336,7 @@ export default class RewardScreen extends BaseComponent {
             onPress={() => this.RBSheetTimer?.close()}>
             <Text style={[styles.buttonText, {color: Colors.black}]}>
               {'No'.toUpperCase()}
-            </Text>
+            </Text> 
           </TouchableOpacity>
           <TouchableOpacity
             style={[

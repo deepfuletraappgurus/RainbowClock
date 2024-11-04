@@ -22,8 +22,9 @@ import moment from 'moment';
 import CalendarStrip from 'react-native-calendar-strip';
 import RBSheet from 'react-native-raw-bottom-sheet';
 import {Calendar, LocaleConfig} from 'react-native-calendars';
-
+import {Swipeable} from 'react-native-gesture-handler';
 import Tips from 'react-native-tips';
+import {Animated} from 'react-native';
 
 // Styles
 import styles from './Styles/ParentHomeScreenStyles';
@@ -54,6 +55,7 @@ export default class ParentHomeScreen extends BaseComponent {
   //constructor event
   constructor(props) {
     super(props);
+    this.swipeableRef = React.createRef();
 
     //tips array ,Tips you want to show in home page
     this.homeTips = new Tips.Waterfall(Constants.PARENT_HOME_SCREEN_TIPS, {
@@ -102,6 +104,8 @@ export default class ParentHomeScreen extends BaseComponent {
       futurearrTask: [],
       futurearrFilteredTasks: [],
       futuredicPieData: {},
+      markedDates: {},
+      isSwiped: false,
     };
 
     this.handleNextTips = this.handleNextTips.bind(this);
@@ -131,6 +135,18 @@ export default class ParentHomeScreen extends BaseComponent {
     super.componentDidMount();
     this.getClockDetail();
     this.getChildDetail();
+    setTimeout(() => {
+      if (this.swipeableRef.current) {
+        this.swipeableRef.current.openRight(); // Programmatically swipe to open right actions
+        
+        // After 1 second, unswipe (close) the row
+        setTimeout(() => {
+          if (this.swipeableRef.current) {
+            this.swipeableRef.current.close(); // Programmatically close the swipe action
+          }
+        }, 1000); // Delay to unswipe (1 second after opening)
+      }
+    }, 3000);
     var date, TimeType, hour;
 
     // Creating Date() function object.
@@ -262,12 +278,13 @@ export default class ParentHomeScreen extends BaseComponent {
       var date, TimeType, hour;
       date = new Date();
       hour = date.getHours();
-      let schoolPieDataAMPM = hour >= 18 ? futureStateData.pieDataAMPM : this.state.pieDataAMPM;
-      let schoolPieDataAMSchool = hour >= 18 ? futureStateData.pieDataAMSchool : this.state.pieDataAMSchool;
-      if (
-        schoolPieDataAMPM?.length == 1 &&
-        schoolPieDataAMPM[0].isEmpty
-      ) {
+      let schoolPieDataAMPM =
+        hour >= 18 ? futureStateData.pieDataAMPM : this.state.pieDataAMPM;
+      let schoolPieDataAMSchool =
+        hour >= 18
+          ? futureStateData.pieDataAMSchool
+          : this.state.pieDataAMSchool;
+      if (schoolPieDataAMPM?.length == 1 && schoolPieDataAMPM[0].isEmpty) {
         pieData = schoolPieDataAMSchool;
       } else {
         function filterTasks(tasks) {
@@ -304,13 +321,12 @@ export default class ParentHomeScreen extends BaseComponent {
         ) {
           schoolPieDataAMPM = filteredTasks;
           let secondLastTaskEndTime =
-            schoolPieDataAMPM[
-              schoolPieDataAMPM?.length - 2
-            ]?.taskId?.split(' - ')[1];
+            schoolPieDataAMPM[schoolPieDataAMPM?.length - 2]?.taskId?.split(
+              ' - ',
+            )[1];
           console.log('1---1', schoolPieDataAMPM);
           let endTimeMeridiem =
-            schoolPieDataAMPM[schoolPieDataAMPM?.length - 2]
-              .endTimeMeridiem;
+            schoolPieDataAMPM[schoolPieDataAMPM?.length - 2].endTimeMeridiem;
 
           // Create moment objects for end time and 6:00 PM
           let endTaskTime = moment(
@@ -323,18 +339,12 @@ export default class ParentHomeScreen extends BaseComponent {
           let timeDifference = sixPMTime.diff(endTaskTime, 'minutes');
 
           // Update the value property of the last task
-          schoolPieDataAMPM[
-            schoolPieDataAMPM?.length - 1
-          ].value = timeDifference;
+          schoolPieDataAMPM[schoolPieDataAMPM?.length - 1].value =
+            timeDifference;
           // Extract the end time from the taskId
-          if (
-            !this.state.isLoading &&
-            schoolPieDataAMSchool !== undefined
-          ) {
+          if (!this.state.isLoading && schoolPieDataAMSchool !== undefined) {
             const startTime = parseInt(
-              schoolPieDataAMSchool[1]?.taskId
-                .split(' ')[0]
-                .split(':')[0],
+              schoolPieDataAMSchool[1]?.taskId.split(' ')[0].split(':')[0],
             );
             console.log('--44---', schoolPieDataAMSchool, startTime);
             // Check if the start time is greater than or equal to 6:00 AM
@@ -349,26 +359,24 @@ export default class ParentHomeScreen extends BaseComponent {
               schoolPieDataAMSchool[0].value = Math.abs(
                 isNaN(differenceInMinutes)
                   ? 360
-                  : differenceInMinutes <= 0 ? 0 : differenceInMinutes -
-                      schoolPieDataAMSchool[1]?.taskId
-                        .split(' ')[0]
-                        .split(':')[1],
+                  : differenceInMinutes <= 0
+                  ? 0
+                  : differenceInMinutes -
+                    schoolPieDataAMSchool[1]?.taskId
+                      .split(' ')[0]
+                      .split(':')[1],
               );
             }
           }
         } else {
-          schoolPieDataAMPM = [
-            {isEmpty: true, taskId: 'Blannk2', value: 0},
-          ];
+          schoolPieDataAMPM = [{isEmpty: true, taskId: 'Blannk2', value: 0}];
           console.log('ERROR');
         }
         console.log(
           '555====5555',
           schoolPieDataAMPM.concat(schoolPieDataAMSchool),
         );
-        pieData = schoolPieDataAMPM.concat(
-          schoolPieDataAMSchool,
-        );
+        pieData = schoolPieDataAMPM.concat(schoolPieDataAMSchool);
       }
     } else if (this.state.meridiam == 'am') {
       var date, TimeType, hour;
@@ -864,40 +872,67 @@ export default class ParentHomeScreen extends BaseComponent {
     );
   }
 
-  renderScheduleTypes = ({item, index}) => {
+  renderRightActions = (progress, dragX, index) => {
     return (
       <View
         style={{
-          flexDirection: 'row',
+          backgroundColor: 'red', // Red background for delete action
+          justifyContent: 'center',
           alignItems: 'center',
-          marginBottom: 10,
-          justifyContent: 'flex-start',
+          width: 80, // Width of the swipe area
+          height: '100%', // Full height of the swiped item
         }}>
-        <Icon
-          onPress={() => this.toggleSelect(index)}
-          name={item?.isSelect ? 'check-square' : 'square'}
-          size={25}
-          color={item?.isSelect ? Colors.restoreGreen : Colors.frost + 60}
-        />
-        <Text
-          style={[
-            styles.mediumButtonText,
-            {color: Colors.black, marginLeft: 15},
-          ]}>
-          {item?.name}
-        </Text>
-        {item?.isCustom ? (
-          <Icon
-            name="pencil"
-            size={20}
-            color={Colors.black + 60}
-            style={{position: 'absolute', right: 0}}
-            onPress={() => this.handleEdit(index)}
-          />
-        ) : null}
+        <TouchableOpacity onPress={() => this.handleDelete(index)}>
+          <Text style={{ color: 'white', fontSize: 16, fontWeight: 'bold' }}>
+            Delete
+          </Text>
+        </TouchableOpacity>
       </View>
     );
   };
+
+  renderScheduleTypes = ({item, index}) => {
+    
+
+    return (
+      <Swipeable
+        ref={this.swipeableRef} // Attach the ref to the Swipeable component
+        renderRightActions={(progress, dragX) =>
+          this.renderRightActions(progress, dragX, index)
+        }
+        overshootRight={false}
+      >
+        <View
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            marginBottom: 10,
+            justifyContent: 'flex-start',
+            backgroundColor: 'white', // Row background
+          }}
+        >
+          <TouchableOpacity onPress={() => console.log('Selected!')}>
+            <Text>{item?.name}</Text>
+          </TouchableOpacity>
+        </View>
+      </Swipeable>
+    );
+  };
+
+  handleDelete = index => {
+    const updatedList = this.state.scheduleType.filter((_, i) => i !== index);
+    this.setState({scheduleType: updatedList});
+  };
+
+  handleEdit = index => {
+    const itemToEdit = this.state.scheduleType[index];
+    this.setState({
+      editingIndex: index, // Set the index of the item being edited
+      editingText: itemToEdit.name, // Set the value to be edited
+      showCustomTextInput: false, // Ensure custom input is closed while editing
+    });
+  };
+
   //#endregion
 
   //#region -> API Call
@@ -920,6 +955,7 @@ export default class ParentHomeScreen extends BaseComponent {
             let arr = [];
             if (response.data.data.length > 0) {
               const tasks = response.data.data[0].tasks;
+              this.setMarkedDates(response.data.data[0].tasks);
               this.state.isRewardClaimed = response.data.data[0].is_claimed;
               this.state.isRewardClaimed == true
                 ? this.callClearRewardNotification()
@@ -1064,6 +1100,56 @@ export default class ParentHomeScreen extends BaseComponent {
         });
     }
   };
+
+  getDatesForDays(days) {
+    const today = moment();
+    const next7Days = [];
+
+    days.forEach(day => {
+      for (let i = 0; i < 7; i++) {
+        const currentDay = today.clone().add(i, 'days');
+        if (currentDay.format('dddd') === day) {
+          next7Days.push(currentDay.format('YYYY-MM-DD'));
+        }
+      }
+    });
+
+    return next7Days;
+  }
+
+  setMarkedDates(taskData) {
+    const newMarkedDates = {};
+
+    // Loop through task data and mark dates where is_date is 0
+    Object.values(taskData).forEach(timeSlots => {
+      timeSlots.forEach(task => {
+        if (task.is_date === 0) {
+          const daysArray = task.days.split(',');
+          const datesToMark = this.getDatesForDays(daysArray);
+
+          datesToMark.forEach(date => {
+            newMarkedDates[date] = {
+              customStyles: {
+                container: {
+                  backgroundColor: 'red', // Red background for specific day
+                  borderRadius: 50,
+                  borderWidth: 2,
+                  borderColor: 'red',
+                },
+                text: {
+                  color: 'white',
+                  fontWeight: 'bold',
+                },
+              },
+            };
+          });
+        }
+      });
+    });
+
+    // Update state with marked dates
+    this.setState({markedDates: newMarkedDates});
+  }
 
   setupTaskData(
     arrAM,
@@ -1315,6 +1401,7 @@ export default class ParentHomeScreen extends BaseComponent {
     const renderPagination = (index, total, context) => {
       return null;
     };
+
     return (
       <View
         style={styles.mainContainer}
@@ -1548,7 +1635,10 @@ export default class ParentHomeScreen extends BaseComponent {
                   }}
                 />
               </TouchableOpacity>
-              {console.log('SELECTED DAY_______', this.state.selectedDay)}
+              {console.log(
+                'SELECTED DAY_______',
+                JSON.stringify(this.state.markedDates),
+              )}
               {this.state.showFullCalender ? (
                 <View>
                   <Calendar
@@ -1580,16 +1670,46 @@ export default class ParentHomeScreen extends BaseComponent {
                     }}
                     onDayPress={day => {
                       console.log('==---', day);
-                      this.selectDayForClock(day.dateString);
-                      this.showFullCalender();
+
+                      const {dateString} = day;
+                      const {markedDates} = this.state;
+
+                      // Check if the date is already marked
+                      if (markedDates[dateString]) {
+                        // Navigate to the "schedule screen" if date is already marked
+                        this.showFullCalender();
+                        this.props.navigation.navigate('ScheduleScreen',{selectedDay:dateString});
+                      } else {
+                        // Add the date to markedDates with a blue background color
+                        const updatedMarkedDates = {
+                          ...markedDates,
+                          [dateString]: {
+                            customStyles: {
+                              container: {
+                                backgroundColor: 'blue',
+                                borderRadius: 50,
+                                borderWidth: 2,
+                                borderColor: 'blue',
+                              },
+                              text: {
+                                color: 'white',
+                                fontWeight: 'bold',
+                              },
+                            },
+                          },
+                        };
+
+                        // Update the state with the new markedDates
+                        this.setState({markedDates: updatedMarkedDates});
+                        this.selectDayForClock(day.dateString);
+                        this.showFullCalender();
+                      }
+
+                      // this.selectDayForClock(day.dateString);
+                      // this.showFullCalender();
                     }}
-                    markedDates={{
-                      [this.state.selectedDay]: {
-                        selected: true,
-                        marked: true,
-                        selectedColor: Colors.pink,
-                      },
-                    }}
+                    markedDates={this.state.markedDates}
+                    markingType={'custom'}
                   />
                 </View>
               ) : (
