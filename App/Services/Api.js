@@ -71,17 +71,17 @@ const create = (baseURL = base_url) => {
       device_type: device_type,
       device_token: device_token,
     });
-  const doLogIn = (username, password, device_id, device_type, device_token) =>
+  const doLogIn = (email, password, device_id, device_type, device_token) =>
     api.post('/login', {
-      username: username,
+      email: email,
       password: password,
       device_id: device_id,
       device_type: device_type,
       device_token: device_token,
     });
   const getRewardIcons = () => api.get('/icons');
-  const doForgotPassword = username =>
-    api.post('/forgot', {username: username});
+  const doForgotPassword = email =>
+    api.post('/forgot', {email: email});
 
   // ------
   // STEP 3

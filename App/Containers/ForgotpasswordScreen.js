@@ -21,7 +21,7 @@ export default class ForgotpasswordScreen extends BaseComponent {
   constructor(props) {
     super(props)
     this.state = {
-      username: '',
+      email: '',
       password: '',
       isLoading: false,
     }
@@ -40,12 +40,11 @@ export default class ForgotpasswordScreen extends BaseComponent {
   }
 
   isValidate = () => {
-    if (this.state.username.trim() == '') {
-      Helper.showErrorMessage(Constants.MESSAGE_NO_USERNAME);
+    if (this.state.email.trim() == '') {
+      Helper.showErrorMessage(Constants.MESSAGE_NO_EMAIL);
       return false;
-    }
-    else if (this.state.username.length < 7) {
-      Helper.showErrorMessage(Constants.MESSAGE_USERNAME_LENGTH);
+    } else if (!Helper.validateEmail(this.state.email.trim())) {
+      Helper.showErrorMessage(Constants.MESSAGE_VALID_EMAIL);
       return false;
     }
     return true;
@@ -55,7 +54,7 @@ export default class ForgotpasswordScreen extends BaseComponent {
   //#endregion -> API Calls
   callAPI_ForgotPassword = async () => {
     this.setState({ isLoading: true })
-    const res = objAPI.doForgotPassword(this.state.username).then((resJSON) => {
+    const res = objAPI.doForgotPassword(this.state.email).then((resJSON) => {
       if (resJSON.ok && resJSON.status == 200) {
         this.setState({ isLoading: false })
         Helper.showConfirmationMessagesignleAction(resJSON.data.message, 'Ok').then((action) => {
@@ -93,11 +92,11 @@ export default class ForgotpasswordScreen extends BaseComponent {
                       <Image source={Images.user} style={styles.inputIcon} />
                       <TextInput
                         style={styles.input}
-                        placeholder={'Username'.toUpperCase()}
+                        placeholder={'email'.toUpperCase()}
                         underlineColorAndroid={'transparent'}
                         placeholderTextColor={Colors.placeHolderText}
                         returnKeyType={'next'}
-                        onChangeText={(username) => this.setState({ username })}
+                        onChangeText={(email) => this.setState({ email })}
                       />
                     </View>
                     <View style={styles.formFooter}>

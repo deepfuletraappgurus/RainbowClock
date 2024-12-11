@@ -34,7 +34,7 @@ export default class LaunchScreen extends BaseComponent {
   constructor(props) {
     super(props);
     this.state = {
-      username: '',
+      email: '',
       password: '',
       isLoading: false,
       isPasswordSecure: true,
@@ -59,13 +59,10 @@ export default class LaunchScreen extends BaseComponent {
   };
 
   isValidate = () => {
-    if (this.state.username.trim() == '') {
-      Helper.showErrorMessage(Constants.MESSAGE_NO_USERNAME);
+    if (this.state.email.trim() == '') {
+      Helper.showErrorMessage(Constants.MESSAGE_NO_EMAIL);
       return false;
-    } else if (this.state.username.length < 7) {
-      Helper.showErrorMessage(Constants.MESSAGE_USERNAME_LENGTH);
-      return false;
-    } else if (!Helper.validateUsername(this.state.username.trim())) {
+    } else if (!Helper.validateEmail(this.state.email.trim())) {
       Helper.showErrorMessage(Constants.MESSAGE_VALID_EMAIL);
       return false;
     } else if (this.state.password == '') {
@@ -84,7 +81,7 @@ export default class LaunchScreen extends BaseComponent {
     this.setState({isLoading: true});
     const res = objAPI
       .doLogIn(
-        this.state.username,
+        this.state.email,
         this.state.password,
         '',
         Platform.OS.toUpperCase(),
@@ -103,10 +100,7 @@ export default class LaunchScreen extends BaseComponent {
                 Constants.KEY_USER,
                 JSON.stringify(resJSON.data.data),
               );
-              AsyncStorage.setItem(
-                Constants.KEY_USER_NAME,
-                resJSON.data.data.username,
-              );
+              
               AsyncStorage.setItem(
                 Constants.KEY_USER_TOKEN,
                 resJSON.data.data.token + '',
@@ -176,11 +170,11 @@ export default class LaunchScreen extends BaseComponent {
                       <TextInput
                         style={styles.input}
                         // autoCapitalize="characters"
-                        placeholder={'Username'.toUpperCase()}
+                        placeholder={'email'.toUpperCase()}
                         underlineColorAndroid={'transparent'}
                         placeholderTextColor={Colors.placeHolderText}
                         returnKeyType={'next'}
-                        onChangeText={username => this.setState({username})}
+                        onChangeText={email => this.setState({email})}
                         onSubmitEditing={event => {
                           this.refs.pass.focus();
                         }}

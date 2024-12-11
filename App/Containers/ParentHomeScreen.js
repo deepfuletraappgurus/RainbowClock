@@ -138,7 +138,7 @@ export default class ParentHomeScreen extends BaseComponent {
     setTimeout(() => {
       if (this.swipeableRef.current) {
         this.swipeableRef.current.openRight(); // Programmatically swipe to open right actions
-        
+
         // After 1 second, unswipe (close) the row
         setTimeout(() => {
           if (this.swipeableRef.current) {
@@ -248,6 +248,7 @@ export default class ParentHomeScreen extends BaseComponent {
   onPressMoveToSetUpTimeBlock = () => {
     this.props.navigation.navigate('SetupTimeBlockScreen', {
       is_school_clock: this.state.school,
+      selectedDate: this.state.selectedDay,
     });
   };
 
@@ -271,8 +272,16 @@ export default class ParentHomeScreen extends BaseComponent {
     pieData = '';
     var futureStateData = this.state.futuredicPieData;
     if (this.state.is_24HrsClock) {
+      var date, TimeType, hour;
+      date = new Date();
+      hour = date.getHours();
+      console.log('24 HOUR -----', futureStateData);
       pieData = this.state.school
-        ? this.state.pieData24Hour_School
+        ? hour >= 18
+          ? futureStateData.pieData24Hour_School
+          : this.state.pieData24Hour_School
+        : hour >= 18
+        ? futureStateData.pieData24Hour
         : this.state.pieData24Hour;
     } else if (this.state.school) {
       var date, TimeType, hour;
@@ -883,7 +892,7 @@ export default class ParentHomeScreen extends BaseComponent {
           height: '100%', // Full height of the swiped item
         }}>
         <TouchableOpacity onPress={() => this.handleDelete(index)}>
-          <Text style={{ color: 'white', fontSize: 16, fontWeight: 'bold' }}>
+          <Text style={{color: 'white', fontSize: 16, fontWeight: 'bold'}}>
             Delete
           </Text>
         </TouchableOpacity>
@@ -892,16 +901,13 @@ export default class ParentHomeScreen extends BaseComponent {
   };
 
   renderScheduleTypes = ({item, index}) => {
-    
-
     return (
       <Swipeable
         ref={this.swipeableRef} // Attach the ref to the Swipeable component
         renderRightActions={(progress, dragX) =>
           this.renderRightActions(progress, dragX, index)
         }
-        overshootRight={false}
-      >
+        overshootRight={false}>
         <View
           style={{
             flexDirection: 'row',
@@ -909,8 +915,7 @@ export default class ParentHomeScreen extends BaseComponent {
             marginBottom: 10,
             justifyContent: 'flex-start',
             backgroundColor: 'white', // Row background
-          }}
-        >
+          }}>
           <TouchableOpacity onPress={() => console.log('Selected!')}>
             <Text>{item?.name}</Text>
           </TouchableOpacity>
@@ -1279,6 +1284,7 @@ export default class ParentHomeScreen extends BaseComponent {
     date = new Date();
     hour = date.getHours();
     {
+      this.state.isLoading = false;
       const pieDataAM = Helper.generateClockTaskArray(
         arrAM,
         'am',
@@ -1293,30 +1299,34 @@ export default class ParentHomeScreen extends BaseComponent {
       );
       const pieDataAMPM = Helper.generateClockTaskArray(arrPM, 'pm', 3, false);
       const pieDataPMAM = Helper.generateClockTaskArray(arrAM, 'am', 1, false);
-
-      console.log('__________111-------', pieDataPMAM, pieDataAM, pieDataPM);
       const pieDataAMSchool = Helper.generateClockTaskArray(
         arrAM,
         'am',
         2,
         false,
       );
+
+      const pieDataAM24Hour = Helper.generateClockTaskArray(
+        arrAM,
+        'am',
+        1,
+        true,
+      );
+      const pieDataPM24Hour = Helper.generateClockTaskArray(
+        arrPM,
+        'pm',
+        2,
+        true,
+      );
+
       // const pieDataAM_School = Helper.generateClockTaskArray(arrAM_School,"am",true);
       // const pieDataPM_School = Helper.generateClockTaskArray(arrPM_School,"pm",true);
       var pieDataAM_School = [];
       var pieDataPM_School = [];
       if (todaysSchoolHours) {
-        // todaysSchoolHours ={
-        //   FROM:"00:00",
-        //   TO:"00:00"
-        // }
-        // schoolHoursFromMeradian = "am"
-        // schoolHoursToMeradian =  "am"
-
         if (schoolHoursFromMeradian != schoolHoursToMeradian) {
-          //here change arrAM_School to arrAM
           pieDataAM_School = Helper.generateClockTaskArraySchool(
-            arrAM,
+            arrAM_School,
             'am',
             todaysSchoolHours.FROM,
             '11:59 AM',
@@ -1349,7 +1359,7 @@ export default class ParentHomeScreen extends BaseComponent {
         }
       }
       this.state.currentTaskSlot = runningTimeSlot;
-      pieData24Hour = [...pieDataAM, ...pieDataAMPM];
+      pieData24Hour = [...pieDataAM24Hour, ...pieDataPM24Hour];
       pieData24Hour_School = [...pieDataAM_School, ...pieDataPM_School];
       meridian = Helper.getCurrentTimeMeridian();
 
@@ -1365,6 +1375,9 @@ export default class ParentHomeScreen extends BaseComponent {
         pieDataAMSchool,
         pieDataPMAM,
       };
+      if (this.state.is_24HrsClock) {
+        this.setWatchData();
+      }
     }
   }
 
@@ -1589,6 +1602,7 @@ export default class ParentHomeScreen extends BaseComponent {
                     this.state.scheduleType.find(item => item.isSelect).name}
                 </Text>
                 <TouchableOpacity
+                  disabled
                   onPress={() => this.RBSheet.open()}
                   hitSlop={{top: 20, bottom: 20, left: 50, right: 50}}>
                   <Icon name="ellipsis-h" size={25} color={'#fff'} />
@@ -1678,7 +1692,9 @@ export default class ParentHomeScreen extends BaseComponent {
                       if (markedDates[dateString]) {
                         // Navigate to the "schedule screen" if date is already marked
                         this.showFullCalender();
-                        this.props.navigation.navigate('ScheduleScreen',{selectedDay:dateString});
+                        this.props.navigation.navigate('ScheduleScreen', {
+                          selectedDay: dateString,
+                        });
                       } else {
                         // Add the date to markedDates with a blue background color
                         const updatedMarkedDates = {
@@ -1758,14 +1774,13 @@ export default class ParentHomeScreen extends BaseComponent {
               {justifyContent: 'center'},
               this.state.currentTaskSlot && this.state.arrFooterTasks.length > 0
                 ? {
-                    backgroundColor: this.state.is_24HrsClock
-                      ? this.state.currentTaskSlot[0].tasks[0].color // Always show background color
-                      : this.state.currentTaskSlot[0].tasks[0]
-                          .is_school_clock == this.state.school &&
-                        !this.state.isLoading &&
-                        moment(this.state.selectedDay).isSame(moment(), 'day')
-                      ? this.state.currentTaskSlot[0].tasks[0].color // Show if both conditions are met
-                      : null,
+                    backgroundColor:
+                      this.state.currentTaskSlot[0].tasks[0].is_school_clock ==
+                        this.state.school &&
+                      !this.state.isLoading &&
+                      moment(this.state.selectedDay).isSame(moment(), 'day')
+                        ? this.state.currentTaskSlot[0].tasks[0].color // Show if both conditions are met
+                        : null,
                   }
                 : null,
             ]}>
@@ -1776,14 +1791,13 @@ export default class ParentHomeScreen extends BaseComponent {
                 this.state.currentTaskSlot &&
                 this.state.arrFooterTasks.length > 0
                   ? {
-                      backgroundColor: this.state.is_24HrsClock
-                        ? this.state.currentTaskSlot[0].tasks[0].color // Always show background color
-                        : this.state.currentTaskSlot[0].tasks[0]
-                            .is_school_clock == this.state.school &&
-                          !this.state.isLoading &&
-                          moment(this.state.selectedDay).isSame(moment(), 'day')
-                        ? this.state.currentTaskSlot[0].tasks[0].color // Show if both conditions are met
-                        : null,
+                      backgroundColor:
+                        this.state.currentTaskSlot[0].tasks[0]
+                          .is_school_clock == this.state.school &&
+                        !this.state.isLoading &&
+                        moment(this.state.selectedDay).isSame(moment(), 'day')
+                          ? this.state.currentTaskSlot[0].tasks[0].color // Show if both conditions are met
+                          : null,
                     }
                   : null,
               ]}>

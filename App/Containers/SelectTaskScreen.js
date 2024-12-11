@@ -294,6 +294,10 @@ export default class SelectTaskScreen extends BaseComponent {
           this.setState({categoryListLoading: false});
           Helper.showErrorMessage(Constants.SERVER_ERROR);
         }
+      })
+      .catch(error => {
+        this.setState({categoryListLoading: false});
+        Helper.showErrorMessage(Constants.SERVER_ERROR);
       });
   };
 
@@ -318,6 +322,9 @@ export default class SelectTaskScreen extends BaseComponent {
           this.setState({isLoading: false});
           Helper.showErrorMessage(Constants.SERVER_ERROR);
         }
+      }).catch(error => {
+        this.setState({categoryListLoading: false});
+        Helper.showErrorMessage(Constants.SERVER_ERROR);
       });
   };
 
@@ -840,8 +847,9 @@ export default class SelectTaskScreen extends BaseComponent {
     return (
       <View style={{flex: 1, padding: 15}}>
         {this.state.categoryListLoading ? (
-          <View style={{flex:1,justifyContent:'center',alignSelf:'center'}}>
-            <ActivityIndicator style={{alignSelf:'center'}}/>
+          <View
+            style={{flex: 1, justifyContent: 'center', alignSelf: 'center'}}>
+            <ActivityIndicator style={{alignSelf: 'center'}} />
           </View>
         ) : (
           <FlatList

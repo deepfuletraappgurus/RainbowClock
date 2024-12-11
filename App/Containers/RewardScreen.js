@@ -273,7 +273,7 @@ export default class RewardScreen extends BaseComponent {
           onPress={() => {
             if (item?.is_claimed) {
               Helper.showConfirmationMessageActions(
-                'Are you sure you want to recover this reward?',
+                'Are you sure you want to re-use this reward?',
                 'No',
                 'Yes',
                 () => {},
@@ -295,7 +295,7 @@ export default class RewardScreen extends BaseComponent {
           }}>
           <Text
             style={[styles1.rewardType, {color: Colors.white, marginTop: 0}]}>
-            {item?.is_claimed ? 'RECOVER' : 'EDIT REWARD'}
+            {item?.is_claimed ? 'RE-USE' : 'EDIT REWARD'}
           </Text>
         </TouchableOpacity>
       </TouchableOpacity>

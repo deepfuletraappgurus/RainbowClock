@@ -170,7 +170,7 @@ const Constants = {
     THURSDAY_MESSAGE: `I'm THURSDAY.\nI was named after the planet Jupiter, a gas giant.`,
     FRIDAY_MESSAGE: `I'm FRIDAY.\nI was named after Venus the second planet from the Sun.`,
     SATURDAY_MESSAGE: `I'm SATURDAY.\nI was named after Saturn. I am the second largest planet in our solar system.`,
-    SUNDAY_MESSAGE: "Hi, I'm Sunday, named after the Sun, the star at the center of our solar system.",
+    SUNDAY_MESSAGE: "Hi, I'm Sunday.  I was named after the Sun, the star at the centre of our solar system.",
     // SUNDAY_MESSAGE: `It's SUNDAY.\nI was named after the Sun. I am a Star. All the planets in our solar system orbit around me.`,
 
     // URL Keys

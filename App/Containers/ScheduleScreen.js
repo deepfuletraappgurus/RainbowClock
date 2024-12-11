@@ -925,9 +925,10 @@ export default class ScheduleScreen extends BaseComponent {
                 <Text style={[styles.h1]}>
                   {'SCHEDULE' +
                     ' - ' +
-                    this.state.scheduleType.find(item => item.isSelect).name}
+                    this.state.scheduleType.find(item => item.isSelect1).name}
                 </Text>
                 <TouchableOpacity
+                  disabled
                   onPress={() => this.RBSheet.open()}
                   hitSlop={{top: 20, bottom: 20, left: 50, right: 50}}>
                   <Icon name="ellipsis-h" size={25} color={'#fff'} />

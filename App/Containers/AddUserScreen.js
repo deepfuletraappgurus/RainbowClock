@@ -310,7 +310,7 @@ export default class AddUserScreen extends BaseComponent {
                     ]}
                     onPress={() => this.onPressSelectAvatar()}>
                     <Text style={styles.smallButtonText}>
-                      {'Add An Avtar Image'.toUpperCase()}
+                      {'Add An Avatar Image'.toUpperCase()}
                     </Text>
                   </TouchableOpacity>
                 </View>

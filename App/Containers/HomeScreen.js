@@ -11,6 +11,7 @@ import {
   FlatList,
   Platform,
   Dimensions,
+  InteractionManager
 } from 'react-native';
 import Constants from '../Components/Constants';
 import * as Helper from '../Lib/Helper';
@@ -25,6 +26,7 @@ import AnalogClock from '../Components/AnalogClock';
 import Tips from 'react-native-tips';
 import * as Animatable from 'react-native-animatable';
 import Svg, {G, Path} from 'react-native-svg';
+import { GestureHandlerRootView, Swipeable } from "react-native-gesture-handler";
 
 // Styles
 import styles from './Styles/HomeScreenStyles';
@@ -534,7 +536,7 @@ export default class HomeScreen extends BaseComponent {
         date = new Date();
         hour = date.getHours();
         
-        if (hour >= 18 && stateData.pieDataPMAM[0].value !== 720) {
+        if (hour >= 18 && stateData.pieDataPMAM[0]?.value !== 720) {
           console.log(
             '!!!!---!!!!!====!!!!!',
             stateData?.pieDataPMAM,
@@ -1685,14 +1687,16 @@ export default class HomeScreen extends BaseComponent {
 
   indexChange = index => {
     this.setState({isLoading: true, scrollable: false}, () => {
-      this._timer ? clearInterval(this._timer) : null;
-      this._timer_task ? clearTimeout(this._timer_task) : null;
+      // this._timer ? clearInterval(this._timer) : null;
+      // this._timer_task ? clearTimeout(this._timer_task) : null;
       this.setState({currentIndex: index}, () => {
         // this,_timer_task = setTimeout(() => {
         // this.getJokeOfTheDay(index);
-        if (!this.state.scrollable) {
-          this.getTaskList(index);
-        }
+        InteractionManager.runAfterInteractions(() => {
+          if (!this.state.scrollable) {
+            this.getTaskList(index);
+          }
+        });
         // this.state.swiperData[index] = this.renderSwiperView(index);
         // }, 10000);
       });
@@ -1898,12 +1902,15 @@ export default class HomeScreen extends BaseComponent {
           }
           style={[styles.backgroundImage, {}]}>
           {this.state.pieData ? (
+            
             <Swiper
               loop={false}
               showsButtons={false}
               // index={this.state.currentIndex}
               renderPagination={renderPagination}
-              onIndexChanged={index => this.indexChange(index)}
+              onIndexChanged={index => {
+                setTimeout(() => this.indexChange(index), 50);
+              }}
               scrollEnabled={this.state.scrollable && !this.state.isLoading}>
               {this.renderSwiperData()}
             </Swiper>
@@ -1963,8 +1970,7 @@ export default class HomeScreen extends BaseComponent {
             </View>
             <View style={styles.clockBottomRight}>
               <TouchableOpacity activeOpacity={0.7}>
-                {this.state.isPlanetIconVisible &&
-                    this.state.currentIndex == 0 ? (
+                {this.state.isPlanetIconVisible ? (
                   <View style={styles.shapeContainer}>
                     <View style={styles.shapeView}>
                       <Image
@@ -1997,6 +2003,9 @@ export default class HomeScreen extends BaseComponent {
                     <TouchableOpacity
                       onPress={() => this.handlePlanetIcon()}
                       style={{zIndex: 100000}}>
+                        {
+                          console.log('!!!!--!!!!!!----',this.state.currentIndex)
+                        }
                       <Image
                         source={
                           Helper.getPlanetImageForTheDay(
@@ -2023,7 +2032,7 @@ export default class HomeScreen extends BaseComponent {
                         {console.log('RENDER JOKE', this.state.jokeData)}
                         {this.state.tickCount == 2 ? null : (
                           <View style={[styles.shapeJoke]}>
-                            <Text style={styles.shapeText} numberOfLines={3}>
+                            <Text style={styles.shapeText} >
                               {this.state.tickCount == 1
                                 ? this.state.jokeData.answer
                                 : this.state.jokeData.question}

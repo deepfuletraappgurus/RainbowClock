@@ -147,7 +147,7 @@ const drawerStack = createStackNavigator(
     },
     AddUserScreen: {
       screen: AddUserScreen,
-      navigationOptions: {title: 'My Rainbow Clock'.toUpperCase()},
+      navigationOptions: {title: 'My Rainbow Clock'.toUpperCase(), headerRight : () => <></>},
     },
     ChildProfileScreen: {
       screen: ChildProfileScreen,
