@@ -106,6 +106,8 @@ export default class ParentHomeScreen extends BaseComponent {
       futuredicPieData: {},
       markedDates: {},
       isSwiped: false,
+      selectedMonth: new Date().getMonth(), // Tracks the selected month
+      selectedYear: new Date().getFullYear(),
     };
 
     this.handleNextTips = this.handleNextTips.bind(this);
@@ -1410,10 +1412,78 @@ export default class ParentHomeScreen extends BaseComponent {
     );
   }
 
+  handleMonthChange = month => {
+    this.setState({
+      selectedMonth: month.month - 1, // react-native-calendars gives months 1-12
+      selectedYear: month.year,
+    });
+  };
+
+  renderHeader = () => {
+    const {selectedMonth, selectedYear} = this.state;
+    const monthNames = [
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December',
+    ];
+    return (
+      <View style={{alignItems: 'center'}}>
+        <Text style={{fontSize: 18, fontWeight: 'bold', color: 'pink'}}>
+          {`${monthNames[selectedMonth]} ${selectedYear}`}
+        </Text>
+      </View>
+    );
+  };
+
+  renderArrow = direction => {
+    const {selectedMonth, selectedYear} = this.state;
+    const currentMonth = new Date().getMonth();
+    const currentYear = new Date().getFullYear();
+
+    // Hide the back arrow if in the current month and year
+    if (
+      direction === 'left' &&
+      selectedYear === currentYear &&
+      selectedMonth === currentMonth
+    ) {
+      return null;
+    }
+
+    // Show the arrow
+    return (
+      <Text style={{fontSize: 20, color: 'pink'}}>
+        {direction === 'left' ? '<' : '>'}
+      </Text>
+    );
+  };
+
+  handlePressArrowLeft = subtractMonth => {
+    const {selectedMonth, selectedYear} = this.state;
+    const currentMonth = new Date().getMonth();
+    const currentYear = new Date().getFullYear();
+
+    // Only allow going back if it's not the current month and year
+    if (!(selectedYear === currentYear && selectedMonth === currentMonth)) {
+      subtractMonth();
+    }
+  };
+
   render() {
     const renderPagination = (index, total, context) => {
       return null;
     };
+    const {markedDates, selectedMonth, selectedYear} = this.state;
+    const currentMonth = new Date().getMonth();
+    const currentYear = new Date().getFullYear();
 
     return (
       <View
@@ -1468,9 +1538,26 @@ export default class ParentHomeScreen extends BaseComponent {
             {
               left: null,
               right: 20,
-              top: Helper.isIPhoneX() ? 190 : 170,
+              top: Helper.isIPhoneX() ? 75 : 60,
             },
           ]}
+        />
+
+        <Tips
+          contentStyle={styles.contentStyle}
+          tooltipContainerStyle={[
+            styles.tooltipContainerStyle,
+            {
+              left: Metrics.screenWidth / 2 - 100, // Adjust for horizontal centering
+              top: Metrics.screenHeight / 2 - 50, // Adjust for vertical centering
+            },
+          ]}
+          style={styles.Tips}
+          tooltipArrowStyle={styles.tooltipArrowStyle}
+          textStyle={styles.tipstextStyle}
+          visible={this.state.tipsVisible === 'adminPortal'} // Ensure you set this state value when showing this tip
+          onRequestClose={this.handleNextTips}
+          text="Select from the menu admin portal, to start creating your child's schedule"
         />
 
         <ImageBackground
@@ -1675,56 +1762,67 @@ export default class ParentHomeScreen extends BaseComponent {
                       textSectionTitleColor: Colors.pink,
                     }}
                     headerStyle={{color: Colors.pink}}
-                    showSixWeeks={false}
+                    showSixWeeks={true}
                     hideExtraDays={true}
-                    disableMonthChange={true}
-                    hideArrows={true}
-                    renderHeader={date => {
-                      return <></>;
-                    }}
+                    disableMonthChange={false}
+                    renderHeader={this.renderHeader}
+                    renderArrow={this.renderArrow}
+                    onMonthChange={this.handleMonthChange}
+                    onPressArrowLeft={subtractMonth =>
+                      this.handlePressArrowLeft(subtractMonth)
+                    }
+                    onPressArrowRight={addMonth => addMonth()} // Keep the default functionality for the right arrow
                     onDayPress={day => {
-                      console.log('==---', day);
-
                       const {dateString} = day;
-                      const {markedDates} = this.state;
-
-                      // Check if the date is already marked
-                      if (markedDates[dateString]) {
-                        // Navigate to the "schedule screen" if date is already marked
-                        this.showFullCalender();
-                        this.props.navigation.navigate('ScheduleScreen', {
-                          selectedDay: dateString,
-                        });
-                      } else {
-                        // Add the date to markedDates with a blue background color
-                        const updatedMarkedDates = {
-                          ...markedDates,
-                          [dateString]: {
-                            customStyles: {
-                              container: {
-                                backgroundColor: 'blue',
-                                borderRadius: 50,
-                                borderWidth: 2,
-                                borderColor: 'blue',
-                              },
-                              text: {
-                                color: 'white',
-                                fontWeight: 'bold',
-                              },
+                      const updatedMarkedDates = {
+                        ...markedDates,
+                        [dateString]: {
+                          customStyles: {
+                            container: {
+                              backgroundColor: 'blue',
+                              borderRadius: 50,
+                              borderWidth: 2,
+                              borderColor: 'blue',
+                            },
+                            text: {
+                              color: 'white',
+                              fontWeight: 'bold',
                             },
                           },
-                        };
-
-                        // Update the state with the new markedDates
-                        this.setState({markedDates: updatedMarkedDates});
-                        this.selectDayForClock(day.dateString);
-                        this.showFullCalender();
-                      }
-
-                      // this.selectDayForClock(day.dateString);
-                      // this.showFullCalender();
+                        },
+                      };
+                      this.setState({markedDates: updatedMarkedDates});
+                      this.selectDayForClock(day.dateString);
+                      this.showFullCalender();
+                      // if (markedDates[dateString]) {
+                      //   this.showFullCalender();
+                      //   this.props.navigation.navigate('ScheduleScreen', {
+                      //     selectedDay: dateString,
+                      //   });
+                      // } else {
+                      //   const updatedMarkedDates = {
+                      //     ...markedDates,
+                      //     [dateString]: {
+                      //       customStyles: {
+                      //         container: {
+                      //           backgroundColor: 'blue',
+                      //           borderRadius: 50,
+                      //           borderWidth: 2,
+                      //           borderColor: 'blue',
+                      //         },
+                      //         text: {
+                      //           color: 'white',
+                      //           fontWeight: 'bold',
+                      //         },
+                      //       },
+                      //     },
+                      //   };
+                      //   this.setState({markedDates: updatedMarkedDates});
+                      //   this.selectDayForClock(day.dateString);
+                      //   this.showFullCalender();
+                      // }
                     }}
-                    markedDates={this.state.markedDates}
+                    markedDates={markedDates}
                     markingType={'custom'}
                   />
                 </View>

@@ -180,7 +180,7 @@ export default class HomeScreen extends BaseComponent {
     // currentTime > 6 AM && currentTime <= 12 PM
     // currentTime > 12 PM && currentTime <= 6 PM
     // currentTime > 6 PM && currentTime <= 12 AM
-    this.getJokeOfTheDay(this.state.currentIndex);
+    
 
     //this.getJokeOfTheDay(this.state.currentIndex)
 
@@ -197,6 +197,7 @@ export default class HomeScreen extends BaseComponent {
     this.getChildDetail();
     setTimeout(() => {
       this.getTaskList(this.state.currentIndex);
+      this.getJokeOfTheDay(this.state.currentIndex);
     }, 2000);
     this.navFocusListener = this.props.navigation.addListener(
       'didFocus',
@@ -735,9 +736,9 @@ export default class HomeScreen extends BaseComponent {
       () => {
         // this.createSwiperDataForWeek();
         if (!this.state.isLoading) {
-          // setTimeout(() => {
-          // }, 1000);
-          this.setWatchData(this.state.currentIndex);
+          setTimeout(() => {
+            this.setWatchData(this.state.currentIndex);
+          }, 500);
         }
       },
     );
@@ -963,7 +964,7 @@ export default class HomeScreen extends BaseComponent {
 
     const sanitizedData = data.map(entry => ({
       ...entry,
-      value: entry.value < 0 ? 0 : entry.value, // Convert negative values to 0
+      value: entry?.value < 0 ? 0 : entry?.value, // Convert negative values to 0
     }));
 
     const radius =
@@ -973,14 +974,14 @@ export default class HomeScreen extends BaseComponent {
     const cx = width / 2;
     const cy = height / 2;
     const totalValue = sanitizedData.reduce(
-      (acc, entry) => acc + entry.value,
+      (acc, entry) => acc + entry?.value,
       0,
     );
     let cumulativeAngle = 0;
 
     const transformedPieData = sanitizedData.map((entry, index) => {
       const startAngle = cumulativeAngle;
-      const endAngle = cumulativeAngle + (entry.value / totalValue) * 360;
+      const endAngle = cumulativeAngle + (entry?.value / totalValue) * 360;
       cumulativeAngle = endAngle;
 
       const d = createPieSlicePath(cx, cy, radius, startAngle, endAngle);
@@ -1007,13 +1008,13 @@ export default class HomeScreen extends BaseComponent {
     cumulativeAngle = 0; // Reset cumulative angle for the second pie chart
     const pieDataTrans = data.map((entry, index) => {
       const startAngle = cumulativeAngle;
-      const endAngle = cumulativeAngle + (entry.value / totalValue) * 360;
+      const endAngle = cumulativeAngle + (entry?.value / totalValue) * 360;
       cumulativeAngle = endAngle;
 
       const d = createPieSlicePath(cx, cy, radius, startAngle, endAngle);
 
       return {
-        value: entry.value,
+        value: entry?.value,
         svg: {
           fill: clearColor,
           onPress: () => this.handlePress(entry.taskId),
@@ -1219,7 +1220,7 @@ export default class HomeScreen extends BaseComponent {
     var day = Math.floor(diff / oneDay);
 
     objSecureAPI
-      .getJokeOfTheDay(day)
+      .getJokeOfTheDay(day,this.state.objSelectedChild.id)
       .then(response => {
         if (response.ok) {
           if (response.data.success) {

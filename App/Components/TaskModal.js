@@ -56,7 +56,7 @@ export default class TaskModal extends BaseComponent {
       is_new: this.props.objFooterSelectedTask?.is_new,
       showSuccess: false,
       showSuccessModal: false,
-      calenderSelectedDay:this.props?.calenderSelectedDay
+      calenderSelectedDay: this.props?.calenderSelectedDay,
     };
     this.handleBackButtonClick = this.handleBackButtonClick.bind(this);
   }
@@ -98,7 +98,7 @@ export default class TaskModal extends BaseComponent {
           : props.objFooterSelectedTask?.start_time
           ? 'START TIME'
           : 'PAUSE TIME',
-          calenderSelectedDay:moment(props?.calenderSelectedDay ?? new Date())
+      calenderSelectedDay: moment(props?.calenderSelectedDay ?? new Date()),
     });
   }
   componentWillUnmount() {
@@ -175,60 +175,67 @@ export default class TaskModal extends BaseComponent {
   };
 
   callStartTask = (taskStatus, showAnimation) => {
-    console.log('AKSKSKSKSKKSKSKSKSKSKS',this.state.calenderSelectedDay)
-    if (Helper.checkTaskTimeAndDate(this.state.objFooterSelectedTask)) {
+    console.log('AKSKSKSKSKKSKSKSKSKSKS', this.state.calenderSelectedDay);
+    const givenDateTime = moment(this.state.calenderSelectedDay);
+
+    // Get the current date and time
+    const now = moment();
+
+    // Compare the given datetime with the current datetime
+    if (givenDateTime.isAfter(now)) {
       Helper.showErrorMessage(Constants.MESSAGE_NO_FUTURE_TASK);
-      // this.navFocusListener =  this.props.navigation.addListener('didFocus', () => {
-      //   Helper.getChildRewardPoints(this.props.navigation)
-      // });
     } else {
-      objSecureAPI
-        .updateTaskStatus(
-          this.state.task_id,
-          this.state.objSelectedChild.id,
-          taskStatus,
-          this.state.is_new,
-          moment(this.state.calenderSelectedDay).format("YYYY-MM-DD")
-        )
-        .then(response => {
-          console.log('responseeeeee', response);
-          if (response.ok) {
-            if (response.data.success) {
-              this.setState({
-                task_id: response.data.data[0]['updated_task']['id'],
-                is_new: response.data.data[0]['updated_task']['is_new'],
-              });
-              this.setState({playing: true});
-              if (taskStatus == Constants.TASK_STATUS_COMPLETED) {
-                this.state.objFooterSelectedTask.status =
-                  Constants.TASK_STATUS_COMPLETED;
-                EventEmitter.emit(Constants.EVENT_CHILD_UPDATE);
-                clearInterval(this._timer);
-                if (showAnimation) {
-                  this.setState({showSuccess: true});
-                  this.timer = setTimeout(() => {
-                    this.setState({showSuccess: false});
-                    this.setState({showSuccessModal: true});
-                  }, 3000);
+      if (Helper.checkTaskTimeAndDate(this.state.objFooterSelectedTask)) {
+        Helper.showErrorMessage(Constants.MESSAGE_NO_FUTURE_TASK);
+      } else {
+        objSecureAPI
+          .updateTaskStatus(
+            this.state.task_id,
+            this.state.objSelectedChild.id,
+            taskStatus,
+            this.state.is_new,
+            moment(this.state.calenderSelectedDay).format('YYYY-MM-DD'),
+          )
+          .then(response => {
+            console.log('responseeeeee', response);
+            if (response.ok) {
+              if (response.data.success) {
+                this.setState({
+                  task_id: response.data.data[0]['updated_task']['id'],
+                  is_new: response.data.data[0]['updated_task']['is_new'],
+                });
+                this.setState({playing: true});
+                if (taskStatus == Constants.TASK_STATUS_COMPLETED) {
+                  this.state.objFooterSelectedTask.status =
+                    Constants.TASK_STATUS_COMPLETED;
+                  EventEmitter.emit(Constants.EVENT_CHILD_UPDATE);
+                  clearInterval(this._timer);
+                  if (showAnimation) {
+                    this.setState({showSuccess: true});
+                    this.timer = setTimeout(() => {
+                      this.setState({showSuccess: false});
+                      this.setState({showSuccessModal: true});
+                    }, 3000);
+                  }
+                  // this.setModal(false)
+                  // this.setState({counterVisible: true})
+                } else {
+                  this.setRemainTime();
+                  this.state.objFooterSelectedTask.start_time =
+                    Helper.getCurrentUTCTime('YYYY-MM-DD HH:mm:ss');
                 }
-                // this.setModal(false)
-                // this.setState({counterVisible: true})
+                this.setState({});
               } else {
-                this.setRemainTime();
-                this.state.objFooterSelectedTask.start_time =
-                  Helper.getCurrentUTCTime('YYYY-MM-DD HH:mm:ss');
+                Helper.showErrorMessage(response.data.message);
               }
-              this.setState({});
             } else {
-              Helper.showErrorMessage(response.data.message);
+              Helper.showErrorMessage(response.problem);
             }
-          } else {
-            Helper.showErrorMessage(response.problem);
-          }
-        })
-        .catch(error => {
-          console.log('EEEEEE',error)
-        });
+          })
+          .catch(error => {
+            console.log('EEEEEE', error);
+          });
+      }
     }
   };
 

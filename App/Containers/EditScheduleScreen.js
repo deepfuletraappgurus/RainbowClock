@@ -238,35 +238,48 @@ export default class EditScheduleScreen extends BaseComponent {
         .utc(this.state.calenderSelectedDay)
         .format('YYYY-MM-DD');
       const resultArray = [formattedDate];
-      if (this.isValidate(task_dates)) {
-        const scheduleDetails = this.props.navigation.getParam(
-          'scheduleDetails',
-          {},
-        );
-        var dictCreateTask = {
-          taskName:
-            this.state.taskName === ''
-              ? this.state.taskNameList[0]
-              : this.state.taskName,
-          fromTime: this.state.fromTime,
-          toTime: this.state.toTime,
-          taskColor: this.state.taskSelectedColor,
-          task_date: task_dates?.length === 0 ? resultArray : task_dates,
-          is_date: this.state.is_date,
-          is_new: this.state.is_new,
-          tid: this.state.tid,
-          scheduleDetails,
-        };
-        Helper.showConfirmationMessageActions(
-          'Are you sure, you want to update this schedule?',
-          'No',
-          'Yes',
-          this.onActionNo,
-          () => this.onActionYes(dictCreateTask),
-        );
-      }
+      if (task_dates?.length) {
+        this.setState({ is_date: 0 }, () => {
+          this.validateAndProceed(task_dates,resultArray); // Call the next step after state is updated
+        });
+      } else {
+        this.setState({ is_date: 1 }, () => {
+          this.validateAndProceed(task_dates,resultArray); // Call the next step after state is updated
+        });
     }
   };
+}
+
+  validateAndProceed(task_dates,resultArray) {
+    if (this.isValidate(task_dates)) {
+      const scheduleDetails = this.props.navigation.getParam(
+        'scheduleDetails',
+        {},
+      );
+      const dictCreateTask = {
+        taskName:
+          this.state.taskName === ''
+            ? this.state.taskNameList[0]
+            : this.state.taskName,
+        fromTime: this.state.fromTime,
+        toTime: this.state.toTime,
+        taskColor: this.state.taskSelectedColor,
+        task_date: task_dates?.length === 0 ? resultArray : task_dates,
+        is_date: this.state.is_date,
+        is_new: this.state.is_new,
+        tid: this.state.tid,
+        scheduleDetails,
+      };
+  
+      Helper.showConfirmationMessageActions(
+        `Are you sure, you want to update this schedule?`,
+        'No',
+        'Yes',
+        this.onActionNo,
+        () => this.onActionYes(dictCreateTask),
+      );
+    }
+  }
 
   cancelChange = () => {
     const {taskName, fromTime, toTime, taskSelectedColor, task_date, is_date} =

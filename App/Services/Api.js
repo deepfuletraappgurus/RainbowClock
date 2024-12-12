@@ -269,11 +269,12 @@ const createSecure = (baseURL = base_url) => {
     return api.post('/schoolhours', data);
   };
 
-  const getJokeOfTheDay = day => {
+  const getJokeOfTheDay = (day,child_id) => {
     const data = new FormData();
     //Parms
-    // data.append('day', day);
-    return api.get('/jokes');
+    data.append('child_id', child_id);
+    console.log('JJJJJJJJJJJJJ',data)
+    return api.get('/jokes',{child_id:child_id});
   };
 
   const doUpdateParentProfile = (

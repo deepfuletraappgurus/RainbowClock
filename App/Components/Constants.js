@@ -34,6 +34,7 @@ const Constants = {
         "colorWedge",
         "bell",
         "rewards",
+        "adminPortal"
     ],
 
     //Navigation

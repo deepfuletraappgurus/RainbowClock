@@ -256,7 +256,7 @@ export default class ChildClaimedRewardsScreen extends BaseComponent {
   setRewardCount = () => {
     this.setState({
       standardRewardCount:Constants.standardReward,
-      specialReward:Constants.specialReward
+      specialRewardCount:Constants.specialReward
     })
   }
 

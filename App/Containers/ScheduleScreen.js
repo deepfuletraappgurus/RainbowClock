@@ -829,11 +829,11 @@ export default class ScheduleScreen extends BaseComponent {
         <ImageBackground style={[styles.backgroundImage, styles.scheduleBG]}>
           <TouchableOpacity
             onPress={async () => {
-              this.props.navigation.navigate(
-                this.state.isMenuAsParentPortal
-                  ? 'ParentHomeScreen'
-                  : 'HomeScreen',
-              );
+              const targetScreen = this.state.isMenuAsParentPortal
+                ? 'ParentHomeScreen'
+                : 'HomeScreen';
+
+              this.props.navigation.replace(targetScreen);
             }}
             style={{
               backgroundColor: Colors.blue,
@@ -925,7 +925,7 @@ export default class ScheduleScreen extends BaseComponent {
                 <Text style={[styles.h1]}>
                   {'SCHEDULE' +
                     ' - ' +
-                    this.state.scheduleType.find(item => item.isSelect1).name}
+                    this.state.scheduleType.find(item => item.isSelect).name}
                 </Text>
                 <TouchableOpacity
                   disabled
