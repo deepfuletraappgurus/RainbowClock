@@ -11,7 +11,7 @@ import {
   FlatList,
   Platform,
   Dimensions,
-  InteractionManager
+  InteractionManager,
 } from 'react-native';
 import Constants from '../Components/Constants';
 import * as Helper from '../Lib/Helper';
@@ -26,7 +26,7 @@ import AnalogClock from '../Components/AnalogClock';
 import Tips from 'react-native-tips';
 import * as Animatable from 'react-native-animatable';
 import Svg, {G, Path} from 'react-native-svg';
-import { GestureHandlerRootView, Swipeable } from "react-native-gesture-handler";
+import {GestureHandlerRootView, Swipeable} from 'react-native-gesture-handler';
 
 // Styles
 import styles from './Styles/HomeScreenStyles';
@@ -114,8 +114,6 @@ export default class HomeScreen extends BaseComponent {
     this.handleNextTips = this.handleNextTips.bind(this);
   }
 
-  
-
   //show next tips
   handleNextTips() {
     if (!this.state.isLoading) {
@@ -160,7 +158,7 @@ export default class HomeScreen extends BaseComponent {
   //#region -> Component Methods
   componentDidMount() {
     super.componentDidMount();
-    this.checkStoredDateTime()
+    this.checkStoredDateTime();
     var date, TimeType, hour;
 
     // Creating Date() function object.
@@ -180,7 +178,6 @@ export default class HomeScreen extends BaseComponent {
     // currentTime > 6 AM && currentTime <= 12 PM
     // currentTime > 12 PM && currentTime <= 6 PM
     // currentTime > 6 PM && currentTime <= 12 AM
-    
 
     //this.getJokeOfTheDay(this.state.currentIndex)
 
@@ -248,7 +245,7 @@ export default class HomeScreen extends BaseComponent {
 
   async checkStoredDateTime() {
     const isTimeValid = await Helper.checkStoredDateTime();
-    this.setState({ animationRunning:isTimeValid }); // Store the value in state
+    this.setState({animationRunning: isTimeValid}); // Store the value in state
   }
 
   componentWillUnmount() {
@@ -389,6 +386,11 @@ export default class HomeScreen extends BaseComponent {
                   .split(' ')[0]
                   .split(':')[0],
               );
+              const startTimeInMinutes = parseInt(
+                schoolPieData?.pieDataAMSchool[1]?.taskId
+                  .split(' ')[0]
+                  .split(':')[0],
+              );
               console.log('--44---', schoolPieData?.pieDataAMSchool, startTime);
               // Check if the start time is greater than or equal to 6:00 AM
               if (startTime <= 6) {
@@ -402,10 +404,12 @@ export default class HomeScreen extends BaseComponent {
                 schoolPieData.pieDataAMSchool[0].value = Math.abs(
                   isNaN(differenceInMinutes)
                     ? 360
-                    : differenceInMinutes <= 0 ? 0 : differenceInMinutes -
-                        schoolPieData?.pieDataAMSchool[1]?.taskId
-                          .split(' ')[0]
-                          .split(':')[1],
+                    : differenceInMinutes <= 0
+                    ? -(differenceInMinutes) + startTimeInMinutes
+                    : differenceInMinutes -
+                      schoolPieData?.pieDataAMSchool[1]?.taskId
+                        .split(' ')[0]
+                        .split(':')[1],
                 );
               }
             }
@@ -536,7 +540,7 @@ export default class HomeScreen extends BaseComponent {
         var date, TimeType, hour;
         date = new Date();
         hour = date.getHours();
-        
+
         if (hour >= 18 && stateData.pieDataPMAM[0]?.value !== 720) {
           console.log(
             '!!!!---!!!!!====!!!!!',
@@ -669,7 +673,6 @@ export default class HomeScreen extends BaseComponent {
   }
 
   setPlanetIcon = () => {
-
     // Update the state for animationRunning first
     this.setState({animationRunning: false}, async () => {
       const currentDateTime = new Date().toISOString(); // Get current date and time in ISO format
@@ -890,9 +893,7 @@ export default class HomeScreen extends BaseComponent {
           <TouchableOpacity
             onPress={() => this.setPlanetIcon()}
             style={{zIndex: 1000}}>
-            {
-              console.log('ǚ',this.state.animationRunning)
-            }
+            {console.log('ǚ', this.state.animationRunning)}
             {/* <Text > */}
             <Animatable.Text
               ref={this.handleViewRef} //MP
@@ -1220,7 +1221,7 @@ export default class HomeScreen extends BaseComponent {
     var day = Math.floor(diff / oneDay);
 
     objSecureAPI
-      .getJokeOfTheDay(day,this.state.objSelectedChild.id)
+      .getJokeOfTheDay(day, this.state.objSelectedChild.id)
       .then(response => {
         if (response.ok) {
           if (response.data.success) {
@@ -1488,7 +1489,7 @@ export default class HomeScreen extends BaseComponent {
           pieDataAM_School = Helper.generateClockTaskArraySchool(
             arrAM,
             'am',
-            todaysSchoolHours.FROM,      
+            todaysSchoolHours.FROM,
             '11:59 AM',
             '',
             true,
@@ -1896,6 +1897,22 @@ export default class HomeScreen extends BaseComponent {
             },
           ]}
         />
+        <Tips
+          contentStyle={styles.contentStyle}
+          tooltipContainerStyle={[
+            styles.tooltipContainerStyle,
+            {
+              left: Metrics.screenWidth / 2 - 100, // Adjust for horizontal centering
+              top: Metrics.screenHeight / 2 - 50, // Adjust for vertical centering
+            },
+          ]}
+          style={styles.Tips}
+          tooltipArrowStyle={styles.tooltipArrowStyle}
+          textStyle={styles.tipstextStyle}
+          visible={this.state.tipsVisible === 'adminPortal'} // Ensure you set this state value when showing this tip
+          onRequestClose={this.handleNextTips}
+          text="To begin creating your child’s schedule, from the menu bar, select Admin Portal"
+        />
 
         <ImageBackground
           source={
@@ -1903,7 +1920,6 @@ export default class HomeScreen extends BaseComponent {
           }
           style={[styles.backgroundImage, {}]}>
           {this.state.pieData ? (
-            
             <Swiper
               loop={false}
               showsButtons={false}
@@ -2004,9 +2020,7 @@ export default class HomeScreen extends BaseComponent {
                     <TouchableOpacity
                       onPress={() => this.handlePlanetIcon()}
                       style={{zIndex: 100000}}>
-                        {
-                          console.log('!!!!--!!!!!!----',this.state.currentIndex)
-                        }
+                      {console.log('!!!!--!!!!!!----', this.state.currentIndex)}
                       <Image
                         source={
                           Helper.getPlanetImageForTheDay(
@@ -2033,7 +2047,7 @@ export default class HomeScreen extends BaseComponent {
                         {console.log('RENDER JOKE', this.state.jokeData)}
                         {this.state.tickCount == 2 ? null : (
                           <View style={[styles.shapeJoke]}>
-                            <Text style={styles.shapeText} >
+                            <Text style={styles.shapeText}>
                               {this.state.tickCount == 1
                                 ? this.state.jokeData.answer
                                 : this.state.jokeData.question}

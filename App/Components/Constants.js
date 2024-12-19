@@ -24,7 +24,8 @@ const Constants = {
         // "hourSwitch",
         "bell",
         "house",
-        "rewards"
+        "rewards",
+        "adminPortal"
     ],
     CHILD_TASK_TIPS: [
         "complate",

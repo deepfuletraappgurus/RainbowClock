@@ -357,6 +357,9 @@ export default class ParentHomeScreen extends BaseComponent {
             const startTime = parseInt(
               schoolPieDataAMSchool[1]?.taskId.split(' ')[0].split(':')[0],
             );
+            const startTimeInMinutes = parseInt(
+              schoolPieDataAMSchool[1]?.taskId.split(' ')[0].split(':')[1],
+            );
             console.log('--44---', schoolPieDataAMSchool, startTime);
             // Check if the start time is greater than or equal to 6:00 AM
             if (startTime <= 6) {
@@ -371,7 +374,7 @@ export default class ParentHomeScreen extends BaseComponent {
                 isNaN(differenceInMinutes)
                   ? 360
                   : differenceInMinutes <= 0
-                  ? 0
+                  ? -(differenceInMinutes)+startTimeInMinutes
                   : differenceInMinutes -
                     schoolPieDataAMSchool[1]?.taskId
                       .split(' ')[0]

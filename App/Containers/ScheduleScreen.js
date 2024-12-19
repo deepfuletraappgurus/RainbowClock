@@ -74,6 +74,8 @@ export default class ScheduleScreen extends BaseComponent {
       editingIndex: null,
       editingText: '',
       showFullCalender: false,
+      selectedMonth: new Date().getMonth(), // Tracks the selected month
+      selectedYear: new Date().getFullYear(),
     };
     this.handleBackButtonClick = this.handleBackButtonClick.bind(this);
   }
@@ -604,6 +606,79 @@ export default class ScheduleScreen extends BaseComponent {
     });
   };
 
+  selectDayForClock = day => {
+    this.setState({selectedDay: day}, () => {
+      this.getTaskList();
+      // this.updateMarkedDates();
+    });
+    this.toggleDropdown();
+  };
+
+  handleMonthChange = month => {
+    this.setState({
+      selectedMonth: month.month - 1, // react-native-calendars gives months 1-12
+      selectedYear: month.year,
+    });
+  };
+
+  renderHeader = () => {
+    const {selectedMonth, selectedYear} = this.state;
+    const monthNames = [
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December',
+    ];
+    return (
+      <View style={{alignItems: 'center'}}>
+        <Text style={{fontSize: 18, fontWeight: 'bold', color: 'pink'}}>
+          {`${monthNames[selectedMonth]} ${selectedYear}`}
+        </Text>
+      </View>
+    );
+  };
+
+  renderArrow = direction => {
+    const {selectedMonth, selectedYear} = this.state;
+    const currentMonth = new Date().getMonth();
+    const currentYear = new Date().getFullYear();
+
+    // Hide the back arrow if in the current month and year
+    if (
+      direction === 'left' &&
+      selectedYear === currentYear &&
+      selectedMonth === currentMonth
+    ) {
+      return null;
+    }
+
+    // Show the arrow
+    return (
+      <Text style={{fontSize: 20, color: 'pink'}}>
+        {direction === 'left' ? '<' : '>'}
+      </Text>
+    );
+  };
+
+  handlePressArrowLeft = subtractMonth => {
+    const {selectedMonth, selectedYear} = this.state;
+    const currentMonth = new Date().getMonth();
+    const currentYear = new Date().getFullYear();
+
+    // Only allow going back if it's not the current month and year
+    if (!(selectedYear === currentYear && selectedMonth === currentMonth)) {
+      subtractMonth();
+    }
+  };
+
   //#endregion
 
   //#region -> View Render
@@ -822,6 +897,9 @@ export default class ScheduleScreen extends BaseComponent {
   };
 
   render() {
+    const {markedDates, selectedMonth, selectedYear} = this.state;
+    const currentMonth = new Date().getMonth();
+    const currentYear = new Date().getFullYear();
     return (
       <View
         style={styles.mainContainer}
@@ -989,38 +1067,50 @@ export default class ScheduleScreen extends BaseComponent {
                       backgroundColor: Colors.snow,
                       calendarBackground: Colors.snow,
                       textSectionTitleColor: '#b6c1cd',
-                      selectedDayBackgroundColor: '#00adf5',
+                      selectedDayBackgroundColor: 'red',
                       selectedDayTextColor: '#ffffff',
                       todayTextColor: Colors.snow,
                       dayTextColor: '#2d4150',
                       textDisabledColor: '#D5E2EB',
-                      selectedDayBackgroundColor: Colors.blue,
                       todayBackgroundColor: Colors.blue,
                       textSectionTitleColor: Colors.pink,
                     }}
                     headerStyle={{color: Colors.pink}}
-                    showSixWeeks={false}
+                    showSixWeeks={true}
                     hideExtraDays={true}
-                    disableMonthChange={true}
-                    hideArrows={true}
-                    renderHeader={date => {
-                      <></>;
-                    }}
+                    disableMonthChange={false}
+                    renderHeader={this.renderHeader}
+                    renderArrow={this.renderArrow}
+                    onMonthChange={this.handleMonthChange}
+                    onPressArrowLeft={subtractMonth =>
+                      this.handlePressArrowLeft(subtractMonth)
+                    }
+                    onPressArrowRight={addMonth => addMonth()} // Keep the default functionality for the right arrow
                     onDayPress={day => {
-                      console.log('day===--', day);
-                      // this.setState({
-                      //   selectedDay: new Date(day.timestamp),
-                      // });
-                      this.selectDay(day.dateString);
+                      const {dateString} = day;
+                      const updatedMarkedDates = {
+                        ...markedDates,
+                        [dateString]: {
+                          customStyles: {
+                            container: {
+                              backgroundColor: 'blue',
+                              borderRadius: 50,
+                              borderWidth: 2,
+                              borderColor: 'blue',
+                            },
+                            text: {
+                              color: 'white',
+                              fontWeight: 'bold',
+                            },
+                          },
+                        },
+                      };
+                      this.setState({markedDates: updatedMarkedDates});
                       this.showFullCalender();
+                      this.selectDayForClock(day.dateString);
                     }}
-                    markedDates={{
-                      [this.state.selectedDay]: {
-                        selected: true,
-                        marked: true,
-                        selectedColor: Colors.pink,
-                      },
-                    }}
+                    markedDates={markedDates}
+                    markingType={'custom'}
                   />
                 </View>
               ) : (
