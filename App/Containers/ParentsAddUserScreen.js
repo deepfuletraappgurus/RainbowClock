@@ -144,7 +144,7 @@ export default class ParentsAddUserScreen extends BaseComponent {
     if (this.state.username.trim() === '') {
       Helper.showErrorMessage(Constants.MESSAGE_NO_CHILDNAME);
       return false;
-    } else if (!Helper.validateChildName(this.state.username.trim())) {
+    } else if (this.state.username.split(' ').length > 3) {
       Helper.showErrorMessage(Constants.MESSAGE_VALID_CHILD_NAME);
       return false;
     }
